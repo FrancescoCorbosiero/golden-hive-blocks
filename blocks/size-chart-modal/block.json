@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/size-chart-modal",
+    "version": "1.0.0",
+    "title": "Size Chart Modal",
+    "category": "golden-hive",
+    "icon": "editor-table",
+    "description": "Guida taglie con tabella conversione e popup modal per pagine prodotto.",
+    "keywords": ["size", "chart", "taglie", "guida", "modal"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "modalId": {
+            "type": "string",
+            "default": "size-chart"
+        },
+        "title": {
+            "type": "string",
+            "default": "Guida Taglie"
+        },
+        "description": {
+            "type": "string",
+            "default": "Trova la tua taglia perfetta"
+        },
+        "triggerText": {
+            "type": "string",
+            "default": "Guida Taglie"
+        },
+        "showTrigger": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "align": false,
+        "html": false,
+        "multiple": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

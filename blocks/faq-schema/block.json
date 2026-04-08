@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/faq-schema",
+    "version": "1.0.0",
+    "title": "FAQ Schema",
+    "category": "golden-hive",
+    "icon": "editor-help",
+    "description": "Accordion FAQ ottimizzato SEO con structured data schema per rich snippets.",
+    "keywords": ["faq", "domande", "accordion", "schema", "seo"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Domande Frequenti"
+        },
+        "subtitle": {
+            "type": "string",
+            "default": ""
+        },
+        "items": {
+            "type": "array",
+            "default": [
+                {
+                    "question": "I prodotti sono autentici?",
+                    "answer": "S\u00ec, ogni articolo viene verificato dal nostro team di esperti prima della spedizione. Garantiamo il 100% di autenticit\u00e0 su tutti i prodotti."
+                },
+                {
+                    "question": "Quali sono i tempi di spedizione?",
+                    "answer": "Le spedizioni standard vengono elaborate in 1-2 giorni lavorativi. La consegna avviene in 3-5 giorni lavorativi in tutta Italia."
+                },
+                {
+                    "question": "Posso effettuare un reso?",
+                    "answer": "Certamente! Offriamo il reso gratuito entro 14 giorni dalla ricezione dell'ordine. Il prodotto deve essere nelle condizioni originali."
+                }
+            ]
+        },
+        "allowMultiple": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "supports": {
+        "align": ["wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

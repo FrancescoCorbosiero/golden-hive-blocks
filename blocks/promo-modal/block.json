@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/promo-modal",
+    "version": "1.0.0",
+    "title": "Promo Modal",
+    "category": "golden-hive",
+    "icon": "tickets-alt",
+    "description": "Modal promozionale per sconti primo acquisto, offerte speciali e lead capture.",
+    "keywords": ["promo", "modal", "sconto", "popup", "coupon"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "modalId": {
+            "type": "string",
+            "default": "promo-popup"
+        },
+        "imageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "badge": {
+            "type": "string",
+            "default": "Offerta Esclusiva"
+        },
+        "title": {
+            "type": "string",
+            "default": "10% di Sconto"
+        },
+        "text": {
+            "type": "string",
+            "default": "Iscriviti alla newsletter e ricevi subito il 10% di sconto sul tuo primo ordine!"
+        },
+        "couponCode": {
+            "type": "string",
+            "default": "WELCOME10"
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Ottieni lo Sconto"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "disclaimer": {
+            "type": "string",
+            "default": "Valido solo per nuovi clienti. Non cumulabile."
+        },
+        "autoShow": {
+            "type": "boolean",
+            "default": true
+        },
+        "showDelay": {
+            "type": "number",
+            "default": 5000
+        },
+        "showOnce": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "align": false,
+        "html": false,
+        "multiple": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

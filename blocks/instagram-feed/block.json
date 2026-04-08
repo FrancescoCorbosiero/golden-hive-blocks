@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/instagram-feed",
+    "version": "1.0.0",
+    "title": "Instagram Feed",
+    "category": "golden-hive",
+    "icon": "instagram",
+    "description": "Griglia teaser Instagram con CTA per seguire il profilo @resellpiacenza.",
+    "keywords": ["instagram", "feed", "social", "gallery", "griglia"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Seguici su Instagram"
+        },
+        "subtitle": {
+            "type": "string",
+            "default": "Le ultime dal nostro feed @resellpiacenza"
+        },
+        "instagramUrl": {
+            "type": "string",
+            "default": "https://www.instagram.com/resellpiacenza/"
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "@resellpiacenza"
+        },
+        "images": {
+            "type": "array",
+            "default": [
+                { "url": "", "alt": "" },
+                { "url": "", "alt": "" },
+                { "url": "", "alt": "" },
+                { "url": "", "alt": "" },
+                { "url": "", "alt": "" },
+                { "url": "", "alt": "" }
+            ]
+        },
+        "columns": {
+            "type": "number",
+            "default": 3
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/whatsapp-button",
+    "version": "1.0.0",
+    "title": "WhatsApp Button",
+    "category": "golden-hive",
+    "icon": "phone",
+    "description": "Bottone WhatsApp flottante per contatto rapido con i clienti.",
+    "keywords": ["whatsapp", "chat", "contatto", "button", "floating"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "phoneNumber": {
+            "type": "string",
+            "default": ""
+        },
+        "message": {
+            "type": "string",
+            "default": "Ciao! Vorrei avere informazioni su..."
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Chatta con noi"
+        },
+        "iconOnly": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "supports": {
+        "align": false,
+        "html": false,
+        "multiple": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

@@ -1,0 +1,52 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/contact-info",
+    "version": "1.0.0",
+    "title": "Contact Info",
+    "category": "golden-hive",
+    "icon": "location-alt",
+    "description": "Informazioni di contatto aziendali con indirizzo, P.IVA, telefono, email e mappa.",
+    "keywords": ["contatti", "indirizzo", "info", "telefono", "email"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Vieni a Trovarci"
+        },
+        "subtitle": {
+            "type": "string",
+            "default": "La nostra boutique nel cuore di Piacenza"
+        },
+        "address": {
+            "type": "string",
+            "default": "Stradone Farnese 3 - 29121 - Piacenza (PC)"
+        },
+        "vat": {
+            "type": "string",
+            "default": "P.IVA: 01875650333"
+        },
+        "phone": {
+            "type": "string",
+            "default": ""
+        },
+        "email": {
+            "type": "string",
+            "default": ""
+        },
+        "mapUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "mapEmbed": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

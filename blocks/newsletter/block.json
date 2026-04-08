@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/newsletter",
+    "version": "1.0.0",
+    "title": "Newsletter",
+    "category": "golden-hive",
+    "icon": "email",
+    "description": "Sezione iscrizione newsletter elegante per la tua mailing list.",
+    "keywords": ["newsletter", "email", "iscrizione", "mailing", "subscribe"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Resta Connesso"
+        },
+        "text": {
+            "type": "string",
+            "default": "Iscriviti per drop esclusivi, early access e news sulle ultime release."
+        },
+        "placeholder": {
+            "type": "string",
+            "default": "La tua email"
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Iscriviti"
+        },
+        "disclaimer": {
+            "type": "string",
+            "default": "Rispettiamo la tua privacy. Puoi cancellarti in qualsiasi momento."
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

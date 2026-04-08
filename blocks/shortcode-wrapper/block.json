@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/shortcode-wrapper",
+    "version": "1.0.0",
+    "title": "Shortcode Wrapper",
+    "category": "golden-hive",
+    "icon": "shortcode",
+    "description": "Container stilizzato per shortcode WordPress come product carousel, WooCommerce widgets, ecc.",
+    "keywords": ["shortcode", "woocommerce", "carousel", "prodotti", "widget"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "eyebrow": {
+            "type": "string",
+            "default": ""
+        },
+        "title": {
+            "type": "string",
+            "default": ""
+        },
+        "shortcode": {
+            "type": "string",
+            "default": ""
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": "white"
+        },
+        "buttonText": {
+            "type": "string",
+            "default": ""
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/drop-countdown",
+    "version": "1.0.0",
+    "title": "Drop Countdown",
+    "category": "golden-hive",
+    "icon": "clock",
+    "description": "Countdown timer premium per sneaker release con flip-clock animation e layout cinematico.",
+    "keywords": ["countdown", "timer", "drop", "release", "sneakers"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "productName": {
+            "type": "string",
+            "default": "Air Jordan 1 Retro High OG"
+        },
+        "productImage": {
+            "type": "string",
+            "default": ""
+        },
+        "releaseDate": {
+            "type": "string",
+            "default": ""
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Imposta Promemoria"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": "#"
+        },
+        "eyebrow": {
+            "type": "string",
+            "default": "Prossimo Drop"
+        },
+        "backgroundColor": {
+            "type": "string",
+            "default": "#0a0a0a"
+        }
+    },
+    "supports": {
+        "align": ["full", "wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

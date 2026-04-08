@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/cta-image",
+    "version": "1.0.0",
+    "title": "CTA Image Split",
+    "category": "golden-hive",
+    "icon": "align-pull-left",
+    "description": "CTA con immagine a sinistra, sfumatura e testo a destra. Layout split premium.",
+    "keywords": ["cta", "image", "split", "banner", "promo"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "imageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "eyebrow": {
+            "type": "string",
+            "default": "Nuovi Arrivi"
+        },
+        "title": {
+            "type": "string",
+            "default": "Streetwear Selezionato per Te"
+        },
+        "text": {
+            "type": "string",
+            "default": "Ogni capo \u00e8 scelto con cura per garantirti stile, qualit\u00e0 e autenticit\u00e0."
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Shop Now"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "reverse": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "supports": {
+        "align": ["full", "wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

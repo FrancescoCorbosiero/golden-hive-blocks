@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/parallax-section",
+    "version": "1.0.0",
+    "title": "Parallax Section",
+    "category": "golden-hive",
+    "icon": "format-image",
+    "description": "Sezione parallax immersiva multi-layer con effetto 3D mouse-tracking.",
+    "keywords": ["parallax", "section", "3d", "immersive", "effect"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "backgroundImage": {
+            "type": "string",
+            "default": ""
+        },
+        "foregroundImage": {
+            "type": "string",
+            "default": ""
+        },
+        "title": {
+            "type": "string",
+            "default": "Il Tuo Stile, La Nostra Passione"
+        },
+        "text": {
+            "type": "string",
+            "default": "Scopri una selezione curata di sneakers e streetwear premium, verificati e garantiti."
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Esplora la Collezione"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "enableMouseParallax": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "align": ["full", "wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

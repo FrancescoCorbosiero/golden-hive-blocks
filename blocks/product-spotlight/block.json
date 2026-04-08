@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/product-spotlight",
+    "version": "1.0.0",
+    "title": "Product Spotlight",
+    "category": "golden-hive",
+    "icon": "star-filled",
+    "description": "Vetrina prodotto in evidenza con presentazione premium e dettagli eleganti.",
+    "keywords": ["product", "spotlight", "featured", "vetrina", "prodotto"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "imageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "category": {
+            "type": "string",
+            "default": "Featured Drop"
+        },
+        "title": {
+            "type": "string",
+            "default": "Air Jordan 1 Retro High OG"
+        },
+        "description": {
+            "type": "string",
+            "default": "Un'icona dello streetwear che non passa mai di moda. Materiali premium e design intramontabile."
+        },
+        "condition": {
+            "type": "string",
+            "default": "Nuovo"
+        },
+        "size": {
+            "type": "string",
+            "default": ""
+        },
+        "authenticity": {
+            "type": "string",
+            "default": "Verified"
+        },
+        "currentPrice": {
+            "type": "string",
+            "default": "\u20ac189,00"
+        },
+        "originalPrice": {
+            "type": "string",
+            "default": ""
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Acquista Ora"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

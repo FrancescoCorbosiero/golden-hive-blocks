@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/social-proof",
+    "version": "1.0.0",
+    "title": "Social Proof",
+    "category": "golden-hive",
+    "icon": "megaphone",
+    "description": "Popup conversione che mostra acquisti recenti per aumentare fiducia e urgenza.",
+    "keywords": ["social", "proof", "popup", "conversione", "notifica"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "notifications": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name":     { "type": "string" },
+                    "product":  { "type": "string" },
+                    "image":    { "type": "string" },
+                    "location": { "type": "string" },
+                    "time":     { "type": "string" }
+                }
+            },
+            "default": [
+                {
+                    "name": "Marco da Milano",
+                    "product": "Nike Air Force 1 '07",
+                    "image": "",
+                    "location": "Milano, IT",
+                    "time": "2 minuti fa"
+                },
+                {
+                    "name": "Sara da Roma",
+                    "product": "Adidas Yeezy Boost 350",
+                    "image": "",
+                    "location": "Roma, IT",
+                    "time": "5 minuti fa"
+                }
+            ]
+        },
+        "interval": {
+            "type": "number",
+            "default": 8000
+        },
+        "initialDelay": {
+            "type": "number",
+            "default": 5000
+        },
+        "title": {
+            "type": "string",
+            "default": "Qualcuno ha appena acquistato"
+        }
+    },
+    "supports": {
+        "align": false,
+        "html": false,
+        "multiple": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

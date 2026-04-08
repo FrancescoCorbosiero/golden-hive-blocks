@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/about-hero",
+    "version": "1.0.0",
+    "title": "About Hero",
+    "category": "golden-hive",
+    "icon": "heart",
+    "description": "Sezione Chi Siamo con storia del brand, valori e immagine.",
+    "keywords": ["about", "chi siamo", "storia", "brand", "team"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "eyebrow": {
+            "type": "string",
+            "default": "Chi Siamo"
+        },
+        "title": {
+            "type": "string",
+            "default": "Born in Piacenza"
+        },
+        "text": {
+            "type": "string",
+            "default": "Golden Hive nasce dalla passione per le sneakers e lo streetwear. La nostra boutique in Stradone Farnese 3 \u00e8 il punto di riferimento a Piacenza per chi cerca calzature e abbigliamento autentici, selezionati e verificati."
+        },
+        "imageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "values": {
+            "type": "array",
+            "default": [
+                { "title": "Autenticit\u00e0", "text": "Ogni prodotto \u00e8 verificato dal nostro team di esperti." },
+                { "title": "Passione", "text": "Viviamo e respiriamo la cultura streetwear ogni giorno." },
+                { "title": "Comunit\u00e0", "text": "Siamo pi\u00f9 di un negozio: siamo una famiglia di appassionati." }
+            ]
+        },
+        "reverse": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

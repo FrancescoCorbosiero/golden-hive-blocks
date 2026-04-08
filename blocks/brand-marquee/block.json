@@ -1,0 +1,46 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/brand-marquee",
+    "version": "1.0.0",
+    "title": "Brand Marquee",
+    "category": "golden-hive",
+    "icon": "images-alt",
+    "description": "Carousel infinito di loghi brand con effetto hover grayscale-to-color.",
+    "keywords": ["brand", "logo", "marquee", "carousel", "partner"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "I Nostri Brand"
+        },
+        "brands": {
+            "type": "array",
+            "default": [
+                { "name": "Nike", "logo": "", "url": "" },
+                { "name": "Adidas", "logo": "", "url": "" },
+                { "name": "Jordan", "logo": "", "url": "" },
+                { "name": "New Balance", "logo": "", "url": "" },
+                { "name": "Puma", "logo": "", "url": "" }
+            ]
+        },
+        "speed": {
+            "type": "number",
+            "default": 50
+        },
+        "direction": {
+            "type": "string",
+            "default": "left"
+        },
+        "pauseOnHover": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "align": ["full", "wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

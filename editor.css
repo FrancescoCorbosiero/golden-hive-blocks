@@ -1,0 +1,356 @@
+/**
+ * Golden Hive Blocks - Editor Styles
+ * Stili per l'editor WordPress
+ */
+
+/* Icona categoria blocchi */
+.block-editor-block-types-list__list-item[data-type^="golden-hive"] .block-editor-block-types-list__item-icon {
+    color: #721124;
+}
+
+/* Editor Block Wrapper */
+.wp-block[data-type^="golden-hive"] {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Block Controls Panel */
+.golden-hive-panel-row {
+    margin-bottom: 1rem;
+}
+
+.golden-hive-panel-row label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+/* Image Placeholder */
+.gh-editor-image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #f5f5f5;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    text-align: center;
+    min-height: 200px;
+}
+
+.gh-editor-image-placeholder svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    fill: #999;
+}
+
+.gh-editor-image-placeholder__text {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Editable Text Highlights */
+.gh-editor-editable {
+    outline: none;
+    border-radius: 2px;
+    transition: box-shadow 0.2s ease;
+}
+
+.gh-editor-editable:focus {
+    box-shadow: 0 0 0 2px #721124;
+}
+
+.gh-editor-editable:hover:not(:focus) {
+    box-shadow: 0 0 0 1px rgba(114, 17, 36, 0.3);
+}
+
+/* Block Preview Labels */
+.gh-editor-block-label {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    padding: 2px 8px;
+    background-color: #721124;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 2px 2px 0 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.wp-block[data-type^="golden-hive"]:hover .gh-editor-block-label,
+.wp-block[data-type^="golden-hive"].is-selected .gh-editor-block-label {
+    opacity: 1;
+}
+
+/* Help Text */
+.gh-editor-help {
+    margin-top: 0.5rem;
+    font-size: 12px;
+    color: #757575;
+    font-style: italic;
+}
+
+/* Color Swatches in Panel */
+.gh-editor-color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.gh-editor-color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.gh-editor-color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.gh-editor-color-swatch.is-selected {
+    border-color: #000;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #000;
+}
+
+/* Size Input Grid in Panel */
+.gh-editor-sizes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.gh-editor-size-input {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.gh-editor-size-input:focus {
+    border-color: #721124;
+    outline: none;
+}
+
+/* Repeater Field */
+.gh-editor-repeater {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.gh-editor-repeater__item {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.gh-editor-repeater__item:last-child {
+    border-bottom: none;
+}
+
+.gh-editor-repeater__item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.gh-editor-repeater__item-title {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.gh-editor-repeater__add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: none;
+    color: #721124;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.gh-editor-repeater__add:hover {
+    background-color: #fdf2f4;
+}
+
+/* Preview Notice */
+.gh-editor-preview-notice {
+    padding: 12px;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #856404;
+    margin-bottom: 1rem;
+}
+
+.gh-editor-preview-notice strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Alignment Controls */
+.gh-editor-align-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.gh-editor-align-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.gh-editor-align-button:hover {
+    background-color: #f5f5f5;
+}
+
+.gh-editor-align-button.is-active {
+    background-color: #721124;
+    border-color: #721124;
+    color: #fff;
+}
+
+/* Responsive Controls */
+.gh-editor-responsive-toggle {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gh-editor-responsive-toggle button {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.gh-editor-responsive-toggle button:not(:last-child) {
+    border-right: 1px solid #ddd;
+}
+
+.gh-editor-responsive-toggle button:hover {
+    background-color: #f5f5f5;
+}
+
+.gh-editor-responsive-toggle button.is-active {
+    background-color: #000;
+    color: #fff;
+}
+
+/* Block Toolbar Group */
+.gh-block-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Selected State Highlight */
+.wp-block[data-type^="golden-hive"].is-selected > * {
+    outline: 2px solid #721124;
+    outline-offset: 2px;
+}
+
+/* Hide Empty Blocks */
+.wp-block[data-type^="golden-hive"]:not(.is-selected) .gh-editor-empty {
+    display: none;
+}
+
+/* Loading State */
+.gh-editor-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.gh-editor-loading__spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #721124;
+    border-radius: 50%;
+    animation: gh-spin 0.8s linear infinite;
+}
+
+@keyframes gh-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Drag Handle */
+.gh-editor-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #999;
+    cursor: grab;
+}
+
+.gh-editor-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Panel Divider */
+.gh-editor-panel-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 16px 0;
+}
+
+/* Block placeholder message */
+.gh-editor-placeholder {
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+    border-radius: 8px;
+    text-align: center;
+    color: #fff;
+}
+
+.gh-editor-placeholder__icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 16px;
+    color: #721124;
+}
+
+.gh-editor-placeholder__title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.gh-editor-placeholder__text {
+    font-size: 14px;
+    color: #999;
+}

@@ -1,0 +1,53 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/hero-carousel",
+    "version": "1.0.0",
+    "title": "Hero Carousel",
+    "category": "golden-hive",
+    "icon": "slides",
+    "description": "Carousel hero full-screen con animazioni cinematiche e split-text reveal.",
+    "keywords": ["hero", "carousel", "slider", "banner", "sneakers"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "slides": {
+            "type": "array",
+            "default": [
+                {
+                    "image": "",
+                    "eyebrow": "Nuova Collezione",
+                    "title": "Sneakers Premium Autentiche",
+                    "subtitle": "Scopri le ultime release verificate e certificate dal nostro team di esperti.",
+                    "buttonText": "Shop Now",
+                    "buttonUrl": "#shop"
+                },
+                {
+                    "image": "",
+                    "eyebrow": "Edizione Limitata",
+                    "title": "Drop Esclusivi Ogni Settimana",
+                    "subtitle": "Registrati per accedere in anteprima ai drop pi\u00f9 ricercati.",
+                    "buttonText": "Scopri di Pi\u00f9",
+                    "buttonUrl": "#drops"
+                }
+            ]
+        },
+        "autoplay": {
+            "type": "number",
+            "default": 6000
+        },
+        "showDots": {
+            "type": "boolean",
+            "default": true
+        },
+        "showArrows": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "align": ["full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

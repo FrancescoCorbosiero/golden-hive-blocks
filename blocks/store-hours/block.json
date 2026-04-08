@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/store-hours",
+    "version": "1.0.0",
+    "title": "Store Hours",
+    "category": "golden-hive",
+    "icon": "clock",
+    "description": "Orari di apertura del negozio con layout elegante.",
+    "keywords": ["orari", "apertura", "negozio", "hours", "opening"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "title": {
+            "type": "string",
+            "default": "Orari di Apertura"
+        },
+        "hours": {
+            "type": "array",
+            "default": [
+                { "day": "Lunedì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
+                { "day": "Martedì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
+                { "day": "Mercoledì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
+                { "day": "Giovedì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
+                { "day": "Venerdì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
+                { "day": "Sabato", "time": "10.30 - 13.00 | 15.30 - 19.30" },
+                { "day": "Domenica", "time": "Chiuso" }
+            ]
+        },
+        "note": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

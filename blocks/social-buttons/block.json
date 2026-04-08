@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/social-buttons",
+    "version": "1.0.0",
+    "title": "Social Buttons",
+    "category": "golden-hive",
+    "icon": "share",
+    "description": "Bottoni social flottanti per Instagram, Facebook, TikTok e altri.",
+    "keywords": ["social", "instagram", "facebook", "tiktok", "buttons"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "instagram": {
+            "type": "string",
+            "default": ""
+        },
+        "facebook": {
+            "type": "string",
+            "default": ""
+        },
+        "tiktok": {
+            "type": "string",
+            "default": ""
+        },
+        "youtube": {
+            "type": "string",
+            "default": ""
+        },
+        "twitter": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": false,
+        "html": false,
+        "multiple": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/trustpilot-widget",
+    "version": "1.0.0",
+    "title": "Trustpilot Widget",
+    "category": "golden-hive",
+    "icon": "star-filled",
+    "description": "Widget Trustpilot per mostrare valutazione e recensioni del negozio.",
+    "keywords": ["trustpilot", "recensioni", "rating", "stelle", "reviews"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "rating": {
+            "type": "number",
+            "default": 4.8
+        },
+        "reviewCount": {
+            "type": "number",
+            "default": 250
+        },
+        "label": {
+            "type": "string",
+            "default": "Eccezionale"
+        },
+        "trustpilotUrl": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["center", "wide"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

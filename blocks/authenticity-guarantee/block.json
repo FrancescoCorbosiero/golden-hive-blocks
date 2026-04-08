@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/authenticity-guarantee",
+    "version": "1.0.0",
+    "title": "Authenticity Guarantee",
+    "category": "golden-hive",
+    "icon": "awards",
+    "description": "Sezione garanzia autenticita con visual premium e processo di verifica.",
+    "keywords": ["authenticity", "garanzia", "certificazione", "trust", "verified"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "eyebrow": {
+            "type": "string",
+            "default": "La Nostra Promessa"
+        },
+        "title": {
+            "type": "string",
+            "default": "100% Autenticita Garantita"
+        },
+        "description": {
+            "type": "string",
+            "default": "Ogni articolo viene meticolosamente ispezionato e verificato dal nostro team di esperti prima di raggiungerti."
+        },
+        "badgeText": {
+            "type": "string",
+            "default": "Certified Authentic"
+        },
+        "steps": {
+            "type": "array",
+            "default": [
+                {
+                    "title": "Ispezione Visiva",
+                    "text": "Ogni dettaglio viene esaminato dai nostri esperti certificati."
+                },
+                {
+                    "title": "Verifica Materiali",
+                    "text": "Controlliamo qualit\u00e0 dei materiali, cuciture e finiture."
+                },
+                {
+                    "title": "Certificazione",
+                    "text": "Solo i prodotti che superano tutti i controlli ricevono il nostro sigillo."
+                }
+            ]
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Scopri di Più"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/hero-video",
+    "version": "1.0.0",
+    "title": "Hero Video",
+    "category": "golden-hive",
+    "icon": "video-alt3",
+    "description": "Sezione hero full-screen con video o immagine background e tipografia elegante.",
+    "keywords": ["hero", "video", "banner", "fullscreen", "landing"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "mediaType": {
+            "type": "string",
+            "default": "image"
+        },
+        "videoUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "imageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "posterUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "badge": {
+            "type": "string",
+            "default": "100% Authentic"
+        },
+        "title": {
+            "type": "string",
+            "default": "Sneakers Premium"
+        },
+        "subtitle": {
+            "type": "string",
+            "default": "La tua destinazione per sneakers autentiche e verified"
+        },
+        "primaryButtonText": {
+            "type": "string",
+            "default": "Shop Now"
+        },
+        "primaryButtonUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "secondaryButtonText": {
+            "type": "string",
+            "default": "Scopri di più"
+        },
+        "secondaryButtonUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "showScrollIndicator": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "supports": {
+        "align": ["full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}
