@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.0.0
+ * Version: 5.1.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,22 +18,21 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.0.0');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.1.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
 /**
- * Registra gli assets frontend
+ * Conditional frontend assets — only load when GH blocks are on the page.
+ *
+ * Uses `has_block()` to check the current post content so CSS/JS are
+ * NOT loaded on pages that don't use any Golden Hive block.
  */
 function golden_hive_blocks_enqueue_assets()
 {
-    wp_enqueue_script(
-        'golden-hive-animations',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/animations.js',
-        array(),
-        GOLDEN_HIVE_BLOCKS_VERSION,
-        true
-    );
+    if (!golden_hive_blocks_page_has_blocks()) {
+        return;
+    }
 
     wp_enqueue_style(
         'golden-hive-blocks-style',
@@ -41,11 +40,53 @@ function golden_hive_blocks_enqueue_assets()
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
+
+    wp_enqueue_script(
+        'golden-hive-animations',
+        GOLDEN_HIVE_BLOCKS_URL . 'js/animations.js',
+        array(),
+        GOLDEN_HIVE_BLOCKS_VERSION,
+        true
+    );
 }
 add_action('wp_enqueue_scripts', 'golden_hive_blocks_enqueue_assets');
 
 /**
- * Registra gli assets per l'editor
+ * Check whether the current page/post uses at least one GH block.
+ */
+function golden_hive_blocks_page_has_blocks()
+{
+    // Always load in admin/editor context
+    if (is_admin()) {
+        return true;
+    }
+
+    global $post;
+    if (!$post || empty($post->post_content)) {
+        return false;
+    }
+
+    // Check if any golden-hive/* block is present
+    if (has_block('golden-hive', $post)) {
+        return true;
+    }
+
+    // Also check for the carousel shortcodes in content
+    if (
+        has_shortcode($post->post_content, 'carousel_section') ||
+        has_shortcode($post->post_content, 'product_carousel') ||
+        has_shortcode($post->post_content, 'bestsellers') ||
+        has_shortcode($post->post_content, 'on_sale') ||
+        has_shortcode($post->post_content, 'featured_products')
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Editor assets — only loaded inside the block editor.
  */
 function golden_hive_blocks_editor_assets()
 {
@@ -59,7 +100,7 @@ function golden_hive_blocks_editor_assets()
 add_action('enqueue_block_editor_assets', 'golden_hive_blocks_editor_assets');
 
 /**
- * Registra tutti i blocchi automaticamente dalla directory blocks/
+ * Register all blocks from the blocks/ directory.
  */
 function golden_hive_blocks_register()
 {
@@ -81,7 +122,7 @@ function golden_hive_blocks_register()
 add_action('init', 'golden_hive_blocks_register');
 
 /**
- * Registra la categoria personalizzata per i blocchi
+ * Register the custom block category.
  */
 function golden_hive_blocks_category($categories)
 {
@@ -99,7 +140,7 @@ function golden_hive_blocks_category($categories)
 add_filter('block_categories_all', 'golden_hive_blocks_category', 10, 1);
 
 /**
- * Carica le traduzioni
+ * Load translations.
  */
 function golden_hive_blocks_load_textdomain()
 {
@@ -112,6 +153,6 @@ function golden_hive_blocks_load_textdomain()
 add_action('plugins_loaded', 'golden_hive_blocks_load_textdomain');
 
 /**
- * Include shortcodes
+ * Include shortcodes.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-carousel-shortcode.php';
