@@ -17,17 +17,20 @@ if (!defined('ABSPATH')) {
  * 1. ENQUEUE ASSETS
  * ═══════════════════════════════════════════════════════════════
  */
-add_action('wp_enqueue_scripts', 'ghb_enqueue_carousel_assets');
+/**
+ * Register Swiper assets but only enqueue when a carousel shortcode is present.
+ */
+add_action('wp_enqueue_scripts', 'ghb_register_carousel_assets');
 
-function ghb_enqueue_carousel_assets() {
-    wp_enqueue_style(
+function ghb_register_carousel_assets() {
+    wp_register_style(
         'swiper-css',
         'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css',
         array(),
         '11.0.0'
     );
 
-    wp_enqueue_script(
+    wp_register_script(
         'swiper-js',
         'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js',
         array(),
@@ -35,7 +38,23 @@ function ghb_enqueue_carousel_assets() {
         true
     );
 
-    wp_add_inline_style('swiper-css', ghb_get_carousel_styles());
+    wp_register_style(
+        'ghb-carousel-styles',
+        false,
+        array('swiper-css'),
+        GOLDEN_HIVE_BLOCKS_VERSION
+    );
+    wp_add_inline_style('ghb-carousel-styles', ghb_get_carousel_styles());
+}
+
+/**
+ * Enqueue carousel assets — called from the shortcode callback itself,
+ * so assets only load on pages that actually render a carousel.
+ */
+function ghb_enqueue_carousel_assets() {
+    wp_enqueue_style('swiper-css');
+    wp_enqueue_style('ghb-carousel-styles');
+    wp_enqueue_script('swiper-js');
 }
 
 /**
@@ -581,16 +600,16 @@ function ghb_get_carousel_styles() {
 
     /* Card Hover Effects */
     .ghb-product-card--hover-lift:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--ghb-shadow-lg);
+        transform: translateY(-6px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10);
     }
 
     .ghb-product-card--hover-zoom:hover .ghb-product-card__image {
-        transform: scale(1.1);
+        transform: scale(1.08);
     }
 
     .ghb-product-card--hover-glow:hover {
-        box-shadow: 0 0 30px rgba(245, 166, 35, 0.3);
+        box-shadow: 0 0 0 1px var(--ghb-accent), 0 8px 24px rgba(114, 17, 36, 0.15);
     }
 
     .ghb-product-card--hover-border:hover {
@@ -601,7 +620,8 @@ function ghb_get_carousel_styles() {
        CARD STYLE: Default
        ───────────────────────────────────────────────────────── */
     .ghb-product-card--default {
-        box-shadow: var(--ghb-shadow-sm);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
     .ghb-product-card--default .ghb-product-card__image-wrapper {
@@ -629,7 +649,7 @@ function ghb_get_carousel_styles() {
     }
 
     .ghb-product-card--minimal .ghb-product-card__content {
-        padding: 0.75rem 0;
+        padding: 0.875rem 0.125rem;
     }
 
     .ghb-product-card--minimal .ghb-product-card__title {
@@ -653,8 +673,8 @@ function ghb_get_carousel_styles() {
         bottom: 0;
         left: 0;
         right: 0;
-        padding: 3rem 1rem 1rem;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        padding: 3rem 1rem 1.125rem;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.35) 55%, transparent 100%);
         color: var(--ghb-white);
     }
 
@@ -741,24 +761,27 @@ function ghb_get_carousel_styles() {
         left: 10px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 5px;
         z-index: 2;
     }
 
     .ghb-product-card__badge {
         display: inline-block;
         padding: 4px 10px;
-        font-size: 0.65rem;
+        font-size: 0.62rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         border-radius: 4px;
+        line-height: 1.3;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
     }
 
     .ghb-product-card__badge--sale { background: var(--ghb-danger); color: var(--ghb-white); }
     .ghb-product-card__badge--new { background: var(--ghb-primary); color: var(--ghb-white); }
     .ghb-product-card__badge--featured { background: var(--ghb-accent); color: var(--ghb-white); }
-    .ghb-product-card__badge--out { background: #718096; color: var(--ghb-white); }
+    .ghb-product-card__badge--out { background: rgba(113, 128, 150, 0.9); color: var(--ghb-white); }
     .ghb-product-card__badge--discount { background: var(--ghb-success); color: var(--ghb-white); }
 
     /* Quick Actions */
@@ -770,8 +793,8 @@ function ghb_get_carousel_styles() {
         display: flex;
         gap: 8px;
         opacity: 0;
-        transform: translateY(10px);
-        transition: var(--ghb-transition);
+        transform: translateY(8px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 2;
     }
 
@@ -782,13 +805,15 @@ function ghb_get_carousel_styles() {
 
     .ghb-product-card__action-btn {
         flex: 1;
-        padding: 10px 16px;
-        background: var(--ghb-primary);
+        padding: 11px 16px;
+        background: rgba(10, 10, 10, 0.92);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         color: var(--ghb-white);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         border: none;
         border-radius: var(--ghb-radius-sm);
         cursor: pointer;
@@ -817,37 +842,39 @@ function ghb_get_carousel_styles() {
         height: 36px;
         border: none;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #333;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.2s;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         opacity: 0;
-        transform: scale(0.8);
+        transform: translateY(4px);
         pointer-events: none;
     }
     .ghb-product-card:hover .ghb-quick-view-btn {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
         pointer-events: auto;
     }
     @media (hover: none) {
         .ghb-quick-view-btn {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0);
             pointer-events: auto;
         }
     }
     .ghb-quick-view-btn:hover {
         background: var(--ghb-accent, #721124);
         color: #fff;
-        box-shadow: 0 4px 12px rgba(114, 17, 36, 0.3);
-        transform: scale(1.1);
+        box-shadow: 0 4px 16px rgba(114, 17, 36, 0.25);
+    }
+    .ghb-quick-view-btn:active {
+        transform: scale(0.92);
     }
 
     /* Content */
@@ -861,9 +888,9 @@ function ghb_get_carousel_styles() {
         font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.12em;
         color: var(--ghb-text-muted);
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
     .ghb-product-card__title {
@@ -887,27 +914,28 @@ function ghb_get_carousel_styles() {
 
     .ghb-product-card__stars {
         display: flex;
-        gap: 2px;
+        gap: 1px;
     }
 
     .ghb-product-card__star {
-        width: 14px;
-        height: 14px;
-        fill: #ddd;
+        width: 13px;
+        height: 13px;
+        fill: #e0e0e0;
     }
 
     .ghb-product-card__star--filled {
-        fill: #fbbf24;
+        fill: #f59e0b;
     }
 
     .ghb-product-card__rating-count {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: var(--ghb-text-muted);
+        margin-left: 2px;
     }
 
     .ghb-product-card__price-wrapper {
         display: flex;
-        align-items: center;
+        align-items: baseline;
         gap: 8px;
         margin-top: 0.75rem;
         flex-wrap: wrap;
@@ -921,22 +949,24 @@ function ghb_get_carousel_styles() {
 
     .ghb-product-card__price--sale {
         color: var(--ghb-danger);
+        font-weight: 700;
     }
 
     .ghb-product-card__price--regular {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 400;
-        color: #999;
+        color: #a0a0a0;
         text-decoration: line-through;
     }
 
     .ghb-product-card__discount-tag {
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: var(--ghb-success);
-        background: rgba(56, 161, 105, 0.1);
-        padding: 2px 6px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--ghb-white);
+        background: var(--ghb-danger);
+        padding: 2px 7px;
         border-radius: 3px;
+        letter-spacing: 0.02em;
     }
 
     /* Sizes Preview */
@@ -949,22 +979,24 @@ function ghb_get_carousel_styles() {
 
     .ghb-product-card__size {
         font-size: 0.65rem;
-        padding: 2px 6px;
+        font-weight: 500;
+        padding: 3px 7px;
         background: var(--ghb-light);
-        border-radius: 3px;
+        border: 1px solid var(--ghb-border);
+        border-radius: 4px;
         color: var(--ghb-text-muted);
     }
 
     /* Add to Cart Button */
     .ghb-product-card__cart-btn {
         margin-top: 0.75rem;
-        padding: 10px;
+        padding: 11px;
         background: var(--ghb-primary);
         color: var(--ghb-white);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         border: none;
         border-radius: var(--ghb-radius-sm);
         cursor: pointer;
@@ -975,6 +1007,10 @@ function ghb_get_carousel_styles() {
     .ghb-product-card__cart-btn:hover {
         background: var(--ghb-accent);
         color: var(--ghb-white);
+    }
+
+    .ghb-product-card__cart-btn:active {
+        transform: scale(0.98);
     }
 
     /* ─────────────────────────────────────────────────────────
@@ -1071,17 +1107,18 @@ function ghb_get_carousel_styles() {
        ═══════════════════════════════════════════════════════════ */
     @media (max-width: 768px) {
         .ghb-carousel-section {
-            padding: 0.5rem 0;
+            padding: 0.75rem 0;
         }
 
         .ghb-carousel-section__container {
-            padding: 0 15px;
+            padding: 0 16px;
         }
 
         .ghb-carousel-section__header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .ghb-carousel-section__header-right {
@@ -1089,20 +1126,71 @@ function ghb_get_carousel_styles() {
             justify-content: space-between;
         }
 
+        /* KEY FIX: generous content padding on mobile product cards */
         .ghb-product-card__content {
-            padding: 0.75rem;
+            padding: 0.875rem 0.75rem 1rem;
         }
 
         .ghb-product-card__title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            line-height: 1.35;
         }
 
         .ghb-product-card__price {
-            font-size: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .ghb-product-card__price--sale {
+            font-size: 0.95rem;
+        }
+
+        .ghb-product-card__price--regular {
+            font-size: 0.75rem;
         }
 
         .ghb-product-card__brand {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
+            margin-bottom: 4px;
+        }
+
+        .ghb-product-card__discount-tag {
+            font-size: 0.6rem;
+            padding: 2px 5px;
+        }
+
+        .ghb-product-card__price-wrapper {
+            gap: 6px;
+            margin-top: 0.5rem;
+        }
+
+        .ghb-product-card__rating {
+            margin-top: 0.35rem;
+        }
+
+        .ghb-product-card__star {
+            width: 11px;
+            height: 11px;
+        }
+
+        .ghb-product-card__badge {
+            font-size: 0.58rem;
+            padding: 3px 7px;
+        }
+
+        .ghb-product-card__sizes {
+            margin-top: 0.4rem;
+            gap: 3px;
+        }
+
+        .ghb-product-card__size {
+            font-size: 0.6rem;
+            padding: 2px 5px;
+        }
+
+        .ghb-product-card__cart-btn {
+            padding: 9px;
+            font-size: 0.68rem;
+            margin-top: 0.5rem;
         }
 
         /* Keep same aspect ratio on mobile to avoid side-cropping */
@@ -1117,16 +1205,16 @@ function ghb_get_carousel_styles() {
         }
 
         .ghb-product-card--overlay .ghb-product-card__content {
-            padding: 2.5rem 0.75rem 0.75rem;
+            padding: 2.5rem 0.875rem 0.875rem;
         }
 
         .ghb-product-card--overlay .ghb-product-card__title {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 700;
         }
 
         .ghb-product-card--overlay .ghb-product-card__price {
-            font-size: 1.05rem;
+            font-size: 1rem;
         }
 
         .ghb-product-card__actions {
@@ -1135,12 +1223,32 @@ function ghb_get_carousel_styles() {
 
         .ghb-carousel__footer {
             gap: 0.75rem;
+            margin-top: 1rem;
         }
 
-        /* Hide side navigation on mobile */
+        /* Smaller side nav on mobile */
         .ghb-carousel--nav-sides .ghb-carousel__nav-btn {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
+        }
+
+        .ghb-carousel--nav-sides .ghb-carousel__nav-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Detailed card adjustments */
+        .ghb-product-card--detailed .ghb-product-card__content {
+            padding: 0.75rem;
+        }
+
+        /* Horizontal card collapses on mobile */
+        .ghb-product-card--horizontal {
+            flex-direction: column;
+        }
+
+        .ghb-product-card--horizontal .ghb-product-card__image-wrapper {
+            width: 100%;
         }
     }
 
@@ -1149,19 +1257,35 @@ function ghb_get_carousel_styles() {
             font-size: 1.1rem;
         }
 
-        /* Keep cards readable even at small sizes */
+        .ghb-carousel-section__subtitle {
+            font-size: 0.8rem;
+        }
+
+        /* Tighter but still readable cards */
+        .ghb-product-card__content {
+            padding: 0.75rem 0.625rem 0.875rem;
+        }
+
         .ghb-product-card__title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             line-height: 1.3;
         }
 
         .ghb-product-card__price {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+        }
+
+        .ghb-product-card__brand {
+            font-size: 0.6rem;
         }
 
         /* Overlay stays impactful on small screens */
         .ghb-product-card--overlay .ghb-product-card__image-wrapper {
             aspect-ratio: 3/4;
+        }
+
+        .ghb-product-card--overlay .ghb-product-card__content {
+            padding: 2rem 0.75rem 0.75rem;
         }
     }
     ';
@@ -1180,6 +1304,9 @@ function ghb_carousel_section_shortcode($atts) {
     if (!class_exists('WooCommerce')) {
         return '<p style="text-align:center;padding:2rem;color:#666;">WooCommerce is required for the product carousel.</p>';
     }
+
+    // Enqueue assets only when the shortcode is actually rendered
+    ghb_enqueue_carousel_assets();
 
     $atts = shortcode_atts(array(
         // Section settings
@@ -1762,12 +1889,27 @@ function ghb_render_product_card($product, $atts) {
     if ($product->is_type('variable')) {
         $prices = $product->get_variation_prices(true);
         if (!empty($prices['regular_price']) && !empty($prices['sale_price'])) {
-            $max_regular = max($prices['regular_price']);
-            $min_sale    = min($prices['sale_price']);
-            if ($max_regular > 0 && $min_sale > 0 && $max_regular > $min_sale) {
-                $regular_price = $max_regular;
-                $sale_price    = $min_sale;
-                $discount_pct  = round((($max_regular - $min_sale) / $max_regular) * 100);
+            // Calculate per-variation discount and use the maximum real discount.
+            // The old approach (max regular vs min sale) mixed different variations
+            // and produced inflated/impossible percentages (e.g. -70% when real is -20%).
+            $best_discount = 0;
+            $best_regular  = 0;
+            $best_sale     = 0;
+            foreach ($prices['regular_price'] as $vid => $reg) {
+                $sal = $prices['sale_price'][$vid] ?? $reg;
+                if ($reg > 0 && $sal > 0 && $sal < $reg) {
+                    $pct = round((($reg - $sal) / $reg) * 100);
+                    if ($pct > $best_discount) {
+                        $best_discount = $pct;
+                        $best_regular  = $reg;
+                        $best_sale     = $sal;
+                    }
+                }
+            }
+            if ($best_discount > 0) {
+                $regular_price = $best_regular;
+                $sale_price    = $best_sale;
+                $discount_pct  = $best_discount;
             }
         }
     } else {
@@ -2112,8 +2254,9 @@ function ghb_quick_view_handler() {
 add_action('wp_footer', 'ghb_quick_add_to_cart_frontend');
 
 function ghb_quick_add_to_cart_frontend() {
-    // Only load if WooCommerce is active
+    // Only load if WooCommerce is active AND a carousel was rendered on this page
     if (!class_exists('WooCommerce')) return;
+    if (!wp_style_is('ghb-carousel-styles', 'enqueued')) return;
     ?>
     <style>
         /* ═══════════════════════════════════════════════════════════
@@ -2232,11 +2375,12 @@ function ghb_quick_add_to_cart_frontend() {
         }
         .ghb-qa-attr-option {
             padding: 8px 16px;
-            border: 1.5px solid #ddd;
-            border-radius: 10px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
             font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             background: #fff;
             color: #333;
             user-select: none;
@@ -2246,14 +2390,16 @@ function ghb_quick_add_to_cart_frontend() {
         .ghb-qa-attr-option:hover {
             border-color: var(--ghb-accent, #721124);
             color: var(--ghb-accent, #721124);
+            background: rgba(114, 17, 36, 0.04);
         }
         .ghb-qa-attr-option.selected {
             border-color: var(--ghb-accent, #721124);
             background: var(--ghb-accent, #721124);
             color: #fff;
+            font-weight: 600;
         }
         .ghb-qa-attr-option.unavailable {
-            opacity: 0.3;
+            opacity: 0.25;
             cursor: not-allowed;
             text-decoration: line-through;
             pointer-events: none;
@@ -2314,15 +2460,17 @@ function ghb_quick_add_to_cart_frontend() {
         }
         .ghb-qa-add-to-cart {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             border: none;
-            border-radius: 14px;
-            background: #ccc;
+            border-radius: 12px;
+            background: #d4d4d4;
             color: #fff;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
             cursor: not-allowed;
-            transition: all 0.2s;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
         }
         .ghb-qa-add-to-cart.ready {
@@ -2332,6 +2480,11 @@ function ghb_quick_add_to_cart_frontend() {
         }
         .ghb-qa-add-to-cart.ready:hover {
             background: var(--ghb-accent-dark, #520c1a);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(114, 17, 36, 0.25);
+        }
+        .ghb-qa-add-to-cart.ready:active {
+            transform: translateY(0);
         }
         .ghb-qa-add-to-cart.adding {
             background: #999;
