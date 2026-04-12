@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.1.0
+ * Version: 5.1.1
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,22 +18,21 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.1.0');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.1.1');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
 /**
- * Conditional frontend assets — only load when GH blocks are on the page.
+ * Frontend assets.
  *
- * Uses `has_block()` to check the current post content so CSS/JS are
- * NOT loaded on pages that don't use any Golden Hive block.
+ * The previous "conditional" gate relied on `has_block($post)` which silently
+ * skipped the stylesheet on archives, FSE templates, pages where `$post` isn't
+ * the primary query, custom HTML blocks using `.gh-*` classes, etc. — leaving
+ * those pages unstyled. CSS is small (~80KB, cached) so we always enqueue it,
+ * and the animations script is loaded with `defer` so it never blocks paint.
  */
 function golden_hive_blocks_enqueue_assets()
 {
-    if (!golden_hive_blocks_page_has_blocks()) {
-        return;
-    }
-
     wp_enqueue_style(
         'golden-hive-blocks-style',
         GOLDEN_HIVE_BLOCKS_URL . 'style.css',
@@ -46,44 +45,10 @@ function golden_hive_blocks_enqueue_assets()
         GOLDEN_HIVE_BLOCKS_URL . 'js/animations.js',
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
-        true
+        array('in_footer' => true, 'strategy' => 'defer')
     );
 }
 add_action('wp_enqueue_scripts', 'golden_hive_blocks_enqueue_assets');
-
-/**
- * Check whether the current page/post uses at least one GH block.
- */
-function golden_hive_blocks_page_has_blocks()
-{
-    // Always load in admin/editor context
-    if (is_admin()) {
-        return true;
-    }
-
-    global $post;
-    if (!$post || empty($post->post_content)) {
-        return false;
-    }
-
-    // Check if any golden-hive/* block is present
-    if (has_block('golden-hive', $post)) {
-        return true;
-    }
-
-    // Also check for the carousel shortcodes in content
-    if (
-        has_shortcode($post->post_content, 'carousel_section') ||
-        has_shortcode($post->post_content, 'product_carousel') ||
-        has_shortcode($post->post_content, 'bestsellers') ||
-        has_shortcode($post->post_content, 'on_sale') ||
-        has_shortcode($post->post_content, 'featured_products')
-    ) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * Editor assets — only loaded inside the block editor.

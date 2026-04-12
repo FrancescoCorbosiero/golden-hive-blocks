@@ -109,10 +109,12 @@
     font-weight: 800;
 }
 
-/* Prevent horizontal overflow from fixed positioned elements */
-html:has(.gh-whatsapp-btn),
-html:has(.gh-social-buttons) {
-    overflow-x: hidden;
+/* Prevent horizontal overflow from fixed positioned children of GH blocks.
+   Scoped to the block wrappers instead of using `html:has(...)` which forces
+   the browser to re-evaluate the root match on every DOM mutation. */
+.gh-whatsapp-btn,
+.gh-social-buttons {
+    contain: layout;
 }
 
 /* ==========================================================================
@@ -326,8 +328,8 @@ html:has(.gh-social-buttons) {
     color: var(--gh-white);
     cursor: pointer;
     transition: all 0.3s var(--gh-ease-out);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .gh-hero-arrow:hover {
@@ -405,9 +407,8 @@ html:has(.gh-social-buttons) {
     align-items: center;
     gap: var(--gh-space-sm);
     padding: 0.5rem 1.25rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 50px;
     color: var(--gh-white);
     font-size: 0.75rem;
@@ -994,9 +995,7 @@ html:has(.gh-social-buttons) {
 .gh-modal__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.82);
 }
 
 .gh-modal__container {
@@ -1978,9 +1977,7 @@ html:has(.gh-social-buttons) {
 .gh-promo-modal__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.88);
 }
 
 .gh-promo-modal__container {
@@ -2952,11 +2949,9 @@ a.gh-btn:visited {
 /* Countdown digits inherit from existing .gh-countdown__item/value/label styles */
 
 .gh-drop-countdown .gh-countdown__value {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 14px;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     color: var(--gh-white);
     padding: 0.75rem 1rem;
 }
@@ -3458,8 +3453,7 @@ a.gh-btn:visited {
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.18);
     margin-bottom: 16px;
 }
 
@@ -3556,8 +3550,7 @@ a.gh-btn:visited {
     height: 72px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.25);
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.14);
     margin-bottom: 24px;
 }
 

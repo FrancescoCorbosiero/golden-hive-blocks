@@ -10,24 +10,36 @@
 
     /**
      * Split Text Animation - Animazione carattere per carattere
+     * Skips elements that already contain inline markup (e.g. a hero title
+     * with a highlighted <span>) so author-provided HTML isn't destroyed.
      */
     const SplitText = {
         init() {
             document.querySelectorAll('[data-gh-split]').forEach(el => {
                 if (el.dataset.ghSplitProcessed) return;
 
+                // If the element contains any child elements, don't rewrite it —
+                // preserve author markup (inline spans, links, <br>, etc.).
+                if (el.children.length > 0) {
+                    el.dataset.ghSplitProcessed = 'true';
+                    return;
+                }
+
                 const type = el.dataset.ghSplit || 'chars';
                 const text = el.textContent.trim();
+                if (!text) return;
 
                 if (type === 'chars') {
+                    const totalChars = text.replace(/\s/g, '').length;
                     el.innerHTML = text.split('').map((char, i) =>
                         char === ' '
                             ? '<span class="gh-char gh-char--space">&nbsp;</span>'
-                            : `<span class="gh-char" style="--char-index: ${i}; --char-total: ${text.replace(/\s/g, '').length}">${char}</span>`
+                            : `<span class="gh-char" style="--char-index: ${i}; --char-total: ${totalChars}">${char}</span>`
                     ).join('');
                 } else if (type === 'words') {
-                    el.innerHTML = text.split(/\s+/).map((word, i, arr) =>
-                        `<span class="gh-word" style="--word-index: ${i}; --word-total: ${arr.length}">${word}</span>`
+                    const words = text.split(/\s+/);
+                    el.innerHTML = words.map((word, i) =>
+                        `<span class="gh-word" style="--word-index: ${i}; --word-total: ${words.length}">${word}</span>`
                     ).join(' ');
                 }
 
@@ -38,6 +50,7 @@
 
     /**
      * Magnetic Cursor - Elementi attratti dal mouse
+     * rAF-throttled so mousemove never writes more than once per frame.
      */
     const MagneticCursor = {
         init() {
@@ -45,29 +58,41 @@
 
             document.querySelectorAll('[data-gh-magnetic]').forEach(el => {
                 const strength = parseFloat(el.dataset.ghMagnetic) || 0.3;
-                let bounds;
+                let bounds = null;
+                let targetX = 0, targetY = 0;
+                let rafId = 0;
+
+                const apply = () => {
+                    rafId = 0;
+                    el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+                };
 
                 el.addEventListener('mouseenter', () => {
                     bounds = el.getBoundingClientRect();
                     el.style.transition = 'transform 0.1s ease-out';
-                });
+                }, { passive: true });
 
                 el.addEventListener('mousemove', (e) => {
-                    const x = e.clientX - bounds.left - bounds.width / 2;
-                    const y = e.clientY - bounds.top - bounds.height / 2;
-                    el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
-                });
+                    if (!bounds) return;
+                    targetX = (e.clientX - bounds.left - bounds.width / 2) * strength;
+                    targetY = (e.clientY - bounds.top - bounds.height / 2) * strength;
+                    if (!rafId) rafId = requestAnimationFrame(apply);
+                }, { passive: true });
 
                 el.addEventListener('mouseleave', () => {
+                    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
                     el.style.transition = 'transform 0.4s cubic-bezier(0.33, 1, 0.68, 1)';
-                    el.style.transform = 'translate(0, 0)';
-                });
+                    el.style.transform = 'translate3d(0, 0, 0)';
+                }, { passive: true });
             });
         }
     };
 
     /**
      * Depth Parallax - Parallax multi-layer con scroll
+     * - rAF-coalesced scroll handler (one update per frame max)
+     * - IntersectionObserver gate: only animate layers currently in viewport
+     * - Mouse parallax throttled via rAF
      */
     const DepthParallax = {
         layers: [],
@@ -75,50 +100,84 @@
         init() {
             if (prefersReducedMotion) return;
 
-            document.querySelectorAll('[data-gh-depth]').forEach(el => {
+            const nodes = document.querySelectorAll('[data-gh-depth]');
+            nodes.forEach(el => {
                 this.layers.push({
                     el,
                     depth: parseFloat(el.dataset.ghDepth) || 0.5,
-                    direction: el.dataset.ghDepthDir || 'y'
+                    direction: el.dataset.ghDepthDir || 'y',
+                    visible: false
                 });
+                el.style.willChange = 'transform';
             });
 
             if (this.layers.length) {
+                // Only update layers that are on-screen
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        const layer = this.layers.find(l => l.el === entry.target);
+                        if (layer) layer.visible = entry.isIntersecting;
+                    });
+                }, { rootMargin: '200px 0px' });
+                this.layers.forEach(l => io.observe(l.el));
+
+                let ticking = false;
+                const onScroll = () => {
+                    if (ticking) return;
+                    ticking = true;
+                    requestAnimationFrame(() => {
+                        this.update();
+                        ticking = false;
+                    });
+                };
                 this.update();
-                window.addEventListener('scroll', () => requestAnimationFrame(() => this.update()), { passive: true });
+                window.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('resize', onScroll, { passive: true });
             }
 
-            // Mouse parallax per container
+            // Mouse parallax per container — rAF throttled
             document.querySelectorAll('[data-gh-mouse-parallax]').forEach(container => {
                 const layers = container.querySelectorAll('[data-gh-mouse-layer]');
+                if (!layers.length) return;
 
-                container.addEventListener('mousemove', (e) => {
-                    const rect = container.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / rect.width - 0.5;
-                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                let mx = 0, my = 0, rect = null, rafId = 0;
 
+                const apply = () => {
+                    rafId = 0;
                     layers.forEach(layer => {
                         const depth = parseFloat(layer.dataset.ghMouseLayer) || 30;
-                        const rotateX = y * depth * 0.1;
-                        const rotateY = -x * depth * 0.1;
-                        layer.style.transform = `translate3d(${x * depth}px, ${y * depth}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                        layer.style.transform = `translate3d(${mx * depth}px, ${my * depth}px, 0)`;
                     });
-                });
+                };
+
+                container.addEventListener('mouseenter', () => {
+                    rect = container.getBoundingClientRect();
+                }, { passive: true });
+
+                container.addEventListener('mousemove', (e) => {
+                    if (!rect) rect = container.getBoundingClientRect();
+                    mx = (e.clientX - rect.left) / rect.width - 0.5;
+                    my = (e.clientY - rect.top) / rect.height - 0.5;
+                    if (!rafId) rafId = requestAnimationFrame(apply);
+                }, { passive: true });
 
                 container.addEventListener('mouseleave', () => {
+                    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
                     layers.forEach(layer => {
                         layer.style.transition = 'transform 0.6s cubic-bezier(0.33, 1, 0.68, 1)';
-                        layer.style.transform = 'translate3d(0, 0, 0) rotateX(0) rotateY(0)';
+                        layer.style.transform = 'translate3d(0, 0, 0)';
                         setTimeout(() => layer.style.transition = '', 600);
                     });
-                });
+                }, { passive: true });
             });
         },
 
         update() {
             const vh = window.innerHeight;
 
-            this.layers.forEach(({ el, depth, direction }) => {
+            this.layers.forEach((layer) => {
+                if (!layer.visible) return;
+                const { el, depth, direction } = layer;
                 const rect = el.getBoundingClientRect();
                 const elementCenter = rect.top + rect.height / 2;
                 const distance = (elementCenter - vh / 2) / vh;
@@ -586,22 +645,28 @@
 
     /**
      * WhatsApp Button - Lazy visibility
+     * Uses a one-shot IntersectionObserver sentinel so the scroll handler
+     * runs exactly once then detaches itself.
      */
     const WhatsAppButton = {
         init() {
             const btn = document.querySelector('[data-gh-whatsapp]');
             if (!btn) return;
 
-            // Mostra dopo scroll
-            let shown = false;
-            window.addEventListener('scroll', () => {
-                if (shown) return;
+            const reveal = () => {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            };
+
+            if (window.scrollY > 300) { reveal(); return; }
+
+            const onScroll = () => {
                 if (window.scrollY > 300) {
-                    btn.style.opacity = '1';
-                    btn.style.pointerEvents = 'auto';
-                    shown = true;
+                    reveal();
+                    window.removeEventListener('scroll', onScroll);
                 }
-            }, { passive: true });
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
         }
     };
 
