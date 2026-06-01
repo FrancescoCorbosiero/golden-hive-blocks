@@ -1,0 +1,78 @@
+/**
+ * Golden Hive Blocks — Lightweight product rail (CSS scroll-snap carousel).
+ *
+ * No slider library: native horizontal scroll + scroll-snap (Shopify-style),
+ * with optional arrow buttons. Cards are standard WooCommerce product cards, so
+ * they inherit the theme's styling and carry Quick View + the size picker.
+ * See includes/product-rail.php.
+ */
+
+.gh-rail {
+    position: relative;
+    margin: 0 0 40px;
+}
+
+.gh-rail__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.gh-rail__title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.gh-rail__arrows {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.gh-rail__nav {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #e2e2e6;
+    background: #fff;
+    color: #1f2532;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color .15s ease, color .15s ease, opacity .15s ease;
+}
+.gh-rail__nav:hover { border-color: #721124; color: #721124; }
+.gh-rail__nav[disabled] { opacity: .3; cursor: default; }
+/* Arrows are a progressive enhancement; hidden until JS confirms overflow. */
+.gh-rail:not(.is-scrollable) .gh-rail__arrows { display: none; }
+
+/* The track: native scroll-snap rail. Beats the theme's grid on ul.products. */
+.gh-rail__track,
+.gh-rail__track.products {
+    display: flex !important;
+    gap: 16px;
+    margin: 0 !important;
+    padding: 0 2px 10px;
+    list-style: none !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.gh-rail__track::-webkit-scrollbar { display: none; }
+
+.gh-rail__track > li.product {
+    flex: 0 0 auto;
+    width: clamp(150px, 44vw, 230px);
+    margin: 0 !important;
+    padding: 0;
+    scroll-snap-align: start;
+}
+@media (min-width: 768px) {
+    .gh-rail__track > li.product { width: 230px; }
+}

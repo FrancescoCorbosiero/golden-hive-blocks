@@ -161,3 +161,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/shop-grid.php';
  * Include the mobile nav caret toggle + submenu polish (Shoptimizer).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';
+
+/**
+ * Include the lightweight product rail (CSS scroll-snap carousel).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-rail.php';
