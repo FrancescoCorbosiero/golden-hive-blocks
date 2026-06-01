@@ -25,12 +25,14 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * True on the loop contexts where the Quick View UI should load.
+ * Whether the Quick View UI should load. The buttons render via standard
+ * WooCommerce loop hooks (shop, category, search, related products AND native
+ * product sliders / our [gh_product_rail]), which can appear on any front-end
+ * page — so load the modal + assets wherever WooCommerce is active.
  */
-function ghb_quick_view_is_loop()
+function ghb_quick_view_should_load()
 {
-    return function_exists('is_shop')
-        && (is_shop() || is_product_taxonomy() || is_search());
+    return class_exists('WooCommerce');
 }
 
 /**
@@ -98,7 +100,7 @@ function ghb_qv_atc_handler()
 add_action('wp_enqueue_scripts', 'ghb_quick_view_assets');
 function ghb_quick_view_assets()
 {
-    if (!ghb_quick_view_is_loop()) {
+    if (!ghb_quick_view_should_load()) {
         return;
     }
 
@@ -134,7 +136,7 @@ function ghb_quick_view_assets()
 add_action('wp_footer', 'ghb_quick_view_modal');
 function ghb_quick_view_modal()
 {
-    if (!ghb_quick_view_is_loop()) {
+    if (!ghb_quick_view_should_load()) {
         return;
     }
     ?>

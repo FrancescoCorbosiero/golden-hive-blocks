@@ -32,12 +32,14 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Contexts where the loop add-to-cart UI should load its assets.
+ * Whether the add-to-cart UI should load its assets. The picker renders via the
+ * standard WooCommerce loop hook, which can appear on any front-end page
+ * (shop, category, search, related products, native sliders, [gh_product_rail]),
+ * so load the assets wherever WooCommerce is active.
  */
 function ghb_atc_is_loop()
 {
-    return function_exists('is_shop')
-        && (is_shop() || is_product_taxonomy() || is_search() || is_product());
+    return class_exists('WooCommerce');
 }
 
 /**
