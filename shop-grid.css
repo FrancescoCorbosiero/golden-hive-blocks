@@ -1,0 +1,44 @@
+/**
+ * Golden Hive Blocks — Shop grid layout alignment.
+ * Uniform product-card layout on shop/taxonomy/search loops.
+ * See includes/shop-grid.php. Migrated from a Code Snippet; the bottom-align
+ * rule now targets our .ghb-atc control (replaces the old .button / .rp-quick-add-btn).
+ */
+
+/* Each card becomes a flex column */
+.woocommerce ul.products li.product {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Image: uniform ratio */
+.woocommerce ul.products li.product a img,
+.woocommerce ul.products li.product .attachment-woocommerce_thumbnail {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+}
+
+/* Title: fixed 2-line height */
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.8em;
+    line-height: 1.4;
+    font-size: 14px;
+}
+
+/* Price + buttons pushed to bottom */
+.woocommerce ul.products li.product .price {
+    margin-top: auto;
+    padding-top: 6px;
+    padding-bottom: 8px;
+}
+
+.woocommerce ul.products li.product .button,
+.woocommerce ul.products li.product .ghb-atc {
+    margin-top: auto;
+}

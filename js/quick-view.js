@@ -1,10 +1,14 @@
 /**
  * Golden Hive Blocks — WooCommerce Quick View modal behaviour.
  *
- * Fetches a product over AJAX and renders it in a modal. The ajax URL and
- * action come from the localized `ghbQuickView` object (see includes/
- * quick-view.php). Class names (.rp-qv-*) are preserved from the original
- * site snippet this was migrated from.
+ * Fetches a product over AJAX and renders it in a modal. The ajax URL/action
+ * and the cart endpoint come from the localized `ghbQuickView` object (see
+ * includes/quick-view.php). Class names (.rp-qv-*) are preserved from the
+ * original site snippet this was migrated from.
+ *
+ * The modal's add-to-cart reuses WooCommerce's native wc-ajax=add_to_cart
+ * endpoint (posting the variation ID for variable products), exactly like the
+ * loop size picker — so cart fragments and the mini-cart update natively.
  */
 jQuery(function($) {
     var cfg = window.ghbQuickView || {};
@@ -77,12 +81,94 @@ jQuery(function($) {
                 }
 
                 if (p.sku) html += '<div class="rp-qv-sku">SKU: ' + p.sku + '</div>';
+                html += '<div class="rp-qv-atc"></div>';
                 html += '<a href="' + p.url + '" class="rp-qv-view-full">Vedi Prodotto Completo</a>';
                 html += '</div></div>';
 
                 $content.html(html);
+                renderCartControl(productId);
             }
         });
+    });
+
+    // Build the add-to-cart control (simple button or size pills) in the modal.
+    function renderCartControl(productId) {
+        var $slot = $content.find('.rp-qv-atc');
+        if (!$slot.length) return;
+
+        $.ajax({
+            url: cfg.ajaxUrl,
+            data: { action: 'ghb_qv_atc', product_id: productId },
+            success: function(res) {
+                if (!res || !res.success) return;
+                var d = res.data;
+
+                if (d.type === 'variable') {
+                    if (!d.sizes || !d.sizes.length) {
+                        $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + d.url + '">Seleziona opzioni</a>');
+                        return;
+                    }
+                    var h = '<div class="rp-qv-sizes-label">Seleziona taglia</div><div class="rp-qv-sizes">';
+                    d.sizes.forEach(function(s) {
+                        if (s.in_stock) {
+                            h += '<button type="button" class="rp-qv-size" data-variation-id="' + s.variation_id + '">' + s.label + '</button>';
+                        } else {
+                            h += '<span class="rp-qv-size is-oos">' + s.label + '</span>';
+                        }
+                    });
+                    $slot.html(h + '</div>');
+                } else if (d.purchasable) {
+                    $slot.html('<button type="button" class="rp-qv-add" data-product-id="' + d.product_id + '">Aggiungi al carrello</button>');
+                } else if (d.type !== 'simple') {
+                    $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + d.url + '">Vedi prodotto</a>');
+                } else {
+                    $slot.html('<button type="button" class="rp-qv-add" disabled>Esaurito</button>');
+                }
+            }
+        });
+    }
+
+    function feedback($slot) {
+        var $msg = $slot.find('.rp-qv-cart-msg');
+        if (!$msg.length) {
+            $msg = $('<div class="rp-qv-cart-msg"></div>').appendTo($slot);
+        }
+        $msg.text('✓ Aggiunto al carrello').addClass('show');
+        clearTimeout($slot.data('msgTimer'));
+        $slot.data('msgTimer', setTimeout(function() { $msg.removeClass('show'); }, 2000));
+    }
+
+    function addToCart($slot, id) {
+        if (!cfg.cartEndpoint || !id) return;
+        $slot.addClass('is-busy');
+        $.post(cfg.cartEndpoint, { product_id: id, quantity: 1 }, function(data) {
+            $slot.removeClass('is-busy');
+            if (data && data.error && data.product_url) {
+                window.location = data.product_url;
+                return;
+            }
+            if (data && data.fragments) {
+                $.each(data.fragments, function(key, value) { $(key).replaceWith(value); });
+            }
+            $(document.body).trigger('added_to_cart', [
+                data ? data.fragments : null,
+                data ? data.cart_hash : null,
+                $slot
+            ]);
+            feedback($slot);
+        });
+    }
+
+    // Simple product → add directly.
+    $(document).on('click', '.rp-qv-atc .rp-qv-add[data-product-id]', function(e) {
+        e.preventDefault();
+        addToCart($(this).closest('.rp-qv-atc'), $(this).data('product-id'));
+    });
+
+    // Variable product → add the picked size's variation.
+    $(document).on('click', '.rp-qv-atc .rp-qv-size[data-variation-id]', function(e) {
+        e.preventDefault();
+        addToCart($(this).closest('.rp-qv-atc'), $(this).data('variation-id'));
     });
 
     // Thumbnail click

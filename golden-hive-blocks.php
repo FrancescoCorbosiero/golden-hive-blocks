@@ -151,3 +151,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-view.php';
  * Include the loop "Add to cart" with inline size picker.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/add-to-cart.php';
+
+/**
+ * Include the shop grid layout alignment.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/shop-grid.php';
