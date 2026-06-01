@@ -156,3 +156,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/add-to-cart.php';
  * Include the shop grid layout alignment.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/shop-grid.php';
+
+/**
+ * Include the mobile nav caret toggle + submenu polish (Shoptimizer).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';

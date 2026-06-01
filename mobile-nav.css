@@ -1,0 +1,83 @@
+/**
+ * Golden Hive Blocks — Mobile nav caret (+/-) toggle + submenu polish.
+ *
+ * THEME-SPECIFIC (Shoptimizer / CommerceGurus). Relies on .main-navigation,
+ * .menu-item-has-children, .caret, .sub-menu-wrapper and Shoptimizer's own
+ * `.cg-open` class to reveal submenus. See includes/mobile-nav.php.
+ */
+
+@media (max-width: 991px) {
+    /* Link only as wide as its text so the caret sits beside it */
+    .main-navigation .menu-item-has-children > a { display: inline !important; }
+
+    .caret {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        cursor: pointer;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 1.5rem;
+        line-height: 1;
+        vertical-align: middle;
+        background: transparent !important;
+        border: none !important;
+        transition: transform .18s ease;
+    }
+    .caret:active { transform: scale(.82); }
+    .caret:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: -6px;
+        border-radius: 8px;
+    }
+    .caret::before,
+    .caret::after { display: none !important; content: none !important; }
+    .caret::before { display: inline !important; content: '+' !important; color: #fff !important; }
+    .menu-item-has-children.cg-open > .caret::before { content: '-' !important; color: #fff !important; }
+
+    .menu-item-has-children > a::after,
+    .menu-item-has-children > a::before { display: none !important; content: none !important; }
+
+    .main-navigation ul.menu > li {
+        min-height: 36px !important;
+        padding: 10px 0 !important;
+        align-items: center !important;
+    }
+
+    /* ── Submenu: roomier rows + clear hierarchy (Shopify-style tap targets) ── */
+    .main-navigation .sub-menu-wrapper {
+        padding: 2px 0 6px;
+    }
+    .main-navigation .sub-menu-wrapper li {
+        min-height: 0 !important;
+        padding: 0 !important;
+    }
+    .main-navigation .sub-menu-wrapper a {
+        display: block !important;
+        padding: 13px 12px 13px 24px !important;
+        min-height: 46px;
+        line-height: 1.35;
+        font-size: .95rem;
+        border-radius: 8px;
+        transition: background-color .15s ease;
+    }
+    .main-navigation .sub-menu-wrapper a:hover,
+    .main-navigation .sub-menu-wrapper a:focus-visible {
+        background: rgba(255, 255, 255, .08);
+    }
+    .main-navigation .sub-menu-wrapper a:active {
+        background: rgba(255, 255, 255, .14);
+    }
+
+    /* Gentle entrance for submenu items when a branch opens */
+    .main-navigation .menu-item-has-children.cg-open > .sub-menu-wrapper a {
+        animation: ghb-subitem-in .22s ease both;
+    }
+}
+
+@keyframes ghb-subitem-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+}
