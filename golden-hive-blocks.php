@@ -131,3 +131,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/preload-speculation.php';
  * Include the Live Ajax Search modal (UI layer for Relevanssi Live Ajax Search).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/live-search.php';
+
+/**
+ * Include per-variation prices on size swatches (Shoptimizer + CommerceKit).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/variation-swatch-prices.php';
