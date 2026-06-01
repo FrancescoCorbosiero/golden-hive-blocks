@@ -12,43 +12,48 @@
     margin: 0 0 40px;
 }
 
-.gh-rail__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-}
 .gh-rail__title {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 700;
+    margin: 0 0 20px;
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 800;
     line-height: 1.2;
+    text-transform: uppercase;
 }
-.gh-rail__arrows {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-}
+
+/* Holds the track + the side arrows; arrows are centered against the cards. */
+.gh-rail__viewport { position: relative; }
+
 .gh-rail__nav {
-    width: 40px;
-    height: 40px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 1px solid #e2e2e6;
     background: #fff;
     color: #1f2532;
-    font-size: 20px;
+    font-size: 22px;
     line-height: 1;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .10);
     transition: border-color .15s ease, color .15s ease, opacity .15s ease;
 }
+.gh-rail__nav--prev { left: 6px; }
+.gh-rail__nav--next { right: 6px; }
 .gh-rail__nav:hover { border-color: #721124; color: #721124; }
-.gh-rail__nav[disabled] { opacity: .3; cursor: default; }
-/* Arrows are a progressive enhancement; hidden until JS confirms overflow. */
-.gh-rail:not(.is-scrollable) .gh-rail__arrows { display: none; }
+.gh-rail__nav[disabled] { opacity: .35; cursor: default; }
+/* Arrows are a desktop enhancement: hidden until JS confirms overflow, and on
+   touch where native swipe is the interaction. */
+.gh-rail:not(.is-scrollable) .gh-rail__nav { display: none; }
+@media (max-width: 767px) {
+    .gh-rail__nav { display: none; }
+}
 
 /* The track: native scroll-snap rail. Beats the theme's grid/float on
    .woocommerce ul.products (hence the !important overrides + float reset). */

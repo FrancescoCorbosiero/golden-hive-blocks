@@ -80,26 +80,22 @@ function ghb_product_rail_shortcode($atts)
     ob_start();
     ?>
     <div class="woocommerce gh-rail">
-        <div class="gh-rail__head">
-            <?php if ('' !== $atts['title']) : ?>
-                <h2 class="gh-rail__title"><?php echo esc_html($atts['title']); ?></h2>
-            <?php else : ?>
-                <span></span>
-            <?php endif; ?>
-            <div class="gh-rail__arrows">
-                <button type="button" class="gh-rail__nav" data-dir="-1" aria-label="<?php esc_attr_e('Precedente', 'golden-hive-blocks'); ?>">&lsaquo;</button>
-                <button type="button" class="gh-rail__nav" data-dir="1" aria-label="<?php esc_attr_e('Successivo', 'golden-hive-blocks'); ?>">&rsaquo;</button>
-            </div>
+        <?php if ('' !== $atts['title']) : ?>
+            <h2 class="gh-rail__title"><?php echo esc_html($atts['title']); ?></h2>
+        <?php endif; ?>
+        <div class="gh-rail__viewport">
+            <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedente', 'golden-hive-blocks'); ?>">&lsaquo;</button>
+            <ul class="products gh-rail__track">
+                <?php
+                while ($query->have_posts()) {
+                    $query->the_post();
+                    wc_get_template_part('content', 'product');
+                }
+                wp_reset_postdata();
+                ?>
+            </ul>
+            <button type="button" class="gh-rail__nav gh-rail__nav--next" data-dir="1" aria-label="<?php esc_attr_e('Successivo', 'golden-hive-blocks'); ?>">&rsaquo;</button>
         </div>
-        <ul class="products gh-rail__track">
-            <?php
-            while ($query->have_posts()) {
-                $query->the_post();
-                wc_get_template_part('content', 'product');
-            }
-            wp_reset_postdata();
-            ?>
-        </ul>
     </div>
     <?php
     return ob_get_clean();
