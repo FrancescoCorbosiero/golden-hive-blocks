@@ -62,37 +62,11 @@ function ghb_quick_view_button()
  */
 
 /**
- * AJAX: cart control data for the Quick View modal — the product type, whether
- * it's buyable, and (for variable products) the size rows. The actual add still
- * goes through WooCommerce's native wc-ajax=add_to_cart endpoint (same as the
- * loop size picker), so this only describes what button(s) to render.
+ * The Quick View modal's cart-control data (product type, purchasability, size
+ * rows) is bundled into the `ghb_quick_view` payload itself (see
+ * ghb_quick_view_handler), so the modal opens with a single request — no
+ * separate endpoint needed.
  */
-add_action('wp_ajax_ghb_qv_atc', 'ghb_qv_atc_handler');
-add_action('wp_ajax_nopriv_ghb_qv_atc', 'ghb_qv_atc_handler');
-function ghb_qv_atc_handler()
-{
-    $product_id = intval($_GET['product_id'] ?? 0);
-    $product = wc_get_product($product_id);
-
-    if (!$product) {
-        wp_send_json_error('Prodotto non trovato');
-    }
-
-    $data = array(
-        'type'        => $product->get_type(),
-        'product_id'  => $product_id,
-        'purchasable' => $product->is_purchasable() && $product->is_in_stock(),
-        'url'         => get_permalink($product_id),
-        'sizes'       => array(),
-    );
-
-    // Reuse the loop size-picker rows (nice attribute labels) for variable products.
-    if ($product->is_type('variable') && function_exists('ghb_atc_size_rows')) {
-        $data['sizes'] = ghb_atc_size_rows($product);
-    }
-
-    wp_send_json_success($data);
-}
 
 /**
  * Assets — styles + jQuery-based behaviour, on loop pages only.

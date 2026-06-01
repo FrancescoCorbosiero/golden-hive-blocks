@@ -2294,6 +2294,12 @@ function ghb_quick_view_handler() {
         'attributes'  => $attributes,
         'categories'  => implode(', ', is_array($categories) ? $categories : []),
         'sku'         => $product->get_sku(),
+        // Cart-control data so the Quick View modal needs only ONE request.
+        'type'        => $product->get_type(),
+        'purchasable' => $product->is_purchasable() && $product->is_in_stock(),
+        'sizes'       => ($product->is_type('variable') && function_exists('ghb_atc_size_rows'))
+            ? ghb_atc_size_rows($product)
+            : array(),
     ]);
 }
 

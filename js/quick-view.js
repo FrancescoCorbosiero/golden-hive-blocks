@@ -86,46 +86,38 @@ jQuery(function($) {
                 html += '</div></div>';
 
                 $content.html(html);
-                renderCartControl(productId);
+                renderCartControl(productId, p);
             }
         });
     });
 
-    // Build the add-to-cart control (simple button or size pills) in the modal.
-    function renderCartControl(productId) {
+    // Build the add-to-cart control (simple button or size pills) straight from
+    // the Quick View payload — no extra request.
+    function renderCartControl(productId, p) {
         var $slot = $content.find('.rp-qv-atc');
         if (!$slot.length) return;
 
-        $.ajax({
-            url: cfg.ajaxUrl,
-            data: { action: 'ghb_qv_atc', product_id: productId },
-            success: function(res) {
-                if (!res || !res.success) return;
-                var d = res.data;
-
-                if (d.type === 'variable') {
-                    if (!d.sizes || !d.sizes.length) {
-                        $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + d.url + '">Seleziona opzioni</a>');
-                        return;
-                    }
-                    var h = '<div class="rp-qv-sizes-label">Seleziona taglia</div><div class="rp-qv-sizes">';
-                    d.sizes.forEach(function(s) {
-                        if (s.in_stock) {
-                            h += '<button type="button" class="rp-qv-size" data-variation-id="' + s.variation_id + '">' + s.label + '</button>';
-                        } else {
-                            h += '<span class="rp-qv-size is-oos">' + s.label + '</span>';
-                        }
-                    });
-                    $slot.html(h + '</div>');
-                } else if (d.purchasable) {
-                    $slot.html('<button type="button" class="rp-qv-add" data-product-id="' + d.product_id + '">Aggiungi al carrello</button>');
-                } else if (d.type !== 'simple') {
-                    $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + d.url + '">Vedi prodotto</a>');
-                } else {
-                    $slot.html('<button type="button" class="rp-qv-add" disabled>Esaurito</button>');
-                }
+        if (p.type === 'variable') {
+            if (!p.sizes || !p.sizes.length) {
+                $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + p.url + '">Seleziona opzioni</a>');
+                return;
             }
-        });
+            var h = '<div class="rp-qv-sizes-label">Seleziona taglia</div><div class="rp-qv-sizes">';
+            p.sizes.forEach(function(s) {
+                if (s.in_stock) {
+                    h += '<button type="button" class="rp-qv-size" data-variation-id="' + s.variation_id + '">' + s.label + '</button>';
+                } else {
+                    h += '<span class="rp-qv-size is-oos">' + s.label + '</span>';
+                }
+            });
+            $slot.html(h + '</div>');
+        } else if (p.purchasable) {
+            $slot.html('<button type="button" class="rp-qv-add" data-product-id="' + productId + '">Aggiungi al carrello</button>');
+        } else if (p.type !== 'simple') {
+            $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + p.url + '">Vedi prodotto</a>');
+        } else {
+            $slot.html('<button type="button" class="rp-qv-add" disabled>Esaurito</button>');
+        }
     }
 
     function feedback($slot) {
