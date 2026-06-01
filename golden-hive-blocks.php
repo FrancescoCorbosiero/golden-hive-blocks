@@ -131,3 +131,23 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/preload-speculation.php';
  * Include the Live Ajax Search modal (UI layer for Relevanssi Live Ajax Search).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/live-search.php';
+
+/**
+ * Include per-variation prices on size swatches (Shoptimizer + CommerceKit).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/variation-swatch-prices.php';
+
+/**
+ * Include on-sale highlight on variation swatches (Shoptimizer + CommerceKit).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/swatch-sale-badges.php';
+
+/**
+ * Include the WooCommerce Quick View modal.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-view.php';
+
+/**
+ * Include the loop "Add to cart" with inline size picker.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/add-to-cart.php';

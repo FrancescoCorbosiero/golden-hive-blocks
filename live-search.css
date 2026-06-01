@@ -5,7 +5,9 @@
  */
 #rlv-search-modal { --rlv-brand: #721124; }
 .rlv-modal {
-    position: fixed; inset: 0; z-index: 99999;
+    /* Max 32-bit z-index: the search modal must sit above every other
+       component, including the theme's own mobile menu / search overlays. */
+    position: fixed; inset: 0; z-index: 2147483647;
     visibility: hidden; opacity: 0;
     transition: opacity .2s ease, visibility 0s linear .2s;
 }
