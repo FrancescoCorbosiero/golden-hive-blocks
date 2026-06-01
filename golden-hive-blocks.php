@@ -136,3 +136,13 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/live-search.php';
  * Include per-variation prices on size swatches (Shoptimizer + CommerceKit).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/variation-swatch-prices.php';
+
+/**
+ * Include on-sale highlight on variation swatches (Shoptimizer + CommerceKit).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/swatch-sale-badges.php';
+
+/**
+ * Include the WooCommerce Quick View modal.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-view.php';
