@@ -11,9 +11,17 @@
     var input   = document.getElementById('rlv-input');
     var results = document.getElementById('rlv-modal-results');
     var lastFocus = null;
+    var justClosed = false;
 
-    function open() {
-        lastFocus = document.activeElement;
+    // Theme search form(s) to hijack into the modal. Server-provided + filterable
+    // (ghb_live_search_trigger_selector); defaults to the header's .site-search.
+    var cfg = window.ghbLiveSearch || {};
+    var triggerSel = cfg.triggerSelector || '';
+
+    function open(returnFocusEl) {
+        if (!modal.classList.contains('is-open')) {
+            lastFocus = returnFocusEl || document.activeElement;
+        }
         modal.classList.add('is-open');
         document.body.classList.add('rlv-open');
         setTimeout(function () { if (input) input.focus(); }, 60);
@@ -21,12 +29,34 @@
     function close() {
         modal.classList.remove('is-open');
         document.body.classList.remove('rlv-open');
-        if (lastFocus && lastFocus.focus) lastFocus.focus();
+        if (lastFocus && lastFocus.focus) {
+            // Returning focus to a hijacked field would re-fire focusin and
+            // reopen the modal — suppress that for one tick.
+            justClosed = true;
+            lastFocus.focus();
+            setTimeout(function () { justClosed = false; }, 100);
+        }
     }
 
     document.addEventListener('click', function (e) {
         if (e.target.closest('[data-rlv-open]'))  { e.preventDefault(); open();  return; }
-        if (e.target.closest('[data-rlv-close]')) { e.preventDefault(); close(); }
+        if (e.target.closest('[data-rlv-close]')) { e.preventDefault(); close(); return; }
+        // Clicking anywhere in a hijacked theme search form opens the modal
+        // instead of using the inline field / submitting it natively.
+        if (triggerSel && !modal.contains(e.target) && e.target.closest(triggerSel)) {
+            e.preventDefault();
+            open();
+        }
+    });
+
+    // Keyboard users tabbing into the hijacked field also get the modal.
+    document.addEventListener('focusin', function (e) {
+        if (justClosed || !triggerSel) return;
+        if (!modal.contains(e.target) && e.target.closest(triggerSel)) {
+            var trigger = e.target;
+            if (trigger.blur) trigger.blur();
+            open(trigger);
+        }
     });
 
     document.addEventListener('keydown', function (e) {

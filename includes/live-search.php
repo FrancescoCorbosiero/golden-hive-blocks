@@ -70,6 +70,17 @@ function ghb_live_search_enqueue_assets()
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')
     );
+
+    // Theme search form(s) that should open our modal instead of behaving as a
+    // plain inline field. Defaults to the header's WooCommerce search wrapper;
+    // filterable so the target can change without editing JS. Leave it scoped
+    // narrowly so the theme's other search forms stay as native WP search.
+    $trigger_selector = apply_filters('ghb_live_search_trigger_selector', '.site-search');
+    wp_localize_script(
+        'golden-hive-live-search',
+        'ghbLiveSearch',
+        array('triggerSelector' => $trigger_selector)
+    );
 }
 
 /* ══════════════════════════════════════════════════════════════════
