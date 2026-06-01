@@ -146,3 +146,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/swatch-sale-badges.php';
  * Include the WooCommerce Quick View modal.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-view.php';
+
+/**
+ * Include the loop "Add to cart" with inline size picker.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/add-to-cart.php';
