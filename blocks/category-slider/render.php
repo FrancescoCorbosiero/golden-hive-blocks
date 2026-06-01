@@ -46,37 +46,11 @@ if (empty($GLOBALS['gh_cs_assets_done'])) {
     .gh-cs:not(.is-scrollable) .gh-cs__nav{display:none}
     @media(max-width:767px){.gh-cs__nav{display:none}}
     </style>
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.gh-cs').forEach(function (rail) {
-            var track = rail.querySelector('.gh-cs__track');
-            if (!track) return;
-            var navs = rail.querySelectorAll('.gh-cs__nav');
-            function step() {
-                var c = track.querySelector('.gh-cs__slide');
-                return c ? c.getBoundingClientRect().width + 16 : track.clientWidth * 0.8;
-            }
-            function update() {
-                var max = track.scrollWidth - track.clientWidth - 1;
-                rail.classList.toggle('is-scrollable', max > 1);
-                navs.forEach(function (n) {
-                    var d = parseInt(n.getAttribute('data-dir'), 10);
-                    n.disabled = (d < 0 && track.scrollLeft <= 1) || (d > 0 && track.scrollLeft >= max);
-                });
-            }
-            navs.forEach(function (n) {
-                n.addEventListener('click', function () {
-                    track.scrollBy({ left: parseInt(n.getAttribute('data-dir'), 10) * step() * 2, behavior: 'smooth' });
-                });
-            });
-            track.addEventListener('scroll', function () { window.requestAnimationFrame(update); }, { passive: true });
-            window.addEventListener('resize', update);
-            window.addEventListener('load', update);
-            update();
-        });
-    });
-    </script>
     <?php
+    // Behaviour (arrows + scroll) is handled by js/product-rail.js, which drives
+    // both .gh-rail and .gh-cs. Using the shared, readyState-safe external script
+    // (instead of an inline DOMContentLoaded handler) ensures the arrows work
+    // even when an optimizer defers inline scripts.
 }
 ?>
 <section class="gh-block gh-category-slider" id="<?php echo esc_attr($block_id); ?>" style="<?php echo esc_attr($section_style); ?>">
