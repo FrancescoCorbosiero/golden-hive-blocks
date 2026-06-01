@@ -8,6 +8,9 @@
 .woocommerce ul.products li.product,
 .woocommerce-page ul.products li.product {
     position: relative;
+    /* Contain the quick-view button's z-index inside the card so it can never
+       paint over a sticky header while the card scrolls underneath it. */
+    isolation: isolate;
 }
 
 /* Mini icon button */
