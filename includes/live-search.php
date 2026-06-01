@@ -42,17 +42,12 @@ add_action('wp_enqueue_scripts', function () {
 }, 100);
 
 // Load OUR result-card template from inside this plugin (absolute path, NOT the theme).
+// This filter runs inside the plugin's locate_template(): it receives the resolved
+// absolute path (string) and lets us swap in our bundled template.
 add_filter('relevanssi_live_search_results_template', function ($template) {
     $custom = GOLDEN_HIVE_BLOCKS_PATH . 'templates/search-results.php';
     return file_exists($custom) ? $custom : $template;
 });
-
-// Fallback for plugin versions that still resolve the template through the
-// theme via locate_template()/get_template_part(): force our bundled path.
-add_filter('relevanssi_live_search_get_template_part', function ($located, $slug, $name) {
-    $custom = GOLDEN_HIVE_BLOCKS_PATH . 'templates/search-results.php';
-    return file_exists($custom) ? $custom : $located;
-}, 10, 3);
 
 /* ══════════════════════════════════════════════════════════════════
    ASSETS — modal styles + behaviour (plain front-end files)
