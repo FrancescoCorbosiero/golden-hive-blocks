@@ -72,15 +72,16 @@
                 return;
             }
 
-            // The link itself -> let it navigate.
-            var link = li.querySelector(':scope > a');
-            if (link && (e.target === link || link.contains(e.target))) return;
-
-            // Inside an already-open submenu -> leave it alone.
+            // A click within this item's own submenu (a real leaf link, or a
+            // deeper level handled on its own) -> leave it alone so it navigates.
             var sub = li.querySelector(':scope > .sub-menu-wrapper');
             if (sub && (e.target === sub || sub.contains(e.target))) return;
 
-            // Bare row -> toggle this item.
+            // Otherwise the tap is on the parent node itself (its link or the
+            // bare row). Parents have children, so open the dropdown instead of
+            // navigating to their category page (Shopify-style). Only true
+            // leaves — items without children, which never match the
+            // `.menu-item-has-children` lookup above — still navigate.
             e.preventDefault();
             toggle(li);
         });
