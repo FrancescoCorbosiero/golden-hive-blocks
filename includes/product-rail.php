@@ -7,7 +7,8 @@
  * (Shopify-style), with optional ‹ › arrows (a few lines of vanilla JS).
  *
  * Cards are rendered through WooCommerce's standard product-loop template
- * (wc_get_template_part('content','product')), so they:
+ * (wc_get_template_part('content','product')) inside a `.woocommerce` wrapper,
+ * so they:
  *   • match the theme's product-card styling exactly, and
  *   • fire the standard loop hooks — which means Quick View and the inline size
  *     picker (registered on those hooks) appear on rail cards automatically.
@@ -26,16 +27,21 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_action('wp_enqueue_scripts', 'ghb_product_rail_register');
-function ghb_product_rail_register()
+/**
+ * Load the rail assets front-end-wide. They're tiny, and enqueuing from inside
+ * the shortcode is unreliable (late enqueue isn't always printed, e.g. via the
+ * Gutenberg Shortcode block), which is what left the rail unstyled.
+ */
+add_action('wp_enqueue_scripts', 'ghb_product_rail_assets');
+function ghb_product_rail_assets()
 {
-    wp_register_style(
+    wp_enqueue_style(
         'golden-hive-product-rail',
         GOLDEN_HIVE_BLOCKS_URL . 'product-rail.css',
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
-    wp_register_script(
+    wp_enqueue_script(
         'golden-hive-product-rail',
         GOLDEN_HIVE_BLOCKS_URL . 'js/product-rail.js',
         array(),
@@ -71,13 +77,9 @@ function ghb_product_rail_shortcode($atts)
         return '';
     }
 
-    // Rail assets; Quick View + add-to-cart assets load site-wide on their own.
-    wp_enqueue_style('golden-hive-product-rail');
-    wp_enqueue_script('golden-hive-product-rail');
-
     ob_start();
     ?>
-    <section class="gh-rail">
+    <div class="woocommerce gh-rail">
         <div class="gh-rail__head">
             <?php if ('' !== $atts['title']) : ?>
                 <h2 class="gh-rail__title"><?php echo esc_html($atts['title']); ?></h2>
@@ -98,7 +100,7 @@ function ghb_product_rail_shortcode($atts)
             wp_reset_postdata();
             ?>
         </ul>
-    </section>
+    </div>
     <?php
     return ob_get_clean();
 }

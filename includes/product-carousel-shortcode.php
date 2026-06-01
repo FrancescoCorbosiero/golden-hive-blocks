@@ -1818,16 +1818,51 @@ function ghb_get_carousel_products($atts) {
     }
 
     if (!empty($atts['brand'])) {
-        // Support multiple brand taxonomies
-        $brand_taxonomies = array('pa_brand', 'pwb-brand', 'product_brand');
+        // Resolve the brand slug(s) to terms in WHICHEVER brand taxonomy holds
+        // them (a site can have several), instead of only querying the first
+        // registered one. Match across all of them with OR + include_children,
+        // so nested/child brand terms (e.g. nike-travis-scott) work too.
+        $brand_slugs = array_filter(array_map('trim', explode(',', $atts['brand'])));
+        $brand_taxonomies = array('product_brand', 'pwb-brand', 'pa_brand');
+
+        $brand_clauses = array();
         foreach ($brand_taxonomies as $tax) {
-            if (taxonomy_exists($tax)) {
-                $tax_query[] = array(
-                    'taxonomy' => $tax,
-                    'field'    => 'slug',
-                    'terms'    => array_map('trim', explode(',', $atts['brand'])),
+            if (!taxonomy_exists($tax)) {
+                continue;
+            }
+            $ids = array();
+            foreach ($brand_slugs as $slug) {
+                $term = get_term_by('slug', $slug, $tax);
+                if ($term && !is_wp_error($term)) {
+                    $ids[] = (int) $term->term_id;
+                }
+            }
+            if (!empty($ids)) {
+                $brand_clauses[] = array(
+                    'taxonomy'         => $tax,
+                    'field'            => 'term_id',
+                    'terms'            => array_unique($ids),
+                    'include_children' => true,
                 );
-                break;
+            }
+        }
+
+        if (count($brand_clauses) === 1) {
+            $tax_query[] = $brand_clauses[0];
+        } elseif (count($brand_clauses) > 1) {
+            $tax_query[] = array_merge(array('relation' => 'OR'), $brand_clauses);
+        } else {
+            // Slug didn't resolve in any brand taxonomy — fall back to the
+            // original slug query against the first existing one.
+            foreach ($brand_taxonomies as $tax) {
+                if (taxonomy_exists($tax)) {
+                    $tax_query[] = array(
+                        'taxonomy' => $tax,
+                        'field'    => 'slug',
+                        'terms'    => $brand_slugs,
+                    );
+                    break;
+                }
             }
         }
     }
