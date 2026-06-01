@@ -17,6 +17,14 @@
             return card ? card.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
         }
 
+        // Advance by one full "batch" = the number of whole cards currently
+        // visible in the viewport (the carousel's column count).
+        function pageStep() {
+            var step = cardStep();
+            var perView = Math.max(1, Math.floor((track.clientWidth + 16) / step));
+            return perView * step;
+        }
+
         function update() {
             var max = track.scrollWidth - track.clientWidth - 1;
             rail.classList.toggle('is-scrollable', max > 1);
@@ -31,7 +39,7 @@
         navs.forEach(function (n) {
             n.addEventListener('click', function () {
                 var dir = parseInt(n.getAttribute('data-dir'), 10);
-                track.scrollBy({ left: dir * cardStep() * 2, behavior: 'smooth' });
+                track.scrollBy({ left: dir * pageStep(), behavior: 'smooth' });
             });
         });
 

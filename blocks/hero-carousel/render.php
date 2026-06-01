@@ -32,7 +32,9 @@ $block_id = 'gh-hero-' . wp_unique_id();
                     <img src="<?php echo esc_url($slide['image']); ?>"
                          alt=""
                          style="object-position: <?php echo esc_attr($img_pos); ?>;"
-                         loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>">
+                         loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>"
+                         fetchpriority="<?php echo $index === 0 ? 'high' : 'low'; ?>"
+                         decoding="async">
                 <?php endif; ?>
             </div>
             <div class="gh-hero-slide__overlay"></div>

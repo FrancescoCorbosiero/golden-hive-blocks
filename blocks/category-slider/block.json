@@ -6,8 +6,8 @@
     "title": "Category Slider",
     "category": "golden-hive",
     "icon": "category",
-    "description": "Swiper.js category carousel with images - Shopify style.",
-    "keywords": ["category", "collection", "slider", "carousel", "shopify", "swiper"],
+    "description": "Scroll-snap category carousel with images - Shopify style.",
+    "keywords": ["category", "collection", "slider", "carousel", "shopify"],
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "title": {
