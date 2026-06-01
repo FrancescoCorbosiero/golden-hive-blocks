@@ -1,0 +1,96 @@
+/**
+ * Golden Hive Blocks — Live Ajax Search modal styles.
+ * Owns all styling for the search modal; the Relevanssi Live Ajax Search
+ * base stylesheets are dequeued (see includes/live-search.php).
+ */
+#rlv-search-modal { --rlv-brand: #721124; }
+.rlv-modal {
+    position: fixed; inset: 0; z-index: 99999;
+    visibility: hidden; opacity: 0;
+    transition: opacity .2s ease, visibility 0s linear .2s;
+}
+.rlv-modal.is-open { visibility: visible; opacity: 1; transition: opacity .2s ease; }
+body.rlv-open { overflow: hidden; }
+
+.rlv-backdrop { position: absolute; inset: 0; background: rgba(17, 17, 19, .45); }
+
+.rlv-panel {
+    position: absolute; top: 0; left: 0; height: 100%;
+    width: min(460px, 100%);
+    display: flex; flex-direction: column;
+    background: #fff;
+    box-shadow: 0 0 40px rgba(0, 0, 0, .18);
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+}
+.rlv-modal.is-open .rlv-panel { transform: translateX(0); }
+
+.rlv-form { display: flex; flex-direction: column; height: 100%; margin: 0; }
+
+.rlv-panel-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 18px 20px; border-bottom: 1px solid #ececef;
+}
+.rlv-icon { width: 20px; height: 20px; flex-shrink: 0; stroke: #9a9aa2; stroke-width: 2; fill: none; stroke-linecap: round; }
+.rlv-input {
+    flex: 1; min-width: 0; border: none; outline: none; background: none;
+    font-size: 16px; color: #1f2532; padding: 4px 0;
+}
+.rlv-input::placeholder { color: #a8acb4; }
+.rlv-close {
+    display: flex; padding: 6px; border: none; background: none; cursor: pointer;
+    color: #6b7280; border-radius: 6px;
+}
+.rlv-close:hover { background: #f3f4f6; color: #1f2532; }
+.rlv-close svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
+
+.rlv-results { flex: 1; overflow-y: auto; padding: 8px 12px; -webkit-overflow-scrolling: touch; }
+
+.rlv-results-list { list-style: none; margin: 0; padding: 0; }
+.rlv-result-link {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px; border-radius: 10px; text-decoration: none; color: inherit;
+    transition: background .12s ease;
+}
+.rlv-result-link:hover, .rlv-result-link:focus-visible { background: #f6f6f7; outline: none; }
+.rlv-result-thumb {
+    width: 64px; height: 64px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #f3f4f6; border-radius: 8px; overflow: hidden;
+}
+.rlv-result-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rlv-result-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.rlv-result-brand {
+    font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #9a9aa2;
+}
+.rlv-result-title {
+    font-size: 14px; line-height: 1.35; color: #1f2532;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rlv-result-price { font-size: 14px; font-weight: 700; color: var(--rlv-brand); }
+.rlv-result-price del { color: #b9bdc6; font-weight: 500; margin-right: 6px; }
+.rlv-result-price ins { text-decoration: none; }
+
+.rlv-no-results { padding: 32px 20px; text-align: center; color: #9a9aa2; font-size: 14px; }
+
+.rlv-panel-footer {
+    border-top: 1px solid #ececef; padding: 14px 16px;
+    display: none; /* shown once there's a query */
+}
+.rlv-modal.has-query .rlv-panel-footer { display: block; }
+.rlv-seeall {
+    width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer;
+    background: var(--rlv-brand); color: #fff;
+    font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    transition: filter .15s ease;
+}
+.rlv-seeall:hover { filter: brightness(1.12); }
+
+/* The live-search plugin's v2 spinner, recoloured to the brand. */
+.rlv-has-spinner { border-color: var(--rlv-brand); border-right-color: transparent; }
+.rlv-has-spinner::after { background-color: var(--rlv-brand); }
+
+.rlv-sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
