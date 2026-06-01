@@ -52,59 +52,12 @@ function ghb_quick_view_button()
 }
 
 /**
- * AJAX handler — returns the product payload the modal renders.
+ * AJAX handler note: the `ghb_quick_view` endpoint (and its identical payload)
+ * is already registered, site-wide and unconditionally, by
+ * includes/product-carousel-shortcode.php (ghb_quick_view_handler). We
+ * deliberately reuse it here rather than declare a second copy — the JS below
+ * fetches that same `ghb_quick_view` action. Do NOT redeclare the handler.
  */
-add_action('wp_ajax_ghb_quick_view', 'ghb_quick_view_handler');
-add_action('wp_ajax_nopriv_ghb_quick_view', 'ghb_quick_view_handler');
-function ghb_quick_view_handler()
-{
-    $product_id = intval($_GET['product_id'] ?? 0);
-    $product = wc_get_product($product_id);
-
-    if (!$product) {
-        wp_send_json_error('Prodotto non trovato');
-    }
-
-    // Images
-    $images = [];
-    $main_img = wp_get_attachment_image_url($product->get_image_id(), 'medium_large');
-    if ($main_img) {
-        $images[] = $main_img;
-    }
-
-    $gallery_ids = $product->get_gallery_image_ids();
-    foreach (array_slice($gallery_ids, 0, 4) as $gid) {
-        $url = wp_get_attachment_image_url($gid, 'medium_large');
-        if ($url) {
-            $images[] = $url;
-        }
-    }
-
-    // Attributes
-    $attributes = [];
-    foreach ($product->get_attributes() as $attr) {
-        $attributes[] = [
-            'label' => wc_attribute_label($attr->get_name()),
-            'value' => $product->get_attribute($attr->get_name()),
-        ];
-    }
-
-    // Categories
-    $categories = wp_get_post_terms($product_id, 'product_cat', ['fields' => 'names']);
-
-    wp_send_json_success([
-        'title'       => $product->get_name(),
-        'url'         => get_permalink($product_id),
-        'price'       => html_entity_decode(strip_tags($product->get_price_html())),
-        'short_desc'  => wpautop($product->get_short_description()),
-        'images'      => $images,
-        'in_stock'    => $product->is_in_stock(),
-        'stock_text'  => $product->is_in_stock() ? 'Disponibile' : 'Esaurito',
-        'attributes'  => $attributes,
-        'categories'  => implode(', ', $categories),
-        'sku'         => $product->get_sku(),
-    ]);
-}
 
 /**
  * Assets — styles + jQuery-based behaviour, on loop pages only.
