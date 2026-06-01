@@ -1,0 +1,13 @@
+{
+  "name": "golden-hive-blocks-build",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build tooling for Golden Hive Blocks (CSS minification).",
+  "scripts": {
+    "build:css": "cleancss -o style.min.css style.css",
+    "build": "npm run build:css"
+  },
+  "devDependencies": {
+    "clean-css-cli": "^5.6.3"
+  }
+}

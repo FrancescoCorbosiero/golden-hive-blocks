@@ -33,9 +33,15 @@ define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
  */
 function golden_hive_blocks_enqueue_assets()
 {
+    // Prefer the minified stylesheet (run `npm run build:css` after editing
+    // style.css); fall back to the source if it hasn't been built.
+    $style_file = file_exists(GOLDEN_HIVE_BLOCKS_PATH . 'style.min.css')
+        ? 'style.min.css'
+        : 'style.css';
+
     wp_enqueue_style(
         'golden-hive-blocks-style',
-        GOLDEN_HIVE_BLOCKS_URL . 'style.css',
+        GOLDEN_HIVE_BLOCKS_URL . $style_file,
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
