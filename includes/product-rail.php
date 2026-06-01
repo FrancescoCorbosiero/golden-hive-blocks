@@ -66,10 +66,14 @@ function ghb_product_rail_shortcode($atts)
             'tag'      => '',
             'ids'      => '',
             'limit'    => 12,
+            'columns'  => 4,          // cards visible per view on desktop
         ),
         $atts,
         'gh_product_rail'
     );
+
+    // Cards shown per view on desktop (drives the batch step too). 1–8.
+    $cols = max(1, min(8, (int) $atts['columns']));
 
     $query = ghb_get_carousel_products($atts);
     if (!$query->have_posts()) {
@@ -85,7 +89,7 @@ function ghb_product_rail_shortcode($atts)
         <?php endif; ?>
         <div class="gh-rail__viewport">
             <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedente', 'golden-hive-blocks'); ?>">&lsaquo;</button>
-            <ul class="products gh-rail__track">
+            <ul class="products gh-rail__track" style="--gh-cols: <?php echo esc_attr($cols); ?>;">
                 <?php
                 while ($query->have_posts()) {
                     $query->the_post();

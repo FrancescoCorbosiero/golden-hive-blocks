@@ -18,10 +18,14 @@ if (!defined('ABSPATH')) {
  * ═══════════════════════════════════════════════════════════════
  */
 /**
- * Register Swiper assets but only enqueue when a carousel shortcode is present.
+ * Swiper assets — RETIRED for performance.
+ *
+ * The carousel shortcodes now render through the lightweight CSS scroll-snap
+ * rail (includes/product-rail.php), so the Swiper bundle (~140KB from a CDN)
+ * and the legacy carousel CSS are no longer registered or loaded anywhere.
+ * This function is kept intentionally UNHOOKED to avoid churning the rest of
+ * this legacy file; nothing calls it.
  */
-add_action('wp_enqueue_scripts', 'ghb_register_carousel_assets');
-
 function ghb_register_carousel_assets() {
     wp_register_style(
         'swiper-css',
@@ -1305,8 +1309,20 @@ function ghb_carousel_section_shortcode($atts) {
         return '<p style="text-align:center;padding:2rem;color:#666;">WooCommerce is required for the product carousel.</p>';
     }
 
-    // Enqueue assets only when the shortcode is actually rendered
-    ghb_enqueue_carousel_assets();
+    // Swiper carousel retired for performance: render through the lightweight
+    // scroll-snap rail instead (no slider library, no CDN), mapping the
+    // data-relevant attributes across. The legacy rendering below is kept but
+    // never reached.
+    if (function_exists('ghb_product_rail_shortcode')) {
+        $src = is_array($atts) ? $atts : array();
+        $rail_atts = array();
+        foreach (array('title', 'type', 'limit', 'category', 'tag', 'brand', 'ids', 'columns') as $k) {
+            if (isset($src[$k]) && '' !== $src[$k]) {
+                $rail_atts[$k] = $src[$k];
+            }
+        }
+        return ghb_product_rail_shortcode($rail_atts);
+    }
 
     $atts = shortcode_atts(array(
         // Section settings

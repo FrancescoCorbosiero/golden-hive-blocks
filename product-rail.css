@@ -60,9 +60,11 @@
 .gh-rail .gh-rail__track,
 .gh-rail__track,
 .gh-rail__track.products {
+    --gh-cols: 4;          /* overridden inline per shortcode (columns="N") */
+    --gh-gap: 16px;
     display: flex !important;
     flex-wrap: nowrap !important;
-    gap: 16px;
+    gap: var(--gh-gap);
     margin: 0 !important;
     padding: 0 2px 10px;
     list-style: none !important;
@@ -78,8 +80,9 @@
 
 .gh-rail .gh-rail__track > li.product,
 .gh-rail__track > li.product {
-    flex: 0 0 auto !important;
-    width: clamp(150px, 44vw, 230px) !important;
+    /* Exactly --gh-cols cards fill the visible width on desktop. */
+    flex: 0 0 calc((100% - (var(--gh-cols) - 1) * var(--gh-gap)) / var(--gh-cols)) !important;
+    width: auto !important;
     margin: 0 !important;
     padding: 0;
     float: none !important;
@@ -87,9 +90,12 @@
     position: relative;          /* anchor the absolutely-positioned QV button */
     scroll-snap-align: start;
 }
-@media (min-width: 768px) {
+/* On phones, ignore the column count and show a peek so cards stay tappable. */
+@media (max-width: 767px) {
     .gh-rail .gh-rail__track > li.product,
-    .gh-rail__track > li.product { width: 230px !important; }
+    .gh-rail__track > li.product {
+        flex-basis: 44vw !important;
+    }
 }
 
 /* Make sure the Quick View button reveals on the rail too (its default reveal
