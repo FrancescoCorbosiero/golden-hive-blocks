@@ -1,60 +1,54 @@
 /**
- * Golden Hive Blocks — Product rail arrows (progressive enhancement).
+ * Golden Hive Blocks — Scroll-snap rail arrows (progressive enhancement).
  *
- * The rail scrolls natively (CSS scroll-snap); this only wires the optional
- * prev/next arrows and disables them at the ends. No slider library.
- * See includes/product-rail.php.
+ * Drives both the product rail (.gh-rail) and the category slider (.gh-cs):
+ * native CSS scroll-snap does the scrolling; this only wires the optional
+ * prev/next arrows, disables them at the ends, and advances by a full batch
+ * (the number of whole cards visible). No slider library.
  */
 (function () {
-    function initRail(rail) {
-        var track = rail.querySelector('.gh-rail__track');
+    function initScroller(rail, trackSel, navSel) {
+        var track = rail.querySelector(trackSel);
         if (!track) return;
-        var navs = rail.querySelectorAll('.gh-rail__nav');
+        var navs = rail.querySelectorAll(navSel);
+        var GAP = 16;
 
         function cardStep() {
-            var card = track.querySelector('li.product');
-            var gap = 16;
-            return card ? card.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
+            var card = track.querySelector(':scope > *');
+            return card ? card.getBoundingClientRect().width + GAP : track.clientWidth * 0.8;
         }
-
-        // Advance by one full "batch" = the number of whole cards currently
-        // visible in the viewport (the carousel's column count).
         function pageStep() {
             var step = cardStep();
-            var perView = Math.max(1, Math.floor((track.clientWidth + 16) / step));
+            var perView = Math.max(1, Math.floor((track.clientWidth + GAP) / step));
             return perView * step;
         }
-
         function update() {
             var max = track.scrollWidth - track.clientWidth - 1;
             rail.classList.toggle('is-scrollable', max > 1);
             navs.forEach(function (n) {
                 var dir = parseInt(n.getAttribute('data-dir'), 10);
-                var atStart = track.scrollLeft <= 1;
-                var atEnd = track.scrollLeft >= max;
-                n.disabled = (dir < 0 && atStart) || (dir > 0 && atEnd);
+                n.disabled = (dir < 0 && track.scrollLeft <= 1) || (dir > 0 && track.scrollLeft >= max);
             });
         }
 
         navs.forEach(function (n) {
             n.addEventListener('click', function () {
-                var dir = parseInt(n.getAttribute('data-dir'), 10);
-                track.scrollBy({ left: dir * pageStep(), behavior: 'smooth' });
+                track.scrollBy({ left: parseInt(n.getAttribute('data-dir'), 10) * pageStep(), behavior: 'smooth' });
             });
         });
-
-        track.addEventListener('scroll', function () {
-            window.requestAnimationFrame(update);
-        }, { passive: true });
+        track.addEventListener('scroll', function () { window.requestAnimationFrame(update); }, { passive: true });
         window.addEventListener('resize', update);
-
-        // Re-check once images have laid out (card widths settle).
-        window.addEventListener('load', update);
+        window.addEventListener('load', update); // re-check once images settle
         update();
     }
 
     function boot() {
-        document.querySelectorAll('.gh-rail').forEach(initRail);
+        document.querySelectorAll('.gh-rail').forEach(function (r) {
+            initScroller(r, '.gh-rail__track', '.gh-rail__nav');
+        });
+        document.querySelectorAll('.gh-cs').forEach(function (r) {
+            initScroller(r, '.gh-cs__track', '.gh-cs__nav');
+        });
     }
 
     if (document.readyState !== 'loading') {
