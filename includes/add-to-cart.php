@@ -56,7 +56,10 @@ function ghb_atc_replace_core_button()
 add_action('woocommerce_after_shop_loop_item', 'ghb_atc_render_button', 10);
 
 /**
- * Render our add-to-cart control for the current loop product.
+ * Render our add-to-cart control for the current loop product. Clicking it opens
+ * the bottom-sheet quick-add modal (see includes/quick-add.php): simple products
+ * add directly (.ghb-simple-add-btn), variable products open the size picker
+ * (.ghb-quick-add-btn).
  */
 function ghb_atc_render_button()
 {
@@ -65,7 +68,7 @@ function ghb_atc_render_button()
         return;
     }
 
-    // Simple (and other directly-purchasable) products.
+    // Simple (and other directly-purchasable) products → direct add.
     if ($product->is_type('simple')) {
         if (!$product->is_purchasable() || !$product->is_in_stock()) {
             echo '<div class="ghb-atc ghb-atc--disabled"><span class="ghb-atc-trigger" aria-disabled="true">'
@@ -73,47 +76,19 @@ function ghb_atc_render_button()
             return;
         }
         printf(
-            '<div class="ghb-atc" data-type="simple"><button type="button" class="ghb-atc-trigger" data-product-id="%d">%s</button></div>',
+            '<div class="ghb-atc"><button type="button" class="ghb-atc-trigger ghb-simple-add-btn" data-product-id="%d">%s</button></div>',
             (int) $product->get_id(),
             esc_html__('Aggiungi al carrello', 'golden-hive-blocks')
         );
         return;
     }
 
-    // Variable products → inline size picker.
+    // Variable products → open the quick-add modal to choose a size.
     if ($product->is_type('variable')) {
-        $rows = ghb_atc_size_rows($product);
-
-        if (empty($rows)) {
-            // Couldn't resolve sizes — send them to the product page to choose.
-            printf(
-                '<div class="ghb-atc"><a class="ghb-atc-trigger" href="%s">%s</a></div>',
-                esc_url($product->get_permalink()),
-                esc_html__('Seleziona opzioni', 'golden-hive-blocks')
-            );
-            return;
-        }
-
-        $pills = '';
-        foreach ($rows as $row) {
-            if ($row['in_stock']) {
-                $pills .= sprintf(
-                    '<button type="button" class="ghb-atc-size" data-variation-id="%d">%s</button>',
-                    (int) $row['variation_id'],
-                    esc_html($row['label'])
-                );
-            } else {
-                $pills .= sprintf(
-                    '<span class="ghb-atc-size is-oos">%s</span>',
-                    esc_html($row['label'])
-                );
-            }
-        }
-
         printf(
-            '<div class="ghb-atc" data-type="variable"><button type="button" class="ghb-atc-trigger">%s</button><div class="ghb-atc-panel">%s</div></div>',
-            esc_html__('Aggiungi al carrello', 'golden-hive-blocks'),
-            $pills // already escaped per-pill above
+            '<div class="ghb-atc"><button type="button" class="ghb-atc-trigger ghb-quick-add-btn" data-product-id="%d">%s</button></div>',
+            (int) $product->get_id(),
+            esc_html__('Aggiungi al carrello', 'golden-hive-blocks')
         );
         return;
     }
@@ -154,7 +129,8 @@ function ghb_atc_size_rows($product)
 }
 
 /**
- * Assets — styles + jQuery-based behaviour, on loop contexts only.
+ * Assets — just the button styles. The behaviour now lives in the quick-add
+ * modal (includes/quick-add.php), so there's no separate add-to-cart script.
  */
 add_action('wp_enqueue_scripts', 'ghb_atc_assets');
 function ghb_atc_assets()
@@ -168,21 +144,5 @@ function ghb_atc_assets()
         GOLDEN_HIVE_BLOCKS_URL . 'add-to-cart.css',
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
-    );
-
-    wp_enqueue_script(
-        'golden-hive-add-to-cart',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/add-to-cart.js',
-        array('jquery'),
-        GOLDEN_HIVE_BLOCKS_VERSION,
-        array('in_footer' => true)
-    );
-
-    wp_localize_script(
-        'golden-hive-add-to-cart',
-        'ghbAddToCart',
-        array(
-            'endpoint' => class_exists('WC_AJAX') ? WC_AJAX::get_endpoint('add_to_cart') : '',
-        )
     );
 }
