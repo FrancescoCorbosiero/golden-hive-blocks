@@ -154,9 +154,10 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/swatch-sale-badges.php';
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-view.php';
 
 /**
- * Include the loop "Add to cart" with inline size picker.
+ * Include the loop add-to-cart button + the quick-add modal it opens.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/add-to-cart.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-add.php';
 
 /**
  * Include the shop grid layout alignment.

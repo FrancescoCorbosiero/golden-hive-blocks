@@ -20,14 +20,14 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Where the grid layout should apply. Loaded wherever WooCommerce is active,
- * not just shop/taxonomy/search — the product rails reuse the standard
- * .woocommerce product-card markup and need the same card alignment on the
- * home page / landing pages too.
+ * Loop contexts where the shop-archive grid layout applies. The product rails
+ * carry their own card alignment (see product-rail.css), so this stays scoped
+ * to the real shop / taxonomy / search archives.
  */
 function ghb_shop_grid_is_loop()
 {
-    return class_exists('WooCommerce');
+    return function_exists('is_shop')
+        && (is_shop() || is_product_taxonomy() || is_search());
 }
 
 add_action('wp_enqueue_scripts', 'ghb_shop_grid_assets');

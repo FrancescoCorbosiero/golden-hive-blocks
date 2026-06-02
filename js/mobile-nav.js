@@ -77,13 +77,17 @@
             var sub = li.querySelector(':scope > .sub-menu-wrapper');
             if (sub && (e.target === sub || sub.contains(e.target))) return;
 
-            // Otherwise the tap is on the parent node itself (its link or the
-            // bare row). Parents have children, so open the dropdown instead of
-            // navigating to their category page (Shopify-style). Only true
-            // leaves — items without children, which never match the
-            // `.menu-item-has-children` lookup above — still navigate.
-            e.preventDefault();
-            toggle(li);
+            // Otherwise the tap is on the parent node itself (its link / bare
+            // row). Parents open the dropdown instead of navigating (Shopify-
+            // style). The submenu reveal is the theme's, fired by the caret —
+            // so forward the tap to the caret rather than toggling .cg-open
+            // ourselves (which only flips the +/- glyph and left the panel
+            // closed). Only true leaves (no children) still navigate.
+            var ownCaret = li.querySelector(':scope > .caret');
+            if (ownCaret) {
+                e.preventDefault();
+                ownCaret.click();
+            }
         });
 
         // Keyboard support on carets.

@@ -89,6 +89,36 @@
     clear: none !important;
     position: relative;          /* anchor the absolutely-positioned QV button */
     scroll-snap-align: start;
+    /* Uniform card so every row lines up (image, 2-line title, price, button). */
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Uniform square image across all cards. */
+.gh-rail__track > li.product img,
+.gh-rail__track > li.product .attachment-woocommerce_thumbnail {
+    width: 100% !important;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    margin: 0 0 10px !important;
+}
+/* Two-line clamped title with a fixed height so cards stay aligned. */
+.gh-rail__track > li.product .woocommerce-loop-product__title,
+.gh-rail__track > li.product h2,
+.gh-rail__track > li.product h3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+    line-height: 1.3;
+    font-size: 14px;
+    margin: 0 0 4px;
+}
+.gh-rail__track > li.product .price {
+    margin: 0 0 4px;
+    font-size: 14px;
 }
 /* On phones, ignore the column count and show a peek so cards stay tappable. */
 @media (max-width: 767px) {

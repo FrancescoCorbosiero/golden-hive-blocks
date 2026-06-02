@@ -1,11 +1,12 @@
 /**
- * Golden Hive Blocks — Loop "Add to cart" with inline size picker.
+ * Golden Hive Blocks — Loop add-to-cart button.
  * Replaces the core WooCommerce loop button (see includes/add-to-cart.php).
+ * Behaviour (variation picker / add) lives in the quick-add modal.
  */
 
 .ghb-atc {
-    position: relative;
-    margin-top: 8px;
+    margin-top: auto;       /* pin the button to the bottom of the card */
+    padding-top: 6px;
 }
 
 .ghb-atc-trigger {
@@ -29,61 +30,10 @@
     filter: brightness(1.1);
     color: #fff;
 }
-.ghb-atc-trigger.is-done {
-    background: #2e7d32;
-    filter: none;
-}
-.ghb-atc.is-busy .ghb-atc-trigger {
-    opacity: .7;
-    pointer-events: none;
-}
 .ghb-atc--disabled .ghb-atc-trigger,
 .ghb-atc-trigger[aria-disabled="true"] {
     background: #e2e2e6;
     color: #8a8a90;
     cursor: not-allowed;
     pointer-events: none;
-}
-
-/* Size picker popover (opens upward, above the trigger) */
-.ghb-atc-panel {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: calc(100% + 6px);
-    display: none;
-    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-    gap: 6px;
-    padding: 10px;
-    background: #fff;
-    border: 1px solid #ececef;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
-    z-index: 20;
-}
-.ghb-atc.is-open .ghb-atc-panel {
-    display: grid;
-}
-
-.ghb-atc-size {
-    padding: 8px 4px;
-    border: 1px solid #e2e2e6;
-    border-radius: 6px;
-    background: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1f2532;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color .12s ease, color .12s ease;
-}
-.ghb-atc-size:hover {
-    border-color: #721124;
-    color: #721124;
-}
-.ghb-atc-size.is-oos {
-    color: #c3c3c8;
-    background: #f6f6f7;
-    cursor: not-allowed;
-    text-decoration: line-through;
 }
