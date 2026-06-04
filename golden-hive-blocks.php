@@ -57,6 +57,26 @@ function golden_hive_blocks_enqueue_assets()
 add_action('wp_enqueue_scripts', 'golden_hive_blocks_enqueue_assets');
 
 /**
+ * Animation bootstrap — printed inline in <head>, before the stylesheet.
+ *
+ * Adds `gh-js` to <html> so the scroll-reveal "hidden" states (opacity:0) apply
+ * ONLY while JavaScript is actually running. Server-rendered block content is
+ * therefore always painted: if js/animations.js is disabled, blocked, deferred,
+ * or throws (a frequent side effect of a CDN / Cloudflare Rocket Loader), the
+ * content stays visible instead of being trapped invisible until full load.
+ *
+ * A failsafe timer adds `gh-anim-failsafe` if the engine hasn't signalled
+ * `window.__ghAnimReady` shortly after load, force-revealing everything as a
+ * last resort. `data-cfasync="false"` keeps Rocket Loader from deferring this
+ * tiny bootstrap, so `gh-js` is set before first paint (no flash).
+ */
+function golden_hive_blocks_anim_bootstrap()
+{
+    echo '<script data-cfasync="false">(function(d){var h=d.documentElement;h.className+=" gh-js";window.__ghAnimReady=false;window.setTimeout(function(){if(!window.__ghAnimReady){h.className+=" gh-anim-failsafe";}},1500);})(document);</script>' . "\n";
+}
+add_action('wp_head', 'golden_hive_blocks_anim_bootstrap', 1);
+
+/**
  * Editor assets — only loaded inside the block editor.
  */
 function golden_hive_blocks_editor_assets()
