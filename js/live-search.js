@@ -66,15 +66,48 @@
         else if (e.key === '/' && !typing && !modal.classList.contains('is-open')) { e.preventDefault(); open(); }
     });
 
+    // The bundled results template always lands either a .rlv-results-list (hits)
+    // or .rlv-no-results (miss) inside #rlv-modal-results. We treat "the user has
+    // typed but neither has arrived yet" as "searching" and surface a spinner, so
+    // the panel is never just blank while the AJAX request is in flight.
+    var SETTLED_SEL = '.rlv-results-list, .rlv-no-results';
+    var searchGuard = null;
+
+    function setBusy(busy) {
+        modal.classList.toggle('is-searching', busy);
+        if (results) results.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+    function refreshHasResults() {
+        modal.classList.toggle('has-results', !!(results && results.querySelector('.rlv-results-list')));
+    }
+
     if (input) {
         input.addEventListener('input', function () {
-            modal.classList.toggle('has-query', input.value.trim().length > 0);
+            var q = input.value.trim();
+            modal.classList.toggle('has-query', q.length > 0);
+            clearTimeout(searchGuard);
+
+            if (!q) {                                  // back to the idle hint
+                if (results) results.innerHTML = '';
+                setBusy(false);
+                refreshHasResults();
+                return;
+            }
+
+            setBusy(true);                             // optimistic — show it the instant they type
+            searchGuard = setTimeout(function () {     // never spin forever if the request fails
+                setBusy(false);
+            }, 8000);
         });
     }
 
     if (results) {
         new MutationObserver(function () {
-            modal.classList.toggle('has-results', results.children.length > 0);
+            refreshHasResults();
+            if (results.querySelector(SETTLED_SEL)) {  // template landed → request done
+                clearTimeout(searchGuard);
+                setBusy(false);
+            }
             results.scrollTop = 0;
         }).observe(results, { childList: true, subtree: true });
     }

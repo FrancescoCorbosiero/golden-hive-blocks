@@ -41,6 +41,13 @@ function ghb_variation_swatch_prices_assets()
         return;
     }
 
+    wp_enqueue_style(
+        'golden-hive-variation-swatch-prices',
+        GOLDEN_HIVE_BLOCKS_URL . 'variation-swatch-prices.css',
+        array(),
+        GOLDEN_HIVE_BLOCKS_VERSION
+    );
+
     wp_enqueue_script(
         'golden-hive-variation-swatch-prices',
         GOLDEN_HIVE_BLOCKS_URL . 'js/variation-swatch-prices.js',

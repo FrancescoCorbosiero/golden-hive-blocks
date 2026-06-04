@@ -2375,34 +2375,48 @@ a.gh-btn:visited {
    SCROLL REVEAL ANIMATIONS
    ========================================================================== */
 
-[data-gh-reveal] {
+/* Scroll-reveal is a progressive enhancement. The hidden initial state
+   (opacity:0) is scoped to `html.gh-js`, a class set by an inline bootstrap in
+   <head> ONLY when JavaScript runs. Without JS — or if js/animations.js is
+   blocked, deferred, or errors out (a common symptom once a CDN / Cloudflare
+   Rocket Loader sits in front) — the server-rendered content stays fully
+   visible instead of being trapped invisible until full page load.
+   `html.gh-anim-failsafe` is the safety net: the bootstrap adds it shortly
+   after load if the engine never signalled `window.__ghAnimReady`. */
+.gh-js [data-gh-reveal] {
     opacity: 0;
     transition: opacity 0.8s var(--gh-ease-out), transform 0.8s var(--gh-ease-out);
 }
 
-[data-gh-reveal="up"] {
+.gh-js [data-gh-reveal="up"] {
     transform: translateY(40px);
 }
 
-[data-gh-reveal="down"] {
+.gh-js [data-gh-reveal="down"] {
     transform: translateY(-40px);
 }
 
-[data-gh-reveal="left"] {
+.gh-js [data-gh-reveal="left"] {
     transform: translateX(-40px);
 }
 
-[data-gh-reveal="right"] {
+.gh-js [data-gh-reveal="right"] {
     transform: translateX(40px);
 }
 
-[data-gh-reveal="scale"] {
+.gh-js [data-gh-reveal="scale"] {
     transform: scale(0.92);
 }
 
-[data-gh-reveal].gh-revealed {
+.gh-js [data-gh-reveal].gh-revealed {
     opacity: 1;
     transform: translate(0) scale(1);
+}
+
+/* Failsafe — engine never booted; reveal unconditionally so nothing is lost. */
+.gh-anim-failsafe [data-gh-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
 }
 
 [data-gh-image-reveal] {
@@ -2410,7 +2424,7 @@ a.gh-btn:visited {
     overflow: hidden;
 }
 
-[data-gh-image-reveal]::after {
+.gh-js [data-gh-image-reveal]::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -2419,18 +2433,27 @@ a.gh-btn:visited {
     transition: transform 1s var(--gh-ease-in-out);
 }
 
-[data-gh-image-reveal].gh-image-revealed::after {
+.gh-js [data-gh-image-reveal].gh-image-revealed::after {
     transform: scaleX(0);
     transform-origin: right;
 }
 
-[data-gh-image-reveal] img {
+.gh-js [data-gh-image-reveal] img {
     transform: scale(1.2);
     transition: transform 1.2s var(--gh-ease-out) 0.3s;
 }
 
-[data-gh-image-reveal].gh-image-revealed img {
+.gh-js [data-gh-image-reveal].gh-image-revealed img {
     transform: scale(1);
+}
+
+/* Failsafe — clear the cover overlay + zoom if the engine never booted. */
+.gh-anim-failsafe [data-gh-image-reveal]::after {
+    transform: scaleX(0) !important;
+}
+
+.gh-anim-failsafe [data-gh-image-reveal] img {
+    transform: none !important;
 }
 
 /* ==========================================================================
@@ -3615,7 +3638,7 @@ a.gh-btn:visited {
     }
 
     [data-gh-reveal] {
-        opacity: 1;
-        transform: none;
+        opacity: 1 !important;
+        transform: none !important;
     }
 }

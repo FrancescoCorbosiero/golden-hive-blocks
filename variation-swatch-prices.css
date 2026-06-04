@@ -1,0 +1,96 @@
+/**
+ * Golden Hive Blocks — CommerceKit size-swatch styling (attribute_pa_taglia).
+ *
+ * Visual layer for includes/variation-swatch-prices.php + js/variation-swatch-prices.js,
+ * which inject the per-size price (.cgkit-swatch-price) and size label
+ * (.cgkit-swatch-size) and flag sold-out sizes (.cgkit-swatch-oos).
+ *
+ * THEME-SPECIFIC: Shoptimizer + CommerceKit ("CK"). Enqueued on single-product
+ * pages only (see includes/variation-swatch-prices.php). The brand colour is
+ * exposed as --ghsw-brand so it can be retuned in one place.
+ */
+
+/* Swatches */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] {
+  --ghsw-brand: #721124;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-attribute-swatch {
+  margin: 0;
+  padding: 0;
+  width: auto;
+  height: auto;
+}
+
+/* The cell — !important forces the column layout past CommerceKit's own rules */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px;
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 4px;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f2532;
+  text-indent: 0;
+  box-shadow: none;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease;
+}
+
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch-size {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch-price {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: #8a909c;
+}
+
+/* Hover */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch:hover {
+  border-color: var(--ghsw-brand);
+  box-shadow: inset 0 0 0 1px var(--ghsw-brand);
+}
+
+/* Selected */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-selected {
+  background: var(--ghsw-brand);
+  border-color: var(--ghsw-brand);
+  color: #fff;
+}
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-selected .cgkit-swatch-price {
+  color: rgba(255, 255, 255, .85);
+}
+
+/* Out of stock */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-oos,
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-disabled,
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-out-of-stock {
+  background: #f3f4f6;
+  border-color: #f3f4f6;
+  color: #b9bdc6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Hide CommerceKit's diagonal cross */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch .cross {
+  display: none;
+}

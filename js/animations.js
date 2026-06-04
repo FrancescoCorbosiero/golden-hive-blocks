@@ -674,6 +674,11 @@
      * Initialize
      */
     const init = () => {
+        // Tell the inline <head> bootstrap the engine has booted, so its failsafe
+        // timer won't force-reveal content (which would skip entrance animations).
+        // If this never runs — script blocked, deferred away, or thrown before
+        // here — the failsafe still fires and content is revealed regardless.
+        window.__ghAnimReady = true;
         SplitText.init();
         MagneticCursor.init();
         DepthParallax.init();

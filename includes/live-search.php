@@ -109,7 +109,26 @@ function ghb_live_search_render_modal()
                     </svg>
                 </button>
             </div>
-            <div id="rlv-modal-results" class="rlv-results" aria-live="polite"></div>
+            <div class="rlv-results-wrap">
+                <div id="rlv-modal-results" class="rlv-results" aria-live="polite" aria-busy="false"></div>
+
+                <?php /* State layer — sits over the results region; CSS reveals the right one.
+                         Kept OUTSIDE #rlv-modal-results so the live-search plugin's DOM
+                         writes (which replace that node's contents) never wipe it. */ ?>
+                <div class="rlv-status" aria-hidden="true">
+                    <div class="rlv-status-card rlv-status-idle">
+                        <svg class="rlv-status-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <p class="rlv-status-text">Digita per cercare tra i nostri prodotti</p>
+                    </div>
+                    <div class="rlv-status-card rlv-status-loading">
+                        <span class="rlv-spinner"></span>
+                        <p class="rlv-status-text">Ricerca in corso&hellip;</p>
+                    </div>
+                </div>
+                <span class="rlv-progress" aria-hidden="true"></span>
+            </div>
             <div class="rlv-panel-footer">
                 <button type="submit" class="rlv-seeall">Visualizza tutti i risultati</button>
             </div>
