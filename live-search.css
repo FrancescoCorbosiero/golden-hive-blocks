@@ -46,7 +46,54 @@ body.rlv-open { overflow: hidden; }
 .rlv-close:hover { background: #f3f4f6; color: #1f2532; }
 .rlv-close svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
 
+.rlv-results-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
 .rlv-results { flex: 1; overflow-y: auto; padding: 8px 12px; -webkit-overflow-scrolling: touch; }
+
+/* ── Status / loader ──────────────────────────────────────────────────────
+   The panel must never look blank: an idle hint shows before a query, and a
+   spinner shows while a search is in flight (otherwise customers assume nothing
+   is happening and just hit Enter). State is driven by classes on .rlv-modal
+   set in js/live-search.js. */
+.rlv-status {
+    position: absolute; inset: 0; pointer-events: none;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.rlv-status-card { display: none; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.rlv-status-icon { width: 30px; height: 30px; stroke: #c7cad1; stroke-width: 2; fill: none; stroke-linecap: round; }
+.rlv-status-text { margin: 0; font-size: 14px; color: #9a9aa2; }
+
+/* Idle hint: query box empty. Loader: searching with nothing on screen yet
+   (kept off once real results exist, so refinements don't hide them). */
+.rlv-modal:not(.has-query) .rlv-status-idle { display: flex; }
+.rlv-modal.is-searching:not(.has-results) .rlv-status-loading { display: flex; }
+
+/* Our loader owns the panel — hide any spinner the plugin injects into it. */
+#rlv-modal-results .rlv-has-spinner { display: none !important; }
+
+.rlv-spinner {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 3px solid #e6e8ec; border-top-color: var(--rlv-brand);
+    animation: rlv-spin .7s linear infinite;
+}
+
+/* Slim top progress bar — subtle "live" feedback during every search, including
+   refinements where results stay visible underneath. */
+.rlv-progress { position: absolute; top: 0; left: 0; right: 0; height: 2px; overflow: hidden; opacity: 0; transition: opacity .15s ease; }
+.rlv-modal.is-searching .rlv-progress { opacity: 1; }
+.rlv-progress::before {
+    content: ''; position: absolute; top: 0; height: 100%; width: 40%;
+    background: var(--rlv-brand); border-radius: 2px;
+    animation: rlv-progress 1.1s ease-in-out infinite;
+}
+
+@keyframes rlv-spin { to { transform: rotate(360deg); } }
+@keyframes rlv-progress { 0% { left: -40%; } 50% { left: 40%; } 100% { left: 100%; } }
+@keyframes rlv-pulse { from { opacity: .35; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .rlv-spinner { animation: rlv-pulse 1s ease-in-out infinite alternate; }
+    .rlv-progress::before { animation: rlv-pulse 1s ease-in-out infinite alternate; left: 0; width: 100%; }
+}
 
 .rlv-results-list { list-style: none; margin: 0; padding: 0; }
 .rlv-result-link {
