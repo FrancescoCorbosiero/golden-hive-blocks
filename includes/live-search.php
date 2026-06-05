@@ -24,12 +24,35 @@ if (!defined('ABSPATH')) {
 add_filter('relevanssi_live_search_query_args', function ($args) {
     $args['post_type']   = 'product';
     $args['post_status'] = 'publish';
+
+    // The dropdown only ever shows a title + price — never a text snippet — so
+    // skip Relevanssi's custom-excerpt building. That step reloads and scans each
+    // hit's full post content and is typically the single most expensive part of
+    // a Relevanssi query. This is scoped to the live request: the filter only
+    // fires during the as-you-type AJAX, so the full /?s= results page keeps its
+    // excerpts untouched.
+    add_filter('option_relevanssi_excerpts', '__return_empty_string');
+
     return $args;
 });
 
 // Products shown in the panel.
 add_filter('relevanssi_live_search_posts_per_page', function () {
     return 6;
+});
+
+// Snappier as-you-type: drop the keystroke debounce from the 500ms default to
+// 150ms. The plugin aborts any in-flight request on each new keystroke, so a
+// shorter delay just means results start arriving sooner — it doesn't multiply
+// the number of completed queries.
+add_filter('relevanssi_live_search_configs', function ($configs) {
+    if (isset($configs['default']) && is_array($configs['default'])) {
+        if (!isset($configs['default']['input']) || !is_array($configs['default']['input'])) {
+            $configs['default']['input'] = array();
+        }
+        $configs['default']['input']['delay'] = 150;
+    }
+    return $configs;
 });
 
 // Only OUR modal input is enhanced; leave the theme's other search forms as native WP search.
