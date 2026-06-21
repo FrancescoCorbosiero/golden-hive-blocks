@@ -35,7 +35,7 @@ function ghb_carousel_section_shortcode($atts) {
     }
     $src = is_array($atts) ? $atts : array();
     $rail_atts = array();
-    foreach (array('title', 'type', 'limit', 'category', 'tag', 'brand', 'ids', 'columns') as $k) {
+    foreach (array('title', 'type', 'limit', 'category', 'tag', 'brand', 'ids', 'columns', 'columns_tablet', 'columns_mobile', 'ratio', 'fit') as $k) {
         if (isset($src[$k]) && '' !== $src[$k]) {
             $rail_atts[$k] = $src[$k];
         }

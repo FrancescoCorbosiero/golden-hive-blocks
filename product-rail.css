@@ -80,8 +80,11 @@
 
 .gh-rail .gh-rail__track > li.product,
 .gh-rail__track > li.product {
-    /* Exactly --gh-cols cards fill the visible width on desktop. */
-    flex: 0 0 calc((100% - (var(--gh-cols) - 1) * var(--gh-gap)) / var(--gh-cols)) !important;
+    /* Exactly --_cols cards fill the visible width. --_cols is redefined per
+       breakpoint below (desktop ⇒ --gh-cols, tablet ⇒ --gh-cols-tablet), so the
+       single flex formula recomputes without duplicating it. */
+    --_cols: var(--gh-cols, 4);
+    flex: 0 0 calc((100% - (var(--_cols) - 1) * var(--gh-gap)) / var(--_cols)) !important;
     width: auto !important;
     margin: 0 !important;
     padding: 0;
@@ -94,14 +97,29 @@
     flex-direction: column !important;
 }
 
-/* Uniform square image across all cards. */
+/* Card image. Ratio + fit are driven by the shortcode (ratio="" / fit=""),
+   defaulting to the original square + crop when no variables are set. */
 .gh-rail__track > li.product img,
 .gh-rail__track > li.product .attachment-woocommerce_thumbnail {
     width: 100% !important;
     height: auto;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
+    aspect-ratio: var(--gh-ratio, 1 / 1);
+    object-fit: var(--gh-fit, cover);
     margin: 0 0 10px !important;
+}
+/* fit="contain" shows the whole image; a neutral backdrop fills the
+   letterboxed gaps so the card still reads as a clean tile. */
+.gh-rail--fit-contain .gh-rail__track > li.product img,
+.gh-rail--fit-contain .gh-rail__track > li.product .attachment-woocommerce_thumbnail {
+    background: #f6f6f7;
+}
+
+/* Tablet: fall back to the desktop column count unless columns_tablet was set. */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .gh-rail .gh-rail__track > li.product,
+    .gh-rail__track > li.product {
+        --_cols: var(--gh-cols-tablet, var(--gh-cols, 4));
+    }
 }
 /* Two-line clamped title with a fixed height so cards stay aligned. */
 .gh-rail__track > li.product .woocommerce-loop-product__title,
@@ -120,11 +138,16 @@
     margin: 0 0 4px;
     font-size: 14px;
 }
-/* On phones, ignore the column count and show a peek so cards stay tappable. */
+/* On phones, default to a 44vw peek so cards stay tappable and the next one
+   hints there's more to swipe. columns_mobile="N" opts into an exact count. */
 @media (max-width: 767px) {
     .gh-rail .gh-rail__track > li.product,
     .gh-rail__track > li.product {
         flex-basis: 44vw !important;
+    }
+    .gh-rail--mcols .gh-rail__track > li.product {
+        --_cols: var(--gh-cols-mobile, 2);
+        flex: 0 0 calc((100% - (var(--_cols) - 1) * var(--gh-gap)) / var(--_cols)) !important;
     }
 }
 
