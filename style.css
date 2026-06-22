@@ -264,6 +264,29 @@
     transform: translateY(0);
 }
 
+/* --------------------------------------------------------------------------
+   Centered variant (layout="centered") — symmetric, "aesthetic" hero.
+   Content is centred on both axes, the overlay darkens evenly for legibility,
+   and the CTA uses the refined glass-pill button (.gh-btn--hero).
+   -------------------------------------------------------------------------- */
+.gh-hero-carousel--centered .gh-hero-slide__overlay {
+    background:
+        radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.45) 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, transparent 35%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.gh-hero-carousel--centered .gh-hero-slide__content {
+    align-items: center;
+    text-align: center;
+    max-width: 900px;
+}
+
+.gh-hero-carousel--centered .gh-hero-slide__subtitle {
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .gh-hero-nav {
     position: absolute;
     bottom: var(--gh-space-3xl);
@@ -2364,6 +2387,61 @@ a.gh-btn:visited {
 .gh-btn--small {
     padding: 0.625rem 1.25rem;
     font-size: 0.75rem;
+}
+
+/* Hero — refined glass pill for placing over imagery (centered hero variant).
+   Translucent + blurred at rest; a white fill sweeps in from the left on hover
+   and the label/arrow invert to black. Designed against dark hero overlays. */
+.gh-btn--hero {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--gh-white);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    padding: 1.125rem 2.5rem;
+    letter-spacing: 0.14em;
+    overflow: hidden;
+    z-index: 0;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+.gh-btn--hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--gh-white);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--gh-ease-out);
+}
+
+.gh-btn--hero:hover {
+    color: var(--gh-black);
+    border-color: var(--gh-white);
+}
+
+.gh-btn--hero:hover::before {
+    transform: scaleX(1);
+}
+
+.gh-btn--hero svg {
+    transition: transform 0.3s var(--gh-ease-out);
+}
+
+.gh-btn--hero:hover svg {
+    transform: translateX(4px);
+}
+
+.gh-btn--hero:active {
+    transform: translateY(1px);
+}
+
+/* No blur layer on touch / reduced-motion contexts where it just costs paint. */
+@media (prefers-reduced-motion: reduce) {
+    .gh-btn--hero::before {
+        transition: none;
+    }
 }
 
 /* Magnetic wrapper for JS effects */

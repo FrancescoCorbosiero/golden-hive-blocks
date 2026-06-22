@@ -6,7 +6,7 @@
 
     registerBlockType('golden-hive/hero-carousel', {
         edit: function({ attributes, setAttributes }) {
-            const { slides, autoplay, showDots, showArrows } = attributes;
+            const { slides, autoplay, showDots, showArrows, layout } = attributes;
 
             var updateSlide = function(index, field, value) {
                 var updated = slides.map(function(slide, i) {
@@ -51,6 +51,16 @@
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Impostazioni Carousel', initialOpen: true },
+                        el(SelectControl, {
+                            label: 'Layout',
+                            help: 'Centrato applica il layout simmetrico e il pulsante "glass" più estetico.',
+                            value: layout || 'left',
+                            options: [
+                                { label: 'Classico (allineato a sinistra)', value: 'left' },
+                                { label: 'Centrato (aesthetic)', value: 'centered' }
+                            ],
+                            onChange: function(val) { setAttributes({ layout: val }); }
+                        }),
                         el(RangeControl, {
                             label: 'Autoplay (ms)',
                             value: autoplay,
