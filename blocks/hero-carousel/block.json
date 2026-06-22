@@ -35,6 +35,10 @@
             "type": "number",
             "default": 6000
         },
+        "layout": {
+            "type": "string",
+            "default": "left"
+        },
         "showDots": {
             "type": "boolean",
             "default": true

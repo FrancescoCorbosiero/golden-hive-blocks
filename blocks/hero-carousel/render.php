@@ -7,14 +7,21 @@ $slides = $attributes['slides'] ?? [];
 $autoplay = $attributes['autoplay'] ?? 6000;
 $show_dots = $attributes['showDots'] ?? true;
 $show_arrows = $attributes['showArrows'] ?? true;
+$layout = $attributes['layout'] ?? 'left';
 
 if (empty($slides)) {
     return;
 }
 
+// Centered variant: symmetric layout + the refined glass-pill CTA. The classic
+// (default) layout keeps the left-aligned content and solid primary button.
+$is_centered = ($layout === 'centered');
+$layout_class = $is_centered ? ' gh-hero-carousel--centered' : '';
+$btn_class = $is_centered ? 'gh-btn gh-btn--hero gh-btn--large' : 'gh-btn gh-btn--primary gh-btn--large';
+
 $block_id = 'gh-hero-' . wp_unique_id();
 ?>
-<section class="gh-block gh-hero-carousel"
+<section class="gh-block gh-hero-carousel<?php echo esc_attr($layout_class); ?>"
     data-gh-hero-carousel
     data-gh-hero-autoplay="<?php echo esc_attr($autoplay); ?>"
     id="<?php echo esc_attr($block_id); ?>">
@@ -54,7 +61,7 @@ $block_id = 'gh-hero-' . wp_unique_id();
 
                 <?php if (!empty($slide['buttonUrl']) && !empty($slide['buttonText'])) : ?>
                     <div class="gh-hero-slide__cta">
-                        <a href="<?php echo esc_url($slide['buttonUrl']); ?>" class="gh-btn gh-btn--primary gh-btn--large" data-gh-magnetic="0.2">
+                        <a href="<?php echo esc_url($slide['buttonUrl']); ?>" class="<?php echo esc_attr($btn_class); ?>" data-gh-magnetic="0.2">
                             <?php echo esc_html($slide['buttonText']); ?>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>

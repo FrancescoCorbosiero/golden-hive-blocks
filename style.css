@@ -264,6 +264,29 @@
     transform: translateY(0);
 }
 
+/* --------------------------------------------------------------------------
+   Centered variant (layout="centered") — symmetric, "aesthetic" hero.
+   Content is centred on both axes, the overlay darkens evenly for legibility,
+   and the CTA uses the refined glass-pill button (.gh-btn--hero).
+   -------------------------------------------------------------------------- */
+.gh-hero-carousel--centered .gh-hero-slide__overlay {
+    background:
+        radial-gradient(ellipse at center, transparent 0%, rgba(0, 0, 0, 0.45) 100%),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 0%, transparent 35%, transparent 60%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+.gh-hero-carousel--centered .gh-hero-slide__content {
+    align-items: center;
+    text-align: center;
+    max-width: 900px;
+}
+
+.gh-hero-carousel--centered .gh-hero-slide__subtitle {
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .gh-hero-nav {
     position: absolute;
     bottom: var(--gh-space-3xl);
@@ -2366,6 +2389,61 @@ a.gh-btn:visited {
     font-size: 0.75rem;
 }
 
+/* Hero — refined glass pill for placing over imagery (centered hero variant).
+   Translucent + blurred at rest; a white fill sweeps in from the left on hover
+   and the label/arrow invert to black. Designed against dark hero overlays. */
+.gh-btn--hero {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--gh-white);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 999px;
+    padding: 1.125rem 2.5rem;
+    letter-spacing: 0.14em;
+    overflow: hidden;
+    z-index: 0;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+.gh-btn--hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--gh-white);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.4s var(--gh-ease-out);
+}
+
+.gh-btn--hero:hover {
+    color: var(--gh-black);
+    border-color: var(--gh-white);
+}
+
+.gh-btn--hero:hover::before {
+    transform: scaleX(1);
+}
+
+.gh-btn--hero svg {
+    transition: transform 0.3s var(--gh-ease-out);
+}
+
+.gh-btn--hero:hover svg {
+    transform: translateX(4px);
+}
+
+.gh-btn--hero:active {
+    transform: translateY(1px);
+}
+
+/* No blur layer on touch / reduced-motion contexts where it just costs paint. */
+@media (prefers-reduced-motion: reduce) {
+    .gh-btn--hero::before {
+        transition: none;
+    }
+}
+
 /* Magnetic wrapper for JS effects */
 .gh-btn-magnetic {
     display: inline-block;
@@ -2693,7 +2771,11 @@ a.gh-btn:visited {
 
 @media (max-width: 768px) {
     .gh-hero-carousel {
-        min-height: 450px;
+        /* Fit the *visible* viewport on phones: svh excludes the browser
+           chrome, so centred content never hides behind the address bar.
+           Falls back to the base height:100vh where svh is unsupported. */
+        height: 100svh;
+        min-height: 480px;
     }
 
     .gh-hero-slide__content {
@@ -3640,5 +3722,70 @@ a.gh-btn:visited {
     [data-gh-reveal] {
         opacity: 1 !important;
         transform: none !important;
+    }
+}
+
+/* ==========================================================================
+   CENTERED HERO — MOBILE-FIRST TUNING
+   Mobile is the priority for the centered variant: this keeps the title,
+   subtitle and glass CTA comfortably inside small viewports. Loaded last so it
+   wins over the generic hero responsive rules above.
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* Comfortable side gutters so centred text never touches the edges. */
+    .gh-hero-carousel--centered .gh-hero-slide__content {
+        padding-left: var(--gh-space-lg);
+        padding-right: var(--gh-space-lg);
+    }
+
+    .gh-hero-carousel--centered .gh-hero-slide__subtitle {
+        font-size: var(--gh-text-base);
+        max-width: 36ch;
+    }
+
+    /* Tighten the gap above the CTA so the stack fits one screen. */
+    .gh-hero-carousel--centered .gh-hero-slide__cta {
+        margin-top: var(--gh-space-xl);
+        width: 100%;
+    }
+
+    /* The glass pill: centred, generous tap target, lighter letter-spacing and
+       padding so longer Italian labels don't overflow. The resting blur is
+       dropped on phones (a paint cost with little payoff at this size) — the
+       translucency + border still read as glass. */
+    .gh-hero-carousel--centered .gh-btn--hero {
+        display: inline-flex;
+        width: auto;
+        max-width: 100%;
+        padding: 1rem 1.75rem;
+        letter-spacing: 0.1em;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    /* Lift the dots a touch so they clear the CTA / OS home indicator. */
+    .gh-hero-carousel--centered .gh-hero-nav {
+        bottom: var(--gh-space-xl);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Smaller title so a multi-word headline still fits without crowding the
+       subtitle + button on the narrowest phones. */
+    .gh-hero-carousel--centered .gh-hero-slide__title {
+        font-size: var(--gh-text-3xl);
+        margin-bottom: var(--gh-space-lg);
+    }
+
+    .gh-hero-carousel--centered .gh-hero-slide__eyebrow {
+        margin-bottom: var(--gh-space-md);
+    }
+
+    .gh-hero-carousel--centered .gh-btn--hero {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.8125rem;
     }
 }
