@@ -2771,7 +2771,11 @@ a.gh-btn:visited {
 
 @media (max-width: 768px) {
     .gh-hero-carousel {
-        min-height: 450px;
+        /* Fit the *visible* viewport on phones: svh excludes the browser
+           chrome, so centred content never hides behind the address bar.
+           Falls back to the base height:100vh where svh is unsupported. */
+        height: 100svh;
+        min-height: 480px;
     }
 
     .gh-hero-slide__content {
@@ -3718,5 +3722,70 @@ a.gh-btn:visited {
     [data-gh-reveal] {
         opacity: 1 !important;
         transform: none !important;
+    }
+}
+
+/* ==========================================================================
+   CENTERED HERO — MOBILE-FIRST TUNING
+   Mobile is the priority for the centered variant: this keeps the title,
+   subtitle and glass CTA comfortably inside small viewports. Loaded last so it
+   wins over the generic hero responsive rules above.
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* Comfortable side gutters so centred text never touches the edges. */
+    .gh-hero-carousel--centered .gh-hero-slide__content {
+        padding-left: var(--gh-space-lg);
+        padding-right: var(--gh-space-lg);
+    }
+
+    .gh-hero-carousel--centered .gh-hero-slide__subtitle {
+        font-size: var(--gh-text-base);
+        max-width: 36ch;
+    }
+
+    /* Tighten the gap above the CTA so the stack fits one screen. */
+    .gh-hero-carousel--centered .gh-hero-slide__cta {
+        margin-top: var(--gh-space-xl);
+        width: 100%;
+    }
+
+    /* The glass pill: centred, generous tap target, lighter letter-spacing and
+       padding so longer Italian labels don't overflow. The resting blur is
+       dropped on phones (a paint cost with little payoff at this size) — the
+       translucency + border still read as glass. */
+    .gh-hero-carousel--centered .gh-btn--hero {
+        display: inline-flex;
+        width: auto;
+        max-width: 100%;
+        padding: 1rem 1.75rem;
+        letter-spacing: 0.1em;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    /* Lift the dots a touch so they clear the CTA / OS home indicator. */
+    .gh-hero-carousel--centered .gh-hero-nav {
+        bottom: var(--gh-space-xl);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Smaller title so a multi-word headline still fits without crowding the
+       subtitle + button on the narrowest phones. */
+    .gh-hero-carousel--centered .gh-hero-slide__title {
+        font-size: var(--gh-text-3xl);
+        margin-bottom: var(--gh-space-lg);
+    }
+
+    .gh-hero-carousel--centered .gh-hero-slide__eyebrow {
+        margin-bottom: var(--gh-space-md);
+    }
+
+    .gh-hero-carousel--centered .gh-btn--hero {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.8125rem;
     }
 }
