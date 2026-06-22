@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/hero-split",
+    "version": "1.0.0",
+    "title": "Hero Split",
+    "category": "golden-hive",
+    "icon": "align-pull-left",
+    "description": "Hero editoriale a due pannelli (immagine + testo), non-carousel. Mobile-first, ideale per pagine brand e categoria.",
+    "keywords": ["hero", "split", "editorial", "banner", "brand"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "eyebrow": {
+            "type": "string",
+            "default": "Nuova Collezione"
+        },
+        "title": {
+            "type": "string",
+            "default": "Il Drop Della Settimana"
+        },
+        "subtitle": {
+            "type": "string",
+            "default": "Pezzi selezionati e autenticati dal nostro team. Disponibilità limitata."
+        },
+        "imageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "imagePosition": {
+            "type": "string",
+            "default": "center center"
+        },
+        "mediaSide": {
+            "type": "string",
+            "default": "left"
+        },
+        "theme": {
+            "type": "string",
+            "default": "light"
+        },
+        "height": {
+            "type": "string",
+            "default": "tall"
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Scopri Ora"
+        },
+        "buttonUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "buttonStyle": {
+            "type": "string",
+            "default": "solid"
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false
+    },
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

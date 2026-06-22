@@ -31,7 +31,13 @@
     font-size: 14px;
 }
 
-/* Price + buttons pushed to bottom */
+/* Price + button grouped at the bottom of the card.
+   IMPORTANT: only ONE flex child may carry margin-top:auto. With several
+   (price + button, plus .ghb-atc in add-to-cart.css) flexbox splits the free
+   space between each auto margin, opening a gap between the price and the
+   button when the row-height equalizer makes a card taller than its content.
+   Anchor the auto margin on the price; the button then flows directly beneath
+   it. The grid override below also cancels the global .ghb-atc auto margin. */
 .woocommerce ul.products li.product .price {
     margin-top: auto;
     padding-top: 6px;
@@ -40,5 +46,5 @@
 
 .woocommerce ul.products li.product .button,
 .woocommerce ul.products li.product .ghb-atc {
-    margin-top: auto;
+    margin-top: 0;
 }
