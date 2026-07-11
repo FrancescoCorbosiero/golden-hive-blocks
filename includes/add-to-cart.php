@@ -102,14 +102,47 @@ function ghb_atc_render_button()
 }
 
 /**
- * Build the size rows for a variable product: [ variation_id, label, in_stock ].
+ * Normalize a size label into a key that ignores separator style.
+ *
+ * This store carries the same physical size under two term spellings — a
+ * space/slash form ("36 2/3", "37 1/3") and a dash form ("36-2-3", "37-1-3") —
+ * plus exact duplicates for whole sizes ("36" twice). Stripping every
+ * non-alphanumeric character and lowercasing collapses all of these to one key
+ * ("36 2/3", "36-2-3" → "3623"; "36", "36" → "36"), so equal sizes group
+ * together regardless of how they were typed.
  */
-function ghb_atc_size_rows($product)
+function ghb_normalize_size_key($label)
 {
-    $attribute = apply_filters('ghb_atc_size_attribute', 'pa_taglia');
-    $rows = array();
+    return strtolower(preg_replace('/[^a-z0-9]/i', '', (string) $label));
+}
+
+/**
+ * Deduplicated size options for a variable product.
+ *
+ * Collapses the duplicate size spellings described in ghb_normalize_size_key()
+ * to a single option per physical size. When more than one variation maps to
+ * the same size ("real conflict") we keep the one with the HIGHEST price (an
+ * in-stock, purchasable variation breaks a price tie), which drops the stray
+ * low-priced/low-stock import duplicates in favour of the real listing.
+ *
+ * @param WC_Product $product   Variable product.
+ * @param string     $attribute Size attribute (defaults to the filtered pa_taglia).
+ * @param int[]|null $only_ids  When given, only these variation IDs are considered
+ *                              (e.g. the modal's available set) so the kept winner
+ *                              is always a real, selectable variation.
+ * @return array<int,array> Ordered unique sizes, each:
+ *   [ variation_id, label, value (slug, for JS matching), price (float), in_stock (bool) ].
+ */
+function ghb_atc_unique_size_options($product, $attribute = null, $only_ids = null)
+{
+    $attribute = $attribute ?: apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $allow = is_array($only_ids) ? array_map('intval', $only_ids) : null;
+    $groups = array(); // normalized key => winning entry (first-seen position preserved)
 
     foreach ($product->get_children() as $variation_id) {
+        if (null !== $allow && !in_array((int) $variation_id, $allow, true)) {
+            continue;
+        }
         $variation = wc_get_product($variation_id);
         if (!$variation) {
             continue;
@@ -118,10 +151,53 @@ function ghb_atc_size_rows($product)
         if ('' === $label) {
             continue;
         }
-        $rows[] = array(
-            'variation_id' => $variation_id,
+        $key = ghb_normalize_size_key($label);
+        if ('' === $key) {
+            continue;
+        }
+
+        $price    = (float) $variation->get_price();
+        $in_stock = $variation->is_in_stock() && $variation->is_purchasable();
+        $attrs    = $variation->get_variation_attributes();
+        $entry = array(
+            'variation_id' => (int) $variation_id,
             'label'        => $label,
-            'in_stock'     => $variation->is_in_stock() && $variation->is_purchasable(),
+            'value'        => $attrs['attribute_' . $attribute] ?? $label,
+            'price'        => $price,
+            'in_stock'     => $in_stock,
+        );
+
+        if (!isset($groups[$key])) {
+            $groups[$key] = $entry;
+            continue;
+        }
+
+        // Real conflict: same size, different variation. Highest price wins;
+        // on a price tie prefer one that is actually in stock / purchasable.
+        $current = $groups[$key];
+        if ($price > $current['price']
+            || ($price === $current['price'] && $in_stock && !$current['in_stock'])) {
+            $groups[$key] = $entry;
+        }
+    }
+
+    return array_values($groups);
+}
+
+/**
+ * Build the size rows for a variable product: [ variation_id, label, in_stock ].
+ *
+ * Sizes are deduplicated (see ghb_atc_unique_size_options) so each physical
+ * size appears once, keeping the highest-priced variation on a conflict.
+ */
+function ghb_atc_size_rows($product)
+{
+    $rows = array();
+    foreach (ghb_atc_unique_size_options($product) as $opt) {
+        $rows[] = array(
+            'variation_id' => $opt['variation_id'],
+            'label'        => $opt['label'],
+            'in_stock'     => $opt['in_stock'],
         );
     }
 

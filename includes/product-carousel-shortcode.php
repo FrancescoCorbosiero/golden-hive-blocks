@@ -232,18 +232,50 @@ function ghb_get_variations_handler() {
         wp_send_json_error('Prodotto non trovato');
     }
 
+    $available = $product->get_available_variations();
+
+    // Collapse the store's duplicate size spellings ("36 2/3" vs "36-2-3", plus
+    // exact "36"/"36" duplicates) to a single option per physical size, keeping
+    // the highest-priced variation on a conflict. Only the size attribute is
+    // de-duplicated; any other variation attribute passes through untouched.
+    // Winners are chosen from the available set so the kept option always maps
+    // to a selectable variation.
+    $size_attribute = apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $available_ids  = array();
+    foreach ($available as $v) {
+        $available_ids[] = (int) $v['variation_id'];
+    }
+    $unique_sizes = function_exists('ghb_atc_unique_size_options')
+        ? ghb_atc_unique_size_options($product, $size_attribute, $available_ids)
+        : array();
+
+    $kept_size_values   = array(); // winning slug per size, in display order
+    $kept_variation_ids = null;    // null = no size dedup; array = keep only these
+    foreach ($unique_sizes as $opt) {
+        $kept_size_values[]   = $opt['value'];
+        $kept_variation_ids[] = $opt['variation_id'];
+    }
+
     $attributes = [];
     foreach ($product->get_variation_attributes() as $attr_name => $options) {
         $label = wc_attribute_label($attr_name, $product);
         $attributes[] = [
             'name'    => $attr_name,
             'label'   => $label,
-            'options' => array_values($options),
+            'options' => ($attr_name === $size_attribute && !empty($kept_size_values))
+                ? $kept_size_values
+                : array_values($options),
         ];
     }
 
     $variations = [];
-    foreach ($product->get_available_variations() as $v) {
+    foreach ($available as $v) {
+        // Drop the losing duplicate size variations so the matcher only ever
+        // resolves to the kept (highest-priced) one.
+        if (is_array($kept_variation_ids)
+            && !in_array((int) $v['variation_id'], $kept_variation_ids, true)) {
+            continue;
+        }
         $variations[] = [
             'variation_id' => $v['variation_id'],
             'attributes'   => $v['attributes'],
