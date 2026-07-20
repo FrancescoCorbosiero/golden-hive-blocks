@@ -1,0 +1,187 @@
+<!-- ============================================================================
+     ABBIGLIAMENTO — Intro categoria streetwear (Gutenberg block markup)
+     Incolla nel CODE EDITOR di WordPress (Opzioni ⋮ → Editor di codice).
+     Diventa blocchi nativi editabili: titolo, testo, chip e CTA sono blocchi
+     core (heading / paragraph / buttons / columns). Lo stile vive in un unico
+     <style> scoped (.gh-cat-intro), le icone sono piccoli blocchi "HTML".
+     TODO: sostituisci gli href="#..." con gli URL reali di sottocategorie / drop.
+     ============================================================================ -->
+<!-- wp:group {"className":"gh-cat-intro","layout":{"type":"constrained"}} -->
+<div class="wp-block-group gh-cat-intro">
+
+<!-- wp:html -->
+<style>
+.gh-cat-intro{
+  --acc:#721124; --acc-dark:#520c1a; --ink:#0a0a0a; --muted:#525252;
+  --line:rgba(0,0,0,.08); --surface:#fff; --tint:rgba(114,17,36,.09);
+  max-width:1200px; margin:clamp(2.5rem,5vw,4.5rem) auto; padding:0 20px;
+  color:var(--ink); line-height:1.65; overflow-x:clip;
+}
+.gh-cat-intro :where(*){ box-sizing:border-box; }
+
+/* Eyebrow */
+.gh-cat-intro__eyebrow{
+  display:inline-flex; align-items:center; gap:.55rem; margin:0 0 .7rem;
+  font-size:.72rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--acc);
+}
+.gh-cat-intro__eyebrow::before{ content:""; width:26px; height:2px; border-radius:2px; background:var(--acc); }
+
+/* Title + lead */
+.gh-cat-intro__title{
+  margin:0; font-size:clamp(1.85rem,1.2rem + 2.6vw,2.9rem); font-weight:800;
+  line-height:1.08; letter-spacing:-.02em; overflow-wrap:break-word;
+}
+.gh-cat-intro__title-accent{ color:var(--acc); }
+.gh-cat-intro__lead{
+  margin:1.1rem 0 0; font-size:clamp(1rem,.96rem + .3vw,1.15rem);
+  color:var(--muted); max-width:68ch; overflow-wrap:break-word;
+}
+.gh-cat-intro__lead strong{ color:var(--ink); font-weight:700; }
+
+/* Chips (core buttons) */
+.gh-cat-intro__chips{ display:flex; flex-wrap:wrap; gap:.6rem; margin:1.9rem 0 0; }
+.gh-cat-intro__chips .wp-block-button{ margin:0; }
+.gh-cat-intro__chip .wp-block-button__link{
+  display:inline-flex; align-items:center; padding:.5rem 1.05rem; border:1px solid var(--line);
+  border-radius:999px; background:var(--surface); color:var(--ink); text-decoration:none;
+  font-size:.82rem; font-weight:600; line-height:1.2;
+  transition:transform .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease;
+}
+.gh-cat-intro__chip .wp-block-button__link:hover,
+.gh-cat-intro__chip .wp-block-button__link:focus-visible{
+  background:var(--ink); color:#fff; border-color:var(--ink); transform:translateY(-2px);
+}
+
+/* Trust trio (core columns) */
+.gh-cat-intro__grid{ display:flex; flex-wrap:wrap; gap:1rem; margin:2.6rem 0 0; align-items:stretch; }
+.gh-cat-intro__card{
+  flex:1 1 230px; min-width:0; background:var(--surface); border:1px solid var(--line);
+  border-radius:16px; padding:1.6rem 1.5rem;
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+}
+.gh-cat-intro__card:hover{ transform:translateY(-4px); border-color:transparent; box-shadow:0 18px 40px -18px rgba(114,17,36,.35); }
+.gh-cat-intro__icon{
+  display:inline-flex; align-items:center; justify-content:center; width:46px; height:46px;
+  border-radius:12px; background:var(--tint); color:var(--acc); margin:0 0 1rem;
+}
+@supports (background:color-mix(in srgb,red,blue)){ .gh-cat-intro__icon{ background:color-mix(in srgb,var(--acc) 10%,transparent); } }
+.gh-cat-intro__icon svg{ width:24px; height:24px; }
+.gh-cat-intro__card-title{ margin:0 0 .35rem; font-size:1.06rem; font-weight:800; letter-spacing:-.01em; }
+.gh-cat-intro__card-text{ margin:0; font-size:.92rem; color:var(--muted); }
+
+/* CTA (core buttons) */
+.gh-cat-intro__cta{ display:flex; flex-wrap:wrap; align-items:center; gap:1.1rem 1.5rem; margin:2.6rem 0 0; padding-top:2rem; border-top:1px solid var(--line); }
+.gh-cat-intro__cta .wp-block-button{ margin:0; }
+.gh-cat-intro__btn .wp-block-button__link{
+  display:inline-flex; align-items:center; gap:.5rem; padding:.95rem 1.9rem; border-radius:4px;
+  background:var(--ink); color:#fff; border:1px solid var(--ink);
+  font-size:.8rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; line-height:1;
+  transition:transform .2s ease,background-color .2s ease,border-color .2s ease;
+}
+.gh-cat-intro__btn .wp-block-button__link::after{ content:"\2192"; font-size:1.05em; transition:transform .2s ease; }
+.gh-cat-intro__btn .wp-block-button__link:hover{ background:var(--acc); border-color:var(--acc); transform:translateY(-2px); }
+.gh-cat-intro__btn .wp-block-button__link:hover::after{ transform:translateX(3px); }
+.gh-cat-intro__linkbtn .wp-block-button__link{
+  padding:.55rem 0; background:transparent; color:var(--ink); border:0; border-bottom:2px solid var(--acc);
+  border-radius:0; font-size:.88rem; font-weight:700; text-transform:none; letter-spacing:0; text-decoration:none;
+  transition:color .2s ease;
+}
+.gh-cat-intro__linkbtn .wp-block-button__link:hover{ color:var(--acc); background:transparent; }
+
+@media (max-width:600px){ .gh-cat-intro__btn .wp-block-button__link{ width:100%; justify-content:center; } }
+@media (prefers-reduced-motion:reduce){
+  .gh-cat-intro [class*="__link"],.gh-cat-intro__card{ transition:none!important; }
+  .gh-cat-intro__card:hover,.gh-cat-intro__chip .wp-block-button__link:hover,.gh-cat-intro__btn .wp-block-button__link:hover{ transform:none; }
+}
+</style>
+<!-- /wp:html -->
+
+<!-- wp:paragraph {"className":"gh-cat-intro__eyebrow"} -->
+<p class="gh-cat-intro__eyebrow">Abbigliamento · Streetwear</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"className":"gh-cat-intro__title"} -->
+<h2 class="wp-block-heading gh-cat-intro__title">Streetwear autentico, <span class="gh-cat-intro__title-accent">dalla testa ai piedi</span></h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"className":"gh-cat-intro__lead"} -->
+<p class="gh-cat-intro__lead">Felpe con cappuccio, tee grafiche, tute e cargo per completare le tue sneakers e costruire il fit perfetto. Solo capi originali dai <strong>brand più caldi dello streetwear</strong> — dai grandi classici alle capsule e collab più ricercate, verificati uno a uno.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:buttons {"className":"gh-cat-intro__chips"} -->
+<div class="wp-block-buttons gh-cat-intro__chips">
+<!-- wp:button {"className":"gh-cat-intro__chip"} -->
+<div class="wp-block-button gh-cat-intro__chip"><a class="wp-block-button__link wp-element-button" href="#felpe">Felpe &amp; Hoodie</a></div>
+<!-- /wp:button -->
+<!-- wp:button {"className":"gh-cat-intro__chip"} -->
+<div class="wp-block-button gh-cat-intro__chip"><a class="wp-block-button__link wp-element-button" href="#tshirt">T-Shirt &amp; Tee</a></div>
+<!-- /wp:button -->
+<!-- wp:button {"className":"gh-cat-intro__chip"} -->
+<div class="wp-block-button gh-cat-intro__chip"><a class="wp-block-button__link wp-element-button" href="#pantaloni">Pantaloni &amp; Cargo</a></div>
+<!-- /wp:button -->
+<!-- wp:button {"className":"gh-cat-intro__chip"} -->
+<div class="wp-block-button gh-cat-intro__chip"><a class="wp-block-button__link wp-element-button" href="#tute">Tute &amp; Tracksuit</a></div>
+<!-- /wp:button -->
+<!-- wp:button {"className":"gh-cat-intro__chip"} -->
+<div class="wp-block-button gh-cat-intro__chip"><a class="wp-block-button__link wp-element-button" href="#giacche">Giacche &amp; Bomber</a></div>
+<!-- /wp:button -->
+</div>
+<!-- /wp:buttons -->
+
+<!-- wp:columns {"className":"gh-cat-intro__grid"} -->
+<div class="wp-block-columns gh-cat-intro__grid">
+<!-- wp:column {"className":"gh-cat-intro__card"} -->
+<div class="wp-block-column gh-cat-intro__card">
+<!-- wp:html -->
+<span class="gh-cat-intro__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+<!-- /wp:html -->
+<!-- wp:heading {"level":3,"className":"gh-cat-intro__card-title"} -->
+<h3 class="wp-block-heading gh-cat-intro__card-title">Autenticità garantita</h3>
+<!-- /wp:heading -->
+<!-- wp:paragraph {"className":"gh-cat-intro__card-text"} -->
+<p class="gh-cat-intro__card-text">Ogni capo passa il nostro legit check: solo originali verificati, mai repliche.</p>
+<!-- /wp:paragraph -->
+</div>
+<!-- /wp:column -->
+<!-- wp:column {"className":"gh-cat-intro__card"} -->
+<div class="wp-block-column gh-cat-intro__card">
+<!-- wp:html -->
+<span class="gh-cat-intro__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
+<!-- /wp:html -->
+<!-- wp:heading {"level":3,"className":"gh-cat-intro__card-title"} -->
+<h3 class="wp-block-heading gh-cat-intro__card-title">Brand &amp; collab</h3>
+<!-- /wp:heading -->
+<!-- wp:paragraph {"className":"gh-cat-intro__card-text"} -->
+<p class="gh-cat-intro__card-text">Dai grandi classici dello streetwear alle capsule e collab più ricercate del momento.</p>
+<!-- /wp:paragraph -->
+</div>
+<!-- /wp:column -->
+<!-- wp:column {"className":"gh-cat-intro__card"} -->
+<div class="wp-block-column gh-cat-intro__card">
+<!-- wp:html -->
+<span class="gh-cat-intro__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="12" rx="1.5"/><path d="M15 8h4l4 4v4h-8z"/><circle cx="6" cy="18.5" r="2"/><circle cx="18.5" cy="18.5" r="2"/></svg></span>
+<!-- /wp:html -->
+<!-- wp:heading {"level":3,"className":"gh-cat-intro__card-title"} -->
+<h3 class="wp-block-heading gh-cat-intro__card-title">Spedizione &amp; reso</h3>
+<!-- /wp:heading -->
+<!-- wp:paragraph {"className":"gh-cat-intro__card-text"} -->
+<p class="gh-cat-intro__card-text">Consegna express in 24/48h e reso facile entro 14 giorni. Cambia taglia senza pensieri.</p>
+<!-- /wp:paragraph -->
+</div>
+<!-- /wp:column -->
+</div>
+<!-- /wp:columns -->
+
+<!-- wp:buttons {"className":"gh-cat-intro__cta"} -->
+<div class="wp-block-buttons gh-cat-intro__cta">
+<!-- wp:button {"className":"gh-cat-intro__btn"} -->
+<div class="wp-block-button gh-cat-intro__btn"><a class="wp-block-button__link wp-element-button" href="#drops">Scopri gli ultimi drop</a></div>
+<!-- /wp:button -->
+<!-- wp:button {"className":"gh-cat-intro__linkbtn"} -->
+<div class="wp-block-button gh-cat-intro__linkbtn"><a class="wp-block-button__link wp-element-button" href="#guida-taglie">Consulta la guida alle taglie</a></div>
+<!-- /wp:button -->
+</div>
+<!-- /wp:buttons -->
+
+</div>
+<!-- /wp:group -->
