@@ -1,0 +1,220 @@
+<!-- ============================================================================
+     ABBIGLIAMENTO — Intro categoria (Golden Hive / Streetwear)
+     ----------------------------------------------------------------------------
+     Dove incollarlo:
+       • Prodotti → Categorie → Abbigliamento → Descrizione, oppure
+       • un blocco "HTML personalizzato" nel punto desiderato.
+     Self-contained: eredita i design token del tema (--gh-*) quando presenti,
+     con fallback integrati per funzionare ovunque. Nessuna dipendenza da classi
+     esterne (tutto è isolato sotto .gh-cat) e nessun JS richiesto.
+     TODO: sostituisci gli href="#..." con gli URL reali delle sottocategorie.
+     ============================================================================ -->
+<section class="gh-cat gh-block" aria-labelledby="gh-cat-title">
+  <style>
+    .gh-cat{
+      --_acc: var(--gh-accent, #721124);
+      --_acc-dark: var(--gh-accent-dark, #520c1a);
+      --_ink: var(--gh-black, #0a0a0a);
+      --_muted: var(--gh-gray-600, #525252);
+      --_line: var(--gh-border-subtle, rgba(0,0,0,.08));
+      --_surface: var(--gh-white, #fff);
+      --_soft: var(--gh-gray-50, #fafafa);
+      max-width: 1200px;
+      margin: clamp(2.5rem, 5vw, 4.5rem) auto;
+      padding: 0 20px;
+      color: var(--_ink);
+      font-family: var(--gh-font-body, inherit);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: clip; /* safety net: never bleed a horizontal scrollbar */
+    }
+    .gh-cat *{ box-sizing: border-box; }
+
+    /* ---------- Header ---------- */
+    .gh-cat__head{ max-width: 760px; }
+    .gh-cat__eyebrow{
+      display: inline-flex; align-items: center; gap: .55rem;
+      font-size: .72rem; font-weight: 700; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--_acc);
+    }
+    .gh-cat__eyebrow::before{
+      content: ""; width: 26px; height: 2px; border-radius: 2px;
+      background: var(--_acc);
+    }
+    .gh-cat__title{
+      margin: .7rem 0 0;
+      font-family: var(--gh-font-display, inherit);
+      font-size: clamp(1.85rem, 1.2rem + 2.6vw, 2.9rem);
+      font-weight: 800; line-height: 1.08; letter-spacing: -.02em;
+      overflow-wrap: break-word;
+    }
+    .gh-cat__title-accent{ color: var(--_acc); }
+    .gh-cat__lead{
+      margin: 1.1rem 0 0;
+      font-size: clamp(1rem, .96rem + .3vw, 1.15rem);
+      color: var(--_muted); max-width: 68ch;
+      overflow-wrap: break-word;
+    }
+
+    /* ---------- Sub-category quick links ---------- */
+    .gh-cat__chips{
+      display: flex; flex-wrap: wrap; gap: .6rem;
+      margin: 1.9rem 0 0; padding: 0;
+    }
+    .gh-cat__chip{
+      display: inline-flex; align-items: center;
+      padding: .5rem 1.05rem; border: 1px solid var(--_line);
+      border-radius: 999px; background: var(--_surface);
+      color: var(--_ink); text-decoration: none;
+      font-size: .82rem; font-weight: 600; letter-spacing: .01em;
+      transition: transform .2s ease, background-color .2s ease,
+                  color .2s ease, border-color .2s ease;
+    }
+    .gh-cat__chip:hover, .gh-cat__chip:focus-visible{
+      background: var(--_ink); color: var(--gh-white, #fff);
+      border-color: var(--_ink); transform: translateY(-2px);
+      outline: none;
+    }
+
+    /* ---------- Trust / value trio ---------- */
+    .gh-cat__grid{
+      list-style: none; margin: 2.6rem 0 0; padding: 0;
+      display: grid; gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+    .gh-cat__card{
+      background: var(--_surface); border: 1px solid var(--_line);
+      border-radius: 16px; padding: 1.6rem 1.5rem;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .gh-cat__card:hover{
+      transform: translateY(-4px); border-color: transparent;
+      box-shadow: 0 18px 40px -18px rgba(114,17,36,.35);
+    }
+    .gh-cat__icon{
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 46px; height: 46px; border-radius: 12px;
+      background: color-mix(in srgb, var(--_acc) 10%, transparent);
+      color: var(--_acc); margin-bottom: 1rem;
+    }
+    /* Fallback tint for browsers without color-mix() */
+    @supports not (background: color-mix(in srgb, red, blue)){
+      .gh-cat__icon{ background: rgba(114,17,36,.09); }
+    }
+    .gh-cat__icon svg{ width: 24px; height: 24px; }
+    .gh-cat__card-title{
+      margin: 0 0 .35rem; font-size: 1.06rem; font-weight: 800;
+      letter-spacing: -.01em;
+    }
+    .gh-cat__card-text{ margin: 0; font-size: .92rem; color: var(--_muted); }
+
+    /* ---------- CTA ---------- */
+    .gh-cat__cta{
+      display: flex; flex-wrap: wrap; align-items: center; gap: 1.1rem 1.5rem;
+      margin: 2.6rem 0 0; padding-top: 2rem;
+      border-top: 1px solid var(--_line);
+    }
+    .gh-cat__btn{
+      display: inline-flex; align-items: center; gap: .55rem;
+      padding: .95rem 1.9rem; border-radius: 4px;
+      background: var(--_ink); color: var(--gh-white, #fff);
+      font-size: .8rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; text-decoration: none;
+      border: 1px solid var(--_ink);
+      transition: transform .2s ease, background-color .2s ease;
+    }
+    .gh-cat__btn:hover{ background: var(--_acc); border-color: var(--_acc); transform: translateY(-2px); }
+    .gh-cat__btn svg{ width: 17px; height: 17px; transition: transform .2s ease; }
+    .gh-cat__btn:hover svg{ transform: translateX(3px); }
+    .gh-cat__link{
+      display: inline-flex; align-items: center; gap: .35rem;
+      color: var(--_ink); font-weight: 700; font-size: .88rem;
+      text-decoration: none; border-bottom: 2px solid var(--_acc);
+      padding-bottom: 1px; transition: color .2s ease;
+    }
+    .gh-cat__link:hover{ color: var(--_acc); }
+
+    /* ---------- Motion / responsive ---------- */
+    @media (max-width: 600px){
+      .gh-cat__cta{ gap: 1rem; }
+      .gh-cat__btn{ width: 100%; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce){
+      .gh-cat__chip, .gh-cat__card, .gh-cat__btn, .gh-cat__btn svg{ transition: none; }
+      .gh-cat__chip:hover, .gh-cat__card:hover, .gh-cat__btn:hover{ transform: none; }
+    }
+  </style>
+
+  <div class="gh-cat__inner">
+    <header class="gh-cat__head">
+      <span class="gh-cat__eyebrow" data-gh-reveal="up">Abbigliamento · Streetwear Collection</span>
+      <h2 id="gh-cat-title" class="gh-cat__title" data-gh-reveal="up" data-gh-reveal-delay="80">
+        Streetwear, Athleisure <span class="gh-cat__title-accent">&amp; Performance</span>
+      </h2>
+      <p class="gh-cat__lead" data-gh-reveal="up" data-gh-reveal-delay="160">
+        Dai capi iconici dello street ai tessuti tecnici da campo: felpe con cappuccio, jogger,
+        t-shirt premium e giacche funzionali, selezionati tra i <strong>migliori brand sportivi al mondo</strong>.
+        Funzionalità, comfort e stile in ogni pezzo — pronti da indossare, dentro e fuori dal campo.
+      </p>
+    </header>
+
+    <!-- Quick links → aggiorna gli href con le tue sottocategorie -->
+    <nav class="gh-cat__chips" aria-label="Sottocategorie abbigliamento"
+         data-gh-reveal="up" data-gh-reveal-delay="220">
+      <a class="gh-cat__chip" href="#felpe">Felpe &amp; Hoodie</a>
+      <a class="gh-cat__chip" href="#pantaloni">Pantaloni &amp; Jogger</a>
+      <a class="gh-cat__chip" href="#tshirt">T-Shirt &amp; Polo</a>
+      <a class="gh-cat__chip" href="#giacche">Giacche &amp; Gilet</a>
+      <a class="gh-cat__chip" href="#tute">Tute &amp; Completi</a>
+    </nav>
+
+    <!-- Trust / value trio -->
+    <ul class="gh-cat__grid" role="list">
+      <li class="gh-cat__card" data-gh-reveal="up" data-gh-reveal-delay="120">
+        <span class="gh-cat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </span>
+        <h3 class="gh-cat__card-title">Autenticità garantita</h3>
+        <p class="gh-cat__card-text">Ogni capo è verificato uno a uno dal nostro team. Solo originali, zero compromessi.</p>
+      </li>
+      <li class="gh-cat__card" data-gh-reveal="up" data-gh-reveal-delay="200">
+        <span class="gh-cat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="6"/>
+            <path d="M8.2 13.6 7 22l5-2.8L17 22l-1.2-8.4"/>
+          </svg>
+        </span>
+        <h3 class="gh-cat__card-title">Brand iconici</h3>
+        <p class="gh-cat__card-text">Dalle grandi maison sportive alle etichette streetwear più ricercate del momento.</p>
+      </li>
+      <li class="gh-cat__card" data-gh-reveal="up" data-gh-reveal-delay="280">
+        <span class="gh-cat__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="4" width="14" height="12" rx="1.5"/>
+            <path d="M15 8h4l4 4v4h-8z"/>
+            <circle cx="6" cy="18.5" r="2"/>
+            <circle cx="18.5" cy="18.5" r="2"/>
+          </svg>
+        </span>
+        <h3 class="gh-cat__card-title">Spedizione &amp; reso</h3>
+        <p class="gh-cat__card-text">Consegna express in 24/48h e reso facile entro 14 giorni. Cambia taglia senza pensieri.</p>
+      </li>
+    </ul>
+
+    <!-- CTA → aggiorna gli href -->
+    <div class="gh-cat__cta" data-gh-reveal="up" data-gh-reveal-delay="120">
+      <a class="gh-cat__btn" href="#nuovi-arrivi">
+        Scopri i nuovi arrivi
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a class="gh-cat__link" href="#guida-taglie">Consulta la guida alle taglie</a>
+    </div>
+  </div>
+</section>
