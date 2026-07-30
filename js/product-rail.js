@@ -11,7 +11,10 @@
         var track = rail.querySelector(trackSel);
         if (!track) return;
         var navs = rail.querySelectorAll(navSel);
-        var GAP = 16;
+        // Real flex gap from the computed style (columnGap covers `gap` on flex
+        // tracks); "normal"/unset parses to NaN → fall back to the historic 16.
+        var GAP = parseFloat(getComputedStyle(track).columnGap);
+        if (!isFinite(GAP)) GAP = 16;
 
         function cardStep() {
             var card = track.querySelector(':scope > *');

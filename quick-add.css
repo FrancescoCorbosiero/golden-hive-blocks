@@ -1,0 +1,307 @@
+/**
+ * Golden Hive Blocks — Quick Add to Cart modal (bottom sheet) styles.
+ * Extracted from the inline <style> block that used to be printed in
+ * wp_footer by includes/quick-add.php. Behaviour lives in js/quick-add.js.
+ */
+
+/* Overlay */
+.ghb-qa-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: calc(var(--gh-z-quickadd, 1310) - 1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+.ghb-qa-overlay.active { display: block; }
+
+/* Modal */
+.ghb-qa-modal {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: var(--ghb-white, #fff);
+    border-radius: 20px 20px 0 0;
+    z-index: var(--gh-z-quickadd, 1310);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
+    animation: ghb-qa-slide-up 0.3s ease;
+}
+.ghb-qa-modal.active { display: block; }
+
+@keyframes ghb-qa-slide-up {
+    from { transform: translateX(-50%) translateY(100%); }
+    to { transform: translateX(-50%) translateY(0); }
+}
+
+/* Handle bar */
+.ghb-qa-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--gh-gray-300, #ddd);
+    border-radius: 4px;
+    margin: 10px auto 0;
+}
+
+.ghb-qa-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--gh-gray-400, #999);
+    line-height: 1;
+    transition: color var(--gh-duration-fast, 0.2s);
+}
+.ghb-qa-close:hover { color: var(--gh-accent, #721124); }
+
+/* Product header */
+.ghb-qa-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 20px 12px;
+}
+.ghb-qa-header img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: var(--gh-gray-100, #f5f5f5);
+    flex-shrink: 0;
+}
+.ghb-qa-header-info { min-width: 0; }
+.ghb-qa-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gh-gray-800, #262626);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ghb-qa-price {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--gh-accent, #721124);
+    margin-top: 2px;
+}
+/* Sale-price markup straight from WooCommerce (del/ins) */
+.ghb-qa-price del {
+    color: var(--gh-gray-400, #a3a3a3);
+    font-weight: 500;
+    margin-right: 6px;
+}
+.ghb-qa-price ins {
+    text-decoration: none;
+    color: var(--gh-accent, #721124);
+}
+
+/* Attribute selectors */
+.ghb-qa-attributes {
+    padding: 0 20px;
+}
+.ghb-qa-attr-group {
+    margin-bottom: 16px;
+}
+.ghb-qa-attr-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gh-gray-600, #555);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.ghb-qa-attr-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+/* Options are real <button type="button" aria-pressed> elements now — reset
+   the UA button chrome so they keep looking like the old pill divs. */
+.ghb-qa-attr-option {
+    appearance: none;
+    -webkit-appearance: none;
+    font-family: inherit;
+    line-height: inherit;
+    margin: 0;
+    padding: 8px 16px;
+    border: 1.5px solid var(--gh-gray-200, #e0e0e0);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--gh-duration-fast, 0.2s) cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    color: var(--gh-gray-700, #333);
+    user-select: none;
+    text-align: center;
+    min-width: 44px;
+}
+.ghb-qa-attr-option:hover {
+    border-color: var(--gh-accent, #721124);
+    color: var(--gh-accent, #721124);
+    background: rgba(var(--gh-accent-rgb, 114, 17, 36), 0.04);
+}
+.ghb-qa-attr-option.selected {
+    border-color: var(--gh-accent, #721124);
+    background: var(--gh-accent, #721124);
+    color: #fff;
+    font-weight: 600;
+}
+.ghb-qa-attr-option.unavailable {
+    opacity: 0.25;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    pointer-events: none;
+}
+
+/* Quantity */
+.ghb-qa-quantity-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+}
+.ghb-qa-qty-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gh-gray-600, #555);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.ghb-qa-qty-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--gh-gray-300, #ddd);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.ghb-qa-qty-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--gh-gray-50, #f9f9f9);
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--gh-gray-600, #555);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ghb-qa-qty-btn:hover {
+    background: var(--gh-accent, #721124);
+    color: #fff;
+}
+.ghb-qa-qty-value {
+    width: 40px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    color: var(--gh-gray-700, #333);
+}
+
+/* Add to cart button */
+.ghb-qa-footer {
+    padding: 16px 20px 24px;
+}
+.ghb-qa-add-to-cart {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: var(--gh-gray-300, #d4d4d4);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: not-allowed;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+.ghb-qa-add-to-cart.ready {
+    background: var(--gh-accent, #721124);
+    cursor: pointer;
+    pointer-events: auto;
+}
+.ghb-qa-add-to-cart.ready:hover {
+    background: var(--gh-accent-dark, #520c1a);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb, 114, 17, 36), 0.25);
+}
+.ghb-qa-add-to-cart.ready:active {
+    transform: translateY(0);
+}
+.ghb-qa-add-to-cart.adding {
+    background: var(--gh-gray-400, #999);
+    pointer-events: none;
+}
+.ghb-qa-add-to-cart.added {
+    background: var(--gh-success, #38a169);
+    pointer-events: none;
+}
+
+/* Error */
+.ghb-qa-error {
+    font-size: 12px;
+    color: var(--gh-error, #c62828);
+    text-align: center;
+    padding: 0 20px 8px;
+    display: none;
+}
+.ghb-qa-error.visible { display: block; }
+
+/* Loading */
+.ghb-qa-loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--gh-gray-400, #999);
+    font-size: 14px;
+}
+
+/* Simple product adding state on the card button */
+.ghb-simple-add-btn.adding {
+    opacity: 0.6;
+    pointer-events: none;
+}
+.ghb-simple-add-btn.added {
+    background: var(--gh-success, #38a169) !important;
+    color: #fff !important;
+    pointer-events: none;
+}
+
+/* Keyboard focus visibility on every interactive control */
+.ghb-qa-close:focus-visible,
+.ghb-qa-attr-option:focus-visible,
+.ghb-qa-qty-btn:focus-visible,
+.ghb-qa-add-to-cart:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+}
+
+/* Desktop: center modal */
+@media (min-width: 641px) {
+    .ghb-qa-modal {
+        bottom: auto;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 20px;
+        animation: ghb-qa-fade-in 0.25s ease;
+    }
+    @keyframes ghb-qa-fade-in {
+        from { opacity: 0; transform: translate(-50%, -48%); }
+        to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+}

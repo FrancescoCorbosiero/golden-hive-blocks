@@ -72,10 +72,14 @@
     // the panel is never just blank while the AJAX request is in flight.
     var SETTLED_SEL = '.rlv-results-list, .rlv-no-results';
     var searchGuard = null;
+    // Screen-reader status region (the visual status cards sit in an
+    // aria-hidden overlay, so the busy state must be announced here).
+    var liveStatus = document.getElementById('rlv-live-status');
 
     function setBusy(busy) {
         modal.classList.toggle('is-searching', busy);
         if (results) results.setAttribute('aria-busy', busy ? 'true' : 'false');
+        if (liveStatus) liveStatus.textContent = busy ? 'Ricerca in corso…' : '';
     }
     function refreshHasResults() {
         modal.classList.toggle('has-results', !!(results && results.querySelector('.rlv-results-list')));

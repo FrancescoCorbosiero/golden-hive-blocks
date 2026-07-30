@@ -32,14 +32,64 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Whether the add-to-cart UI should load its assets. The picker renders via the
- * standard WooCommerce loop hook, which can appear on any front-end page
- * (shop, category, search, related products, native sliders, [gh_product_rail]),
- * so load the assets wherever WooCommerce is active.
+ * Shared gate for the whole product-UI cluster (quick view, quick add, loop
+ * add-to-cart). Product cards render on WooCommerce pages, cart/checkout
+ * cross-sells, search results, and any singular content embedding one of our
+ * product shortcodes — everywhere else the assets and modal shells are dead
+ * weight, so we skip them.
+ *
+ * Defined here because includes/quick-view.php, includes/quick-add.php and
+ * this file are all require_once'd from the main plugin file; they all call
+ * this one helper at hook time.
+ *
+ * The final decision goes through the `ghb_product_ui_should_load` filter so
+ * edge cases (FSE templates, widgets or reusable blocks containing product
+ * shortcodes) can force it on:
+ *
+ *     add_filter('ghb_product_ui_should_load', '__return_true');
+ */
+function ghb_product_ui_should_load()
+{
+    if (!class_exists('WooCommerce')) {
+        return (bool) apply_filters('ghb_product_ui_should_load', false);
+    }
+
+    $load = (function_exists('is_woocommerce') && is_woocommerce())
+        || is_cart()
+        || is_checkout()
+        || is_search();
+
+    if (!$load && is_singular()) {
+        $post = get_post();
+        if ($post instanceof WP_Post) {
+            $tags = array(
+                'gh_product_rail',
+                'product_carousel',
+                'carousel_section',
+                'bestsellers',
+                'new_arrivals',
+                'on_sale',
+                'featured_products',
+            );
+            foreach ($tags as $tag) {
+                if (has_shortcode($post->post_content, $tag)) {
+                    $load = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return (bool) apply_filters('ghb_product_ui_should_load', $load);
+}
+
+/**
+ * Whether the add-to-cart UI should load its assets. Kept as a named wrapper
+ * for back-compat; the real decision lives in ghb_product_ui_should_load().
  */
 function ghb_atc_is_loop()
 {
-    return class_exists('WooCommerce');
+    return ghb_product_ui_should_load();
 }
 
 /**
@@ -217,7 +267,7 @@ function ghb_atc_assets()
 
     wp_enqueue_style(
         'golden-hive-add-to-cart',
-        GOLDEN_HIVE_BLOCKS_URL . 'add-to-cart.css',
+        gh_asset_url('add-to-cart.css'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );

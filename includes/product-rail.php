@@ -48,13 +48,13 @@ function ghb_product_rail_assets()
 {
     wp_enqueue_style(
         'golden-hive-product-rail',
-        GOLDEN_HIVE_BLOCKS_URL . 'product-rail.css',
+        gh_asset_url('product-rail.css'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
     wp_enqueue_script(
         'golden-hive-product-rail',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/product-rail.js',
+        gh_asset_url('js/product-rail.js'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')

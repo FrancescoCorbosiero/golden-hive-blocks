@@ -6,6 +6,10 @@
  * `.cg-open` class to reveal submenus. See includes/mobile-nav.php.
  */
 
+/* "Vedi tutto in …" is a mobile-only escape hatch (parents open the accordion
+   instead of navigating there); desktop dropdowns keep the plain parent link. */
+.main-navigation .ghb-mnav-viewall { display: none; }
+
 @media (max-width: 991px) {
     /* Link only as wide as its text so the caret sits beside it */
     .main-navigation .menu-item-has-children > a { display: inline !important; }
@@ -67,8 +71,21 @@
     .main-navigation .sub-menu-wrapper a:focus-visible {
         background: rgba(255, 255, 255, .08);
     }
+    /* White outline (not the accent): the mobile nav sits on a dark panel where
+       the dark-red accent outline would be invisible — matches .caret's ring. */
+    .main-navigation .sub-menu-wrapper a:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: -2px;
+    }
     .main-navigation .sub-menu-wrapper a:active {
         background: rgba(255, 255, 255, .14);
+    }
+
+    /* Leading "Vedi tutto in …" row injected by js/mobile-nav.js: matches the
+       sibling rows, slightly emphasized so it reads as the branch's own page. */
+    .main-navigation .ghb-mnav-viewall { display: block; }
+    .main-navigation .sub-menu-wrapper .ghb-mnav-viewall a {
+        font-weight: 700;
     }
 
     /* Gentle entrance for submenu items when a branch opens */

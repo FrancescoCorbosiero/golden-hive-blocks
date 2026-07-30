@@ -36,8 +36,15 @@ function ghb_swatch_sale_badges_init()
         return;
     }
 
+    // Only hydrate the children that are actually on sale: intersecting with
+    // wc_get_product_ids_on_sale() (a cached option/transient) avoids loading
+    // EVERY variation via wc_get_product on every product page — typically
+    // zero loads when nothing is discounted.
+    $sale_ids = array_map('intval', wc_get_product_ids_on_sale());
+    $children = array_intersect(array_map('intval', $product->get_children()), $sale_ids);
+
     $on_sale = [];
-    foreach ($product->get_children() as $var_id) {
+    foreach ($children as $var_id) {
         $variation = wc_get_product($var_id);
         if (!$variation || !$variation->is_on_sale()) {
             continue;
