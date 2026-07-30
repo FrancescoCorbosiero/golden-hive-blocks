@@ -1,173 +1,388 @@
 /**
  * Golden Hive Blocks — WooCommerce Quick View modal behaviour.
  *
- * Fetches a product over AJAX and renders it in a modal. The ajax URL/action
- * and the cart endpoint come from the localized `ghbQuickView` object (see
+ * Vanilla JS, no build step, no jQuery dependency. Fetches a product over
+ * AJAX and renders it in a modal built with createElement/textContent (no
+ * HTML injection from product data). The ajax URL/action and the cart
+ * endpoint come from the localized `ghbQuickView` object (see
  * includes/quick-view.php). Class names (.rp-qv-*) are preserved from the
  * original site snippet this was migrated from.
  *
- * The modal's add-to-cart reuses WooCommerce's native wc-ajax=add_to_cart
- * endpoint (posting the variation ID for variable products), exactly like the
- * loop size picker — so cart fragments and the mini-cart update natively.
+ * Add-to-cart posts to WooCommerce's native wc-ajax=add_to_cart endpoint
+ * (posting the variation ID for variable products), so cart fragments and
+ * the mini-cart update natively in the same round-trip.
  */
-jQuery(function($) {
+(function () {
+    'use strict';
+
     var cfg = window.ghbQuickView || {};
-    var $overlay = $('.rp-qv-overlay');
-    var $modal = $('.rp-qv-modal');
-    var $content = $('.rp-qv-content');
+    var overlay = document.querySelector('.rp-qv-overlay');
+    var modal = document.querySelector('.rp-qv-modal');
+    var content = modal ? modal.querySelector('.rp-qv-content') : null;
+    var closeBtn = modal ? modal.querySelector('.rp-qv-close') : null;
+
+    if (!overlay || !modal || !content) {
+        return;
+    }
+
+    var lastFocus = null;
+    var fetchController = null;
+
+    /* ── Scroll lock (shared GoldenHive helper, guarded fallback) ── */
+    function lockScroll() {
+        if (window.GoldenHive && window.GoldenHive.lockScroll) {
+            window.GoldenHive.lockScroll();
+        } else {
+            document.documentElement.classList.add('gh-scroll-lock');
+        }
+    }
+    function unlockScroll() {
+        if (window.GoldenHive && window.GoldenHive.unlockScroll) {
+            window.GoldenHive.unlockScroll();
+        } else {
+            document.documentElement.classList.remove('gh-scroll-lock');
+        }
+    }
+
+    /* ── Small DOM helpers ── */
+    function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null && text !== '') node.textContent = text;
+        return node;
+    }
+
+    function setLoading(message) {
+        content.textContent = '';
+        content.appendChild(el('div', 'rp-qv-loading', message));
+    }
+
+    /* ── Open / close ── */
+    function isOpen() {
+        return modal.classList.contains('active');
+    }
+
+    function openModal() {
+        if (!isOpen()) {
+            lastFocus = document.activeElement;
+            lockScroll();
+        }
+        overlay.classList.add('active');
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        if (closeBtn) closeBtn.focus();
+    }
 
     function closeModal() {
-        $overlay.removeClass('active');
-        $modal.removeClass('active');
-        $('body').css('overflow', '');
+        if (fetchController) {
+            fetchController.abort();
+            fetchController = null;
+        }
+        overlay.classList.remove('active');
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        unlockScroll();
+        if (lastFocus && lastFocus.focus) {
+            lastFocus.focus();
+        }
+        lastFocus = null;
     }
 
-    $overlay.on('click', closeModal);
-    $('.rp-qv-close').on('click', closeModal);
-    $(document).on('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
+    overlay.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen()) {
+            closeModal();
+        }
     });
 
-    $(document).on('click', '.rp-quick-view-btn', function(e) {
+    // Keep Tab within the dialog while it's open.
+    modal.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab' || !isOpen()) return;
+        var focusables = Array.prototype.slice.call(
+            modal.querySelectorAll('a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])')
+        ).filter(function (node) { return node.offsetParent !== null; });
+        if (!focusables.length) return;
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    });
+
+    /* ── Open + fetch on quick-view button click (delegated) ── */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.rp-quick-view-btn');
+        if (!btn) return;
         e.preventDefault();
         e.stopPropagation();
-        var productId = $(this).data('product-id');
 
-        $content.html('<div class="rp-qv-loading">Caricamento...</div>');
-        $overlay.addClass('active');
-        $modal.addClass('active');
-        $('body').css('overflow', 'hidden');
+        var productId = btn.getAttribute('data-product-id');
 
-        $.ajax({
-            url: cfg.ajaxUrl,
-            data: { action: cfg.action, product_id: productId },
-            success: function(response) {
-                if (!response.success) {
-                    $content.html('<div class="rp-qv-loading">Prodotto non trovato</div>');
+        setLoading('Caricamento...');
+        openModal();
+
+        // Abort any in-flight request so a slow earlier response can never
+        // overwrite the product the user clicked last.
+        if (fetchController) fetchController.abort();
+        fetchController = new AbortController();
+        var signal = fetchController.signal;
+
+        var url = (cfg.ajaxUrl || '')
+            + '?action=' + encodeURIComponent(cfg.action || 'ghb_quick_view')
+            + '&product_id=' + encodeURIComponent(productId);
+
+        fetch(url, { signal: signal })
+            .then(function (r) { return r.json(); })
+            .then(function (response) {
+                if (signal.aborted) return;
+                if (!response || !response.success) {
+                    setLoading('Prodotto non trovato');
                     return;
                 }
-
-                var p = response.data;
-                var html = '<div class="rp-qv-body">';
-
-                // Gallery
-                html += '<div class="rp-qv-gallery">';
-                if (p.images.length) {
-                    html += '<img src="' + p.images[0] + '" class="rp-qv-main-img" alt="' + p.title + '">';
-                    if (p.images.length > 1) {
-                        html += '<div class="rp-qv-thumbs">';
-                        p.images.forEach(function(img, i) {
-                            html += '<img src="' + img + '" class="rp-qv-thumb' + (i === 0 ? ' active' : '') + '" data-src="' + img + '">';
-                        });
-                        html += '</div>';
-                    }
-                }
-                html += '</div>';
-
-                // Info
-                html += '<div class="rp-qv-info">';
-                if (p.categories) html += '<div class="rp-qv-cats">' + p.categories + '</div>';
-                html += '<div class="rp-qv-title">' + p.title + '</div>';
-                html += '<div class="rp-qv-price">' + p.price + '</div>';
-                html += '<div class="rp-qv-stock ' + (p.in_stock ? 'in-stock' : 'out-of-stock') + '">' + p.stock_text + '</div>';
-                if (p.short_desc) html += '<div class="rp-qv-desc">' + p.short_desc + '</div>';
-
-                if (p.attributes.length) {
-                    html += '<div class="rp-qv-attrs">';
-                    p.attributes.forEach(function(a) {
-                        html += '<span class="rp-qv-attr"><strong>' + a.label + ':</strong> ' + a.value + '</span>';
-                    });
-                    html += '</div>';
-                }
-
-                if (p.sku) html += '<div class="rp-qv-sku">SKU: ' + p.sku + '</div>';
-                html += '<div class="rp-qv-atc"></div>';
-                html += '<a href="' + p.url + '" class="rp-qv-view-full">Vedi Prodotto Completo</a>';
-                html += '</div></div>';
-
-                $content.html(html);
-                renderCartControl(productId, p);
-            }
-        });
+                renderProduct(productId, response.data);
+            })
+            .catch(function (err) {
+                if (err && err.name === 'AbortError') return;
+                setLoading('Errore di caricamento — riprova.');
+            });
     });
 
-    // Build the add-to-cart control (simple button or size pills) straight from
-    // the Quick View payload — no extra request.
+    /* ── Render (createElement/textContent — no injection) ── */
+    function renderProduct(productId, p) {
+        content.textContent = '';
+
+        var body = el('div', 'rp-qv-body');
+
+        // Gallery
+        var gallery = el('div', 'rp-qv-gallery');
+        var images = Array.isArray(p.images) ? p.images : [];
+        if (images.length) {
+            var mainImg = el('img', 'rp-qv-main-img');
+            mainImg.src = images[0];
+            mainImg.alt = p.title || '';
+            gallery.appendChild(mainImg);
+
+            if (images.length > 1) {
+                var thumbs = el('div', 'rp-qv-thumbs');
+                images.forEach(function (src, i) {
+                    var thumb = el('img', 'rp-qv-thumb' + (i === 0 ? ' active' : ''));
+                    thumb.src = src;
+                    thumb.alt = '';
+                    thumb.setAttribute('data-src', src);
+                    thumbs.appendChild(thumb);
+                });
+                gallery.appendChild(thumbs);
+            }
+        }
+        body.appendChild(gallery);
+
+        // Info
+        var info = el('div', 'rp-qv-info');
+        if (p.categories) {
+            info.appendChild(el('div', 'rp-qv-cats', p.categories));
+        }
+        info.appendChild(el('div', 'rp-qv-title', p.title || ''));
+
+        var price = el('div', 'rp-qv-price');
+        if (p.price_html) {
+            // WC-generated price markup (del/ins on sale) — safe server HTML.
+            price.innerHTML = p.price_html;
+        } else {
+            price.textContent = p.price || '';
+        }
+        info.appendChild(price);
+
+        info.appendChild(el(
+            'div',
+            'rp-qv-stock ' + (p.in_stock ? 'in-stock' : 'out-of-stock'),
+            p.stock_text || ''
+        ));
+
+        if (p.short_desc) {
+            var desc = el('div', 'rp-qv-desc');
+            // wpautop'd short description from the server (trusted, own site).
+            desc.innerHTML = p.short_desc;
+            info.appendChild(desc);
+        }
+
+        if (Array.isArray(p.attributes) && p.attributes.length) {
+            var attrs = el('div', 'rp-qv-attrs');
+            p.attributes.forEach(function (a) {
+                var attr = el('span', 'rp-qv-attr');
+                attr.appendChild(el('strong', '', (a.label || '') + ':'));
+                attr.appendChild(document.createTextNode(' ' + (a.value || '')));
+                attrs.appendChild(attr);
+            });
+            info.appendChild(attrs);
+        }
+
+        if (p.sku) {
+            info.appendChild(el('div', 'rp-qv-sku', 'SKU: ' + p.sku));
+        }
+
+        info.appendChild(el('div', 'rp-qv-atc'));
+
+        var viewFull = el('a', 'rp-qv-view-full', 'Vedi Prodotto Completo');
+        viewFull.href = p.url || '#';
+        info.appendChild(viewFull);
+
+        body.appendChild(info);
+        content.appendChild(body);
+
+        renderCartControl(productId, p);
+    }
+
+    // Build the add-to-cart control (simple button or size pills) straight
+    // from the Quick View payload — no extra request.
     function renderCartControl(productId, p) {
-        var $slot = $content.find('.rp-qv-atc');
-        if (!$slot.length) return;
+        var slot = content.querySelector('.rp-qv-atc');
+        if (!slot) return;
 
         if (p.type === 'variable') {
-            if (!p.sizes || !p.sizes.length) {
-                $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + p.url + '">Seleziona opzioni</a>');
+            if (!Array.isArray(p.sizes) || !p.sizes.length) {
+                var optionsLink = el('a', 'rp-qv-add rp-qv-add--link', 'Seleziona opzioni');
+                optionsLink.href = p.url || '#';
+                slot.appendChild(optionsLink);
                 return;
             }
-            var h = '<div class="rp-qv-sizes-label">Seleziona taglia</div><div class="rp-qv-sizes">';
-            p.sizes.forEach(function(s) {
+            slot.appendChild(el('div', 'rp-qv-sizes-label', 'Seleziona taglia'));
+            var sizes = el('div', 'rp-qv-sizes');
+            p.sizes.forEach(function (s) {
                 if (s.in_stock) {
-                    h += '<button type="button" class="rp-qv-size" data-variation-id="' + s.variation_id + '">' + s.label + '</button>';
+                    var sizeBtn = el('button', 'rp-qv-size', s.label);
+                    sizeBtn.type = 'button';
+                    sizeBtn.setAttribute('data-variation-id', s.variation_id);
+                    sizes.appendChild(sizeBtn);
                 } else {
-                    h += '<span class="rp-qv-size is-oos">' + s.label + '</span>';
+                    sizes.appendChild(el('span', 'rp-qv-size is-oos', s.label));
                 }
             });
-            $slot.html(h + '</div>');
+            slot.appendChild(sizes);
         } else if (p.purchasable) {
-            $slot.html('<button type="button" class="rp-qv-add" data-product-id="' + productId + '">Aggiungi al carrello</button>');
+            var addBtn = el('button', 'rp-qv-add', 'Aggiungi al carrello');
+            addBtn.type = 'button';
+            addBtn.setAttribute('data-product-id', productId);
+            slot.appendChild(addBtn);
         } else if (p.type !== 'simple') {
-            $slot.html('<a class="rp-qv-add rp-qv-add--link" href="' + p.url + '">Vedi prodotto</a>');
+            var viewLink = el('a', 'rp-qv-add rp-qv-add--link', 'Vedi prodotto');
+            viewLink.href = p.url || '#';
+            slot.appendChild(viewLink);
         } else {
-            $slot.html('<button type="button" class="rp-qv-add" disabled>Esaurito</button>');
+            var soldOut = el('button', 'rp-qv-add', 'Esaurito');
+            soldOut.type = 'button';
+            soldOut.disabled = true;
+            slot.appendChild(soldOut);
         }
     }
 
-    function feedback($slot) {
-        var $msg = $slot.find('.rp-qv-cart-msg');
-        if (!$msg.length) {
-            $msg = $('<div class="rp-qv-cart-msg"></div>').appendTo($slot);
+    /* ── Feedback message inside the atc slot ── */
+    var msgTimer = null;
+    function feedback(slot, text, isError) {
+        var msg = slot.querySelector('.rp-qv-cart-msg');
+        if (!msg) {
+            msg = el('div', 'rp-qv-cart-msg');
+            slot.appendChild(msg);
         }
-        $msg.text('✓ Aggiunto al carrello').addClass('show');
-        clearTimeout($slot.data('msgTimer'));
-        $slot.data('msgTimer', setTimeout(function() { $msg.removeClass('show'); }, 2000));
+        msg.textContent = text;
+        msg.classList.toggle('is-error', !!isError);
+        msg.classList.add('show');
+        clearTimeout(msgTimer);
+        msgTimer = setTimeout(function () { msg.classList.remove('show'); }, 3000);
     }
 
-    function addToCart($slot, id) {
-        if (!cfg.cartEndpoint || !id) return;
-        $slot.addClass('is-busy');
-        $.post(cfg.cartEndpoint, { product_id: id, quantity: 1 }, function(data) {
-            $slot.removeClass('is-busy');
-            if (data && data.error && data.product_url) {
-                window.location = data.product_url;
-                return;
-            }
-            if (data && data.fragments) {
-                $.each(data.fragments, function(key, value) { $(key).replaceWith(value); });
-            }
-            $(document.body).trigger('added_to_cart', [
-                data ? data.fragments : null,
-                data ? data.cart_hash : null,
-                $slot
-            ]);
-            feedback($slot);
+    /* ── Native WooCommerce fragment application ── */
+    function applyFragments(fragments) {
+        if (!fragments) return;
+        Object.keys(fragments).forEach(function (selector) {
+            document.querySelectorAll(selector).forEach(function (node) {
+                var wrap = document.createElement('div');
+                wrap.innerHTML = fragments[selector];
+                var replacement = wrap.firstElementChild;
+                if (replacement) {
+                    node.replaceWith(replacement);
+                } else {
+                    node.remove();
+                }
+            });
         });
     }
 
-    // Simple product → add directly.
-    $(document).on('click', '.rp-qv-atc .rp-qv-add[data-product-id]', function(e) {
-        e.preventDefault();
-        addToCart($(this).closest('.rp-qv-atc'), $(this).data('product-id'));
-    });
+    /* ── Add to cart via WooCommerce's native wc-ajax endpoint ── */
+    function addToCart(slot, id) {
+        if (!cfg.cartEndpoint || !id) return;
+        slot.classList.add('is-busy');
 
-    // Variable product → add the picked size's variation.
-    $(document).on('click', '.rp-qv-atc .rp-qv-size[data-variation-id]', function(e) {
-        e.preventDefault();
-        addToCart($(this).closest('.rp-qv-atc'), $(this).data('variation-id'));
-    });
+        var formData = new FormData();
+        formData.append('product_id', id);
+        formData.append('quantity', 1);
 
-    // Thumbnail click
-    $(document).on('click', '.rp-qv-thumb', function() {
-        var src = $(this).data('src');
-        $(this).siblings().removeClass('active');
-        $(this).addClass('active');
-        $(this).closest('.rp-qv-gallery').find('.rp-qv-main-img').attr('src', src);
+        fetch(cfg.cartEndpoint, { method: 'POST', body: formData })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                slot.classList.remove('is-busy');
+                if (data && data.error) {
+                    // WooCommerce refused the add (stock, purchasability…);
+                    // the real notice is shown on the product page it points to.
+                    if (data.product_url) {
+                        window.location = data.product_url;
+                        return;
+                    }
+                    feedback(slot, 'Impossibile aggiungere al carrello — riprova.', true);
+                    return;
+                }
+                // Success: the returned fragments already carry the fresh
+                // mini-cart — no extra wc_fragment_refresh round-trip needed.
+                applyFragments(data ? data.fragments : null);
+                if (window.jQuery) {
+                    window.jQuery(document.body).trigger('added_to_cart', [
+                        data ? data.fragments : null,
+                        data ? data.cart_hash : null,
+                        window.jQuery(slot)
+                    ]);
+                }
+                feedback(slot, '✓ Aggiunto al carrello', false);
+            })
+            .catch(function () {
+                slot.classList.remove('is-busy');
+                feedback(slot, 'Errore di caricamento — riprova.', true);
+            });
+    }
+
+    /* ── Delegated clicks inside the modal ── */
+    document.addEventListener('click', function (e) {
+        // Simple product → add directly.
+        var addBtn = e.target.closest('.rp-qv-atc .rp-qv-add[data-product-id]');
+        if (addBtn) {
+            e.preventDefault();
+            addToCart(addBtn.closest('.rp-qv-atc'), addBtn.getAttribute('data-product-id'));
+            return;
+        }
+
+        // Variable product → add the picked size's variation (posted as
+        // product_id: WooCommerce resolves parent + attributes natively).
+        var sizeBtn = e.target.closest('.rp-qv-atc .rp-qv-size[data-variation-id]');
+        if (sizeBtn) {
+            e.preventDefault();
+            addToCart(sizeBtn.closest('.rp-qv-atc'), sizeBtn.getAttribute('data-variation-id'));
+            return;
+        }
+
+        // Thumbnail click → swap the main image.
+        var thumb = e.target.closest('.rp-qv-thumb');
+        if (thumb) {
+            var src = thumb.getAttribute('data-src');
+            var siblings = thumb.parentElement.querySelectorAll('.rp-qv-thumb');
+            siblings.forEach(function (t) { t.classList.remove('active'); });
+            thumb.classList.add('active');
+            var gallery = thumb.closest('.rp-qv-gallery');
+            var mainImg = gallery ? gallery.querySelector('.rp-qv-main-img') : null;
+            if (mainImg && src) mainImg.src = src;
+        }
     });
-});
+})();

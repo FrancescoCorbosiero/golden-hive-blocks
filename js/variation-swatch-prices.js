@@ -8,8 +8,23 @@
  * out-of-stock sizes. Fails silently if the CommerceKit markup isn't present.
  */
 (function () {
+  // Same taxonomy the swatch selector below targets. Read it explicitly —
+  // the size is not guaranteed to be the FIRST variation attribute.
+  var SIZE_ATTR = 'attribute_pa_taglia';
+
+  // Never round prices: 99,90 € must display as 99,90 €, not 100 €.
+  // Decimals are dropped only when they are ,00 (clean integer look).
+  var fmtFull = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+  var fmtInt  = new Intl.NumberFormat('it-IT', {
+    style: 'currency', currency: 'EUR',
+    minimumFractionDigits: 0, maximumFractionDigits: 0
+  });
+
   function formatPrice(a) {
-    return Math.round(a).toLocaleString('it-IT') + ' €';
+    var n = Number(a);
+    if (!isFinite(n)) return '';
+    var isWhole = Math.round(n * 100) % 100 === 0;
+    return (isWhole ? fmtInt : fmtFull).format(n);
   }
 
   function getMap(form) {
@@ -19,9 +34,10 @@
     try { vars = JSON.parse(raw); } catch (e) { return null; }
     var map = {};
     vars.forEach(function (v) {
-      var keys = Object.keys(v.attributes || {});
-      if (!keys.length) return;
-      var val = v.attributes[keys[0]];
+      var attrs = v.attributes || {};
+      var val = Object.prototype.hasOwnProperty.call(attrs, SIZE_ATTR)
+        ? attrs[SIZE_ATTR]
+        : attrs[Object.keys(attrs)[0]];
       if (!val) return;
       map[val] = {
         price: v.display_price,

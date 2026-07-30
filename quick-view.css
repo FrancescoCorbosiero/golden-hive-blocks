@@ -46,6 +46,12 @@
     pointer-events: auto;
 }
 
+/* Keyboard users: reveal the button when focus lands inside the card */
+li.product:focus-within .rp-quick-view-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 /* Always visible on touch devices */
 @media (hover: none) {
     .rp-quick-view-btn {
@@ -56,9 +62,9 @@
 }
 
 .rp-quick-view-btn:hover {
-    background: #721124;
+    background: var(--gh-accent, #721124);
     color: #fff;
-    box-shadow: 0 4px 12px rgba(114, 17, 36, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb, 114, 17, 36), 0.3);
     transform: scale(1.1);
 }
 
@@ -68,7 +74,7 @@
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 99998;
+    z-index: calc(var(--gh-z-quickview, 1300) - 1);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
 }
@@ -87,7 +93,7 @@
     overflow-y: auto;
     background: #fff;
     border-radius: 16px;
-    z-index: 99999;
+    z-index: var(--gh-z-quickview, 1300);
     box-shadow: 0 16px 50px rgba(0, 0, 0, 0.2);
 }
 .rp-qv-modal.active { display: block; }
@@ -105,7 +111,7 @@
     transition: color 0.2s;
     line-height: 1;
 }
-.rp-qv-close:hover { color: #721124; }
+.rp-qv-close:hover { color: var(--gh-accent, #721124); }
 
 .rp-qv-body {
     display: flex;
@@ -144,7 +150,7 @@
 }
 .rp-qv-thumb:hover,
 .rp-qv-thumb.active {
-    border-color: #721124;
+    border-color: var(--gh-accent, #721124);
 }
 
 /* Info */
@@ -170,7 +176,17 @@
 .rp-qv-price {
     font-size: 22px;
     font-weight: 700;
-    color: #721124;
+    color: var(--gh-accent, #721124);
+}
+/* Sale-price markup straight from WooCommerce (del/ins) */
+.rp-qv-price del {
+    color: var(--gh-gray-400, #a3a3a3);
+    font-weight: 500;
+    margin-right: 8px;
+}
+.rp-qv-price ins {
+    text-decoration: none;
+    color: var(--gh-accent, #721124);
 }
 .rp-qv-stock {
     font-size: 12px;
@@ -182,11 +198,11 @@
 }
 .rp-qv-stock.in-stock {
     background: #e8f5e9;
-    color: #2e7d32;
+    color: var(--gh-success, #2e7d32);
 }
 .rp-qv-stock.out-of-stock {
     background: #fbe9e7;
-    color: #c62828;
+    color: var(--gh-error, #c62828);
 }
 .rp-qv-desc {
     font-size: 13px;
@@ -217,7 +233,7 @@
     display: inline-block;
     margin-top: 10px;
     padding: 12px 24px;
-    background: #721124;
+    background: var(--gh-accent, #721124);
     color: #fff;
     text-decoration: none;
     border-radius: 25px;
@@ -227,7 +243,7 @@
     transition: background 0.2s;
 }
 .rp-qv-view-full:hover {
-    background: #5a0d1d;
+    background: var(--gh-accent-dark, #5a0d1d);
     color: #fff;
 }
 
@@ -246,7 +262,7 @@
     padding: 13px 20px;
     border: none;
     border-radius: 25px;
-    background: #1f2532;
+    background: var(--gh-gray-800, #262626);
     color: #fff;
     font-size: 14px;
     font-weight: 700;
@@ -256,7 +272,7 @@
     transition: filter .15s ease;
 }
 .rp-qv-add:hover { filter: brightness(1.15); color: #fff; }
-.rp-qv-add[disabled] { background: #d9d9de; color: #8a8a90; cursor: not-allowed; }
+.rp-qv-add[disabled] { background: var(--gh-gray-300, #d9d9de); color: var(--gh-gray-500, #8a8a90); cursor: not-allowed; }
 
 .rp-qv-sizes-label {
     font-size: 12px;
@@ -273,20 +289,20 @@
 }
 .rp-qv-size {
     padding: 10px 4px;
-    border: 1px solid #e2e2e6;
+    border: 1px solid var(--gh-gray-200, #e2e2e6);
     border-radius: 8px;
     background: #fff;
     font-size: 14px;
     font-weight: 600;
-    color: #1f2532;
+    color: var(--gh-gray-800, #262626);
     text-align: center;
     cursor: pointer;
     transition: border-color .12s ease, color .12s ease;
 }
-.rp-qv-size:hover { border-color: #721124; color: #721124; }
+.rp-qv-size:hover { border-color: var(--gh-accent, #721124); color: var(--gh-accent, #721124); }
 .rp-qv-size.is-oos {
-    color: #c3c3c8;
-    background: #f6f6f7;
+    color: var(--gh-gray-300, #c3c3c8);
+    background: var(--gh-gray-50, #f6f6f7);
     cursor: not-allowed;
     text-decoration: line-through;
 }
@@ -295,11 +311,23 @@
     margin-top: 10px;
     font-size: 13px;
     font-weight: 600;
-    color: #2e7d32;
+    color: var(--gh-success, #2e7d32);
     opacity: 0;
     transition: opacity .2s ease;
 }
 .rp-qv-cart-msg.show { opacity: 1; }
+.rp-qv-cart-msg.is-error { color: var(--gh-error, #c62828); }
+
+/* Keyboard focus visibility on every interactive control */
+.rp-quick-view-btn:focus-visible,
+.rp-qv-close:focus-visible,
+.rp-qv-thumb:focus-visible,
+.rp-qv-size:focus-visible,
+.rp-qv-add:focus-visible,
+.rp-qv-view-full:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+}
 
 /* Loading */
 .rp-qv-loading {

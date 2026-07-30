@@ -29,14 +29,14 @@ function ghb_mobile_nav_assets()
 {
     wp_enqueue_style(
         'golden-hive-mobile-nav',
-        GOLDEN_HIVE_BLOCKS_URL . 'mobile-nav.css',
+        gh_asset_url('mobile-nav.css'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
 
     wp_enqueue_script(
         'golden-hive-mobile-nav',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/mobile-nav.js',
+        gh_asset_url('js/mobile-nav.js'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')

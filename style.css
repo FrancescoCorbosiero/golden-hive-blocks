@@ -73,13 +73,48 @@
     --gh-border-subtle: rgba(0, 0, 0, 0.06);
     --gh-surface-elevated: #ffffff;
 
-    /* Z-Index */
+    /* Accent come triplet RGB — per le varianti rgba(var(--gh-accent-rgb), x) */
+    --gh-accent-rgb: 114, 17, 36;
+
+    /* Contenitori */
+    --gh-max-width: 1200px;
+    --gh-max-width-wide: 1400px;
+
+    /* Raggi */
+    --gh-radius-sm: 8px;
+    --gh-radius-md: 12px;
+    --gh-radius-lg: 16px;
+    --gh-radius-xl: 24px;
+    --gh-radius-pill: 999px;
+
+    /* Durate */
+    --gh-duration-fast: 0.15s;
+    --gh-duration-base: 0.3s;
+    --gh-duration-slow: 0.6s;
+
+    /* Z-Index — scala unica per tutto il plugin.
+       Notifiche/floating UI SOTTO i modali (un toast non deve mai coprire
+       un dialogo aperto); i tre sistemi modali in banda 1000-1400. */
     --gh-z-dropdown: 100;
     --gh-z-sticky: 200;
     --gh-z-fixed: 500;
+    --gh-z-whatsapp: 850;
+    --gh-z-toast: 900;
     --gh-z-modal: 1000;
     --gh-z-notification: 1100;
+    --gh-z-promo: 1150;
     --gh-z-tooltip: 1200;
+    --gh-z-quickview: 1300;
+    --gh-z-quickadd: 1310;
+    --gh-z-livesearch: 1400;
+}
+
+/* Scroll lock condiviso — usato da tutti i modali (animations.js, quick view,
+   quick add, live search) tramite GoldenHive.lockScroll()/unlockScroll().
+   scrollbar-gutter evita lo shift orizzontale quando la scrollbar sparisce. */
+html.gh-scroll-lock {
+    overflow: hidden;
+    scrollbar-gutter: stable;
 }
 
 /* ==========================================================================
@@ -2464,6 +2499,9 @@ a.gh-btn:visited {
 .gh-js [data-gh-reveal] {
     opacity: 0;
     transition: opacity 0.8s var(--gh-ease-out), transform 0.8s var(--gh-ease-out);
+    /* Stagger dichiarativo: render.php emette style="--gh-reveal-delay: 150ms"
+       e il delay vive nel compositor invece che in un setTimeout JS. */
+    transition-delay: var(--gh-reveal-delay, 0s);
 }
 
 .gh-js [data-gh-reveal="up"] {

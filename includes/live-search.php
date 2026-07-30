@@ -16,6 +16,20 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * Is the Relevanssi Live Ajax Search plugin actually active? Checked
+ * defensively against several of its symbols (class, bootstrap function,
+ * version constant) so a plugin update renaming one of them doesn't break the
+ * detection. When the plugin is missing we bail out of the enqueue, the modal
+ * markup and the search hijack, so the theme's native search keeps working.
+ */
+function ghb_live_search_is_active()
+{
+    return class_exists('Relevanssi_Live_Search')
+        || function_exists('relevanssi_live_search_init')
+        || defined('RLV_VERSION');
+}
+
 /* ══════════════════════════════════════════════════════════════════
    LIVE SEARCH FILTERS — scope & configure the as-you-type query
    ══════════════════════════════════════════════════════════════════ */
@@ -56,16 +70,20 @@ add_filter('relevanssi_live_search_results_template', function ($template) {
 add_action('wp_enqueue_scripts', 'ghb_live_search_enqueue_assets');
 function ghb_live_search_enqueue_assets()
 {
+    if (!ghb_live_search_is_active()) {
+        return;
+    }
+
     wp_enqueue_style(
         'golden-hive-live-search',
-        GOLDEN_HIVE_BLOCKS_URL . 'live-search.css',
+        gh_asset_url('live-search.css'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
 
     wp_enqueue_script(
         'golden-hive-live-search',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/live-search.js',
+        gh_asset_url('js/live-search.js'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')
@@ -90,6 +108,9 @@ function ghb_live_search_enqueue_assets()
 add_action('wp_footer', 'ghb_live_search_render_modal', 99);
 function ghb_live_search_render_modal()
 {
+    if (!ghb_live_search_is_active()) {
+        return;
+    }
     ?>
 <div id="rlv-search-modal" class="rlv-modal" role="dialog" aria-modal="true" aria-label="Cerca prodotti">
     <div class="rlv-backdrop" data-rlv-close></div>
@@ -110,6 +131,11 @@ function ghb_live_search_render_modal()
                 </button>
             </div>
             <div class="rlv-results-wrap">
+                <?php /* Announced status: the visual status cards below live in an
+                         aria-hidden overlay, so screen readers never heard them.
+                         js/live-search.js mirrors "Ricerca in corso…" into this
+                         live region while a search is in flight. */ ?>
+                <span id="rlv-live-status" class="rlv-sr-only" role="status" aria-live="polite"></span>
                 <div id="rlv-modal-results" class="rlv-results" aria-live="polite" aria-busy="false"></div>
 
                 <?php /* State layer — sits over the results region; CSS reveals the right one.

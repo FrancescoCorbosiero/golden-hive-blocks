@@ -6,8 +6,9 @@
  * [product_carousel] and the convenience shortcodes (bestsellers / new_arrivals
  * / on_sale / featured_products) now delegate to the lightweight CSS scroll-snap
  * rail (includes/product-rail.php). What remains here is the shared product
- * query builder (ghb_get_carousel_products) and the Quick View / add-to-cart
- * AJAX handlers, which the rail and Quick View depend on.
+ * query builder (ghb_get_carousel_products) and the read-only Quick View /
+ * variations AJAX handlers, which the rail, Quick View and Quick Add depend
+ * on. Cart writes go through WooCommerce's native wc-ajax=add_to_cart.
  *
  * @package Golden_Hive_Blocks
  * @version 5.3.0
@@ -225,6 +226,7 @@ add_action('wp_ajax_ghb_get_variations', 'ghb_get_variations_handler');
 add_action('wp_ajax_nopriv_ghb_get_variations', 'ghb_get_variations_handler');
 
 function ghb_get_variations_handler() {
+    // Deliberately nonce-less: read-only public catalog data, kept cache-friendly.
     $product_id = intval($_GET['product_id'] ?? 0);
     $product = wc_get_product($product_id);
 
@@ -276,67 +278,42 @@ function ghb_get_variations_handler() {
             && !in_array((int) $v['variation_id'], $kept_variation_ids, true)) {
             continue;
         }
+        // max_qty: WC returns '' when there is no purchase cap — normalise to -1.
+        $max_qty = isset($v['max_qty']) && '' !== $v['max_qty'] && (int) $v['max_qty'] > 0
+            ? (int) $v['max_qty']
+            : -1;
+
         $variations[] = [
             'variation_id' => $v['variation_id'],
             'attributes'   => $v['attributes'],
-            'price_html'   => html_entity_decode(strip_tags($v['price_html'])),
+            // Raw WC-generated price markup (del/ins for sales) — safe HTML.
+            'price_html'   => $v['price_html'],
+            'price_text'   => html_entity_decode(strip_tags($v['price_html'])),
             'is_in_stock'  => $v['is_in_stock'],
             'image'        => $v['image']['thumb_src'] ?? '',
+            'max_qty'      => $max_qty,
         ];
     }
 
     wp_send_json_success([
         'title'      => $product->get_name(),
         'price'      => html_entity_decode(strip_tags($product->get_price_html())),
+        // Raw WC-generated price markup so sale prices keep their del/ins styling.
+        'price_html' => $product->get_price_html(),
         'image'      => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail') ?: wc_placeholder_img_src('thumbnail'),
         'attributes' => $attributes,
         'variations' => $variations,
     ]);
 }
 
-// AJAX: add to cart (variable + simple)
-add_action('wp_ajax_ghb_add_to_cart', 'ghb_add_to_cart_handler');
-add_action('wp_ajax_nopriv_ghb_add_to_cart', 'ghb_add_to_cart_handler');
-
-function ghb_add_to_cart_handler() {
-    $product_id   = intval($_POST['product_id'] ?? 0);
-    $variation_id = intval($_POST['variation_id'] ?? 0);
-    $quantity     = max(1, intval($_POST['quantity'] ?? 1));
-
-    if (!$product_id) {
-        wp_send_json_error('Dati mancanti');
-    }
-
-    $product = wc_get_product($product_id);
-    if (!$product) {
-        wp_send_json_error('Prodotto non trovato');
-    }
-
-    if ($product->is_type('variable')) {
-        if (!$variation_id) {
-            wp_send_json_error('Seleziona una variante');
-        }
-        $variation = wc_get_product($variation_id);
-        if (!$variation) {
-            wp_send_json_error('Variante non trovata');
-        }
-        $attributes = $variation->get_variation_attributes();
-        $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $attributes);
-    } else {
-        $cart_item_key = WC()->cart->add_to_cart($product_id, $quantity);
-    }
-
-    if ($cart_item_key) {
-        wp_send_json_success([
-            'message'    => 'Prodotto aggiunto al carrello!',
-            'cart_count' => WC()->cart->get_cart_contents_count(),
-            'cart_total' => WC()->cart->get_cart_total(),
-            'cart_url'   => wc_get_cart_url(),
-        ]);
-    } else {
-        wp_send_json_error('Impossibile aggiungere al carrello');
-    }
-}
+/*
+ * The custom ghb_add_to_cart AJAX handler was removed in 5.7.0: all cart
+ * writes now go through WooCommerce's native wc-ajax=add_to_cart endpoint
+ * (js/quick-add.js and js/quick-view.js post the matched variation ID as
+ * product_id). That drops an unauthenticated custom cart-write endpoint,
+ * halves the round-trips (fragments come back with the add), and lets WC
+ * drain its own session notices instead of leaking them onto the next page.
+ */
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -347,6 +324,7 @@ add_action('wp_ajax_ghb_quick_view', 'ghb_quick_view_handler');
 add_action('wp_ajax_nopriv_ghb_quick_view', 'ghb_quick_view_handler');
 
 function ghb_quick_view_handler() {
+    // Deliberately nonce-less: read-only public catalog data, kept cache-friendly.
     $product_id = intval($_GET['product_id'] ?? 0);
     $product = wc_get_product($product_id);
 
@@ -381,6 +359,8 @@ function ghb_quick_view_handler() {
         'title'       => $product->get_name(),
         'url'         => get_permalink($product_id),
         'price'       => html_entity_decode(strip_tags($product->get_price_html())),
+        // Raw WC-generated price markup so sale prices keep their del/ins styling.
+        'price_html'  => $product->get_price_html(),
         'short_desc'  => wpautop($product->get_short_description()),
         'images'      => $images,
         'in_stock'    => $product->is_in_stock(),

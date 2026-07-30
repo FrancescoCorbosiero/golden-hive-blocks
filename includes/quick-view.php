@@ -25,13 +25,17 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Whether the Quick View UI should load. The buttons render via standard
- * WooCommerce loop hooks (shop, category, search, related products AND native
- * product sliders / our [gh_product_rail]), which can appear on any front-end
- * page — so load the modal + assets wherever WooCommerce is active.
+ * Whether the Quick View UI should load. Delegates to the shared product-UI
+ * gate (see includes/add-to-cart.php): WooCommerce pages, cart/checkout,
+ * search, or singular content embedding one of our product shortcodes —
+ * filterable via `ghb_product_ui_should_load`.
  */
 function ghb_quick_view_should_load()
 {
+    if (function_exists('ghb_product_ui_should_load')) {
+        return ghb_product_ui_should_load();
+    }
+
     return class_exists('WooCommerce');
 }
 
@@ -45,7 +49,7 @@ function ghb_quick_view_button()
     if (!$product) {
         return;
     }
-    echo '<button class="rp-quick-view-btn" data-product-id="' . esc_attr($product->get_id()) . '" aria-label="Quick View">
+    echo '<button class="rp-quick-view-btn" data-product-id="' . esc_attr($product->get_id()) . '" aria-label="' . esc_attr__('Anteprima rapida', 'golden-hive-blocks') . '">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -69,7 +73,7 @@ function ghb_quick_view_button()
  */
 
 /**
- * Assets — styles + jQuery-based behaviour, on loop pages only.
+ * Assets — styles + vanilla-JS behaviour, on product-UI pages only.
  */
 add_action('wp_enqueue_scripts', 'ghb_quick_view_assets');
 function ghb_quick_view_assets()
@@ -80,15 +84,15 @@ function ghb_quick_view_assets()
 
     wp_enqueue_style(
         'golden-hive-quick-view',
-        GOLDEN_HIVE_BLOCKS_URL . 'quick-view.css',
+        gh_asset_url('quick-view.css'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
 
     wp_enqueue_script(
         'golden-hive-quick-view',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/quick-view.js',
-        array('jquery'),
+        gh_asset_url('js/quick-view.js'),
+        array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true)
     );
@@ -115,8 +119,8 @@ function ghb_quick_view_modal()
     }
     ?>
     <div class="rp-qv-overlay"></div>
-    <div class="rp-qv-modal">
-        <button class="rp-qv-close" aria-label="Chiudi">&#10005;</button>
+    <div class="rp-qv-modal" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr__('Anteprima rapida prodotto', 'golden-hive-blocks'); ?>" aria-hidden="true">
+        <button class="rp-qv-close" aria-label="<?php echo esc_attr__('Chiudi', 'golden-hive-blocks'); ?>">&#10005;</button>
         <div class="rp-qv-content"></div>
     </div>
     <?php

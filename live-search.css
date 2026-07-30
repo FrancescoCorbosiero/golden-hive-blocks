@@ -3,11 +3,11 @@
  * Owns all styling for the search modal; the Relevanssi Live Ajax Search
  * base stylesheets are dequeued (see includes/live-search.php).
  */
-#rlv-search-modal { --rlv-brand: #721124; }
+#rlv-search-modal { --rlv-brand: var(--gh-accent, #721124); }
 .rlv-modal {
-    /* Max 32-bit z-index: the search modal must sit above every other
+    /* Top of the plugin's z-scale: the search modal must sit above every other
        component, including the theme's own mobile menu / search overlays. */
-    position: fixed; inset: 0; z-index: 2147483647;
+    position: fixed; inset: 0; z-index: var(--gh-z-livesearch, 2147483647);
     visibility: hidden; opacity: 0;
     transition: opacity .2s ease, visibility 0s linear .2s;
 }
@@ -31,19 +31,23 @@ body.rlv-open { overflow: hidden; }
 
 .rlv-panel-header {
     display: flex; align-items: center; gap: 10px;
-    padding: 18px 20px; border-bottom: 1px solid #ececef;
+    padding: 18px 20px; border-bottom: 1px solid var(--gh-gray-200, #ececef);
 }
-.rlv-icon { width: 20px; height: 20px; flex-shrink: 0; stroke: #9a9aa2; stroke-width: 2; fill: none; stroke-linecap: round; }
+.rlv-icon { width: 20px; height: 20px; flex-shrink: 0; stroke: var(--gh-gray-400, #9a9aa2); stroke-width: 2; fill: none; stroke-linecap: round; }
 .rlv-input {
     flex: 1; min-width: 0; border: none; outline: none; background: none;
-    font-size: 16px; color: #1f2532; padding: 4px 0;
+    font-size: 16px; color: var(--gh-gray-800, #1f2532); padding: 4px 0;
 }
-.rlv-input::placeholder { color: #a8acb4; }
+.rlv-input::placeholder { color: var(--gh-gray-400, #a8acb4); }
 .rlv-close {
     display: flex; padding: 6px; border: none; background: none; cursor: pointer;
-    color: #6b7280; border-radius: 6px;
+    color: var(--gh-gray-500, #6b7280); border-radius: 6px;
 }
-.rlv-close:hover { background: #f3f4f6; color: #1f2532; }
+.rlv-close:hover { background: var(--gh-gray-100, #f3f4f6); color: var(--gh-gray-800, #1f2532); }
+.rlv-close:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+}
 .rlv-close svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
 
 .rlv-results-wrap { position: relative; flex: 1; min-height: 0; display: flex; }
@@ -59,8 +63,8 @@ body.rlv-open { overflow: hidden; }
     display: flex; align-items: center; justify-content: center; padding: 24px;
 }
 .rlv-status-card { display: none; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
-.rlv-status-icon { width: 30px; height: 30px; stroke: #c7cad1; stroke-width: 2; fill: none; stroke-linecap: round; }
-.rlv-status-text { margin: 0; font-size: 14px; color: #9a9aa2; }
+.rlv-status-icon { width: 30px; height: 30px; stroke: var(--gh-gray-300, #c7cad1); stroke-width: 2; fill: none; stroke-linecap: round; }
+.rlv-status-text { margin: 0; font-size: 14px; color: var(--gh-gray-400, #9a9aa2); }
 
 /* Idle hint: query box empty. Loader: searching with nothing on screen yet
    (kept off once real results exist, so refinements don't hide them). */
@@ -72,7 +76,7 @@ body.rlv-open { overflow: hidden; }
 
 .rlv-spinner {
     width: 30px; height: 30px; border-radius: 50%;
-    border: 3px solid #e6e8ec; border-top-color: var(--rlv-brand);
+    border: 3px solid var(--gh-gray-200, #e6e8ec); border-top-color: var(--rlv-brand);
     animation: rlv-spin .7s linear infinite;
 }
 
@@ -101,29 +105,33 @@ body.rlv-open { overflow: hidden; }
     padding: 10px; border-radius: 10px; text-decoration: none; color: inherit;
     transition: background .12s ease;
 }
-.rlv-result-link:hover, .rlv-result-link:focus-visible { background: #f6f6f7; outline: none; }
+.rlv-result-link:hover, .rlv-result-link:focus-visible { background: var(--gh-gray-100, #f6f6f7); }
+.rlv-result-link:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: -2px;
+}
 .rlv-result-thumb {
     width: 64px; height: 64px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: #f3f4f6; border-radius: 8px; overflow: hidden;
+    background: var(--gh-gray-100, #f3f4f6); border-radius: 8px; overflow: hidden;
 }
 .rlv-result-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .rlv-result-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .rlv-result-brand {
-    font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #9a9aa2;
+    font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--gh-gray-400, #9a9aa2);
 }
 .rlv-result-title {
-    font-size: 14px; line-height: 1.35; color: #1f2532;
+    font-size: 14px; line-height: 1.35; color: var(--gh-gray-800, #1f2532);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .rlv-result-price { font-size: 14px; font-weight: 700; color: var(--rlv-brand); }
-.rlv-result-price del { color: #b9bdc6; font-weight: 500; margin-right: 6px; }
+.rlv-result-price del { color: var(--gh-gray-400, #b9bdc6); font-weight: 500; margin-right: 6px; }
 .rlv-result-price ins { text-decoration: none; }
 
-.rlv-no-results { padding: 32px 20px; text-align: center; color: #9a9aa2; font-size: 14px; }
+.rlv-no-results { padding: 32px 20px; text-align: center; color: var(--gh-gray-400, #9a9aa2); font-size: 14px; }
 
 .rlv-panel-footer {
-    border-top: 1px solid #ececef; padding: 14px 16px;
+    border-top: 1px solid var(--gh-gray-200, #ececef); padding: 14px 16px;
     display: none; /* shown once there's a query */
 }
 .rlv-modal.has-query .rlv-panel-footer { display: block; }
@@ -134,6 +142,10 @@ body.rlv-open { overflow: hidden; }
     transition: filter .15s ease;
 }
 .rlv-seeall:hover { filter: brightness(1.12); }
+.rlv-seeall:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+}
 
 /* The live-search plugin's v2 spinner, recoloured to the brand. */
 .rlv-has-spinner { border-color: var(--rlv-brand); border-right-color: transparent; }

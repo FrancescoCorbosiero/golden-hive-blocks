@@ -32,9 +32,9 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid #e2e2e6;
+    border: 1px solid var(--gh-gray-200, #e2e2e6);
     background: #fff;
-    color: #1f2532;
+    color: var(--gh-gray-800, #1f2532);
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
@@ -46,7 +46,11 @@
 }
 .gh-rail__nav--prev { left: 6px; }
 .gh-rail__nav--next { right: 6px; }
-.gh-rail__nav:hover { border-color: #721124; color: #721124; }
+.gh-rail__nav:hover { border-color: var(--gh-accent, #721124); color: var(--gh-accent, #721124); }
+.gh-rail__nav:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+}
 .gh-rail__nav[disabled] { opacity: .35; cursor: default; }
 /* Arrows are a desktop enhancement: hidden until JS confirms overflow, and on
    touch where native swipe is the interaction. */
@@ -111,7 +115,7 @@
    letterboxed gaps so the card still reads as a clean tile. */
 .gh-rail--fit-contain .gh-rail__track > li.product img,
 .gh-rail--fit-contain .gh-rail__track > li.product .attachment-woocommerce_thumbnail {
-    background: #f6f6f7;
+    background: var(--gh-gray-100, #f6f6f7);
 }
 
 /* Tablet: fall back to the desktop column count unless columns_tablet was set. */

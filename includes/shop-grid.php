@@ -26,8 +26,16 @@ if (!defined('ABSPATH')) {
  */
 function ghb_shop_grid_is_loop()
 {
-    return function_exists('is_shop')
-        && (is_shop() || is_product_taxonomy() || is_search());
+    if (!function_exists('is_shop')) {
+        return false;
+    }
+
+    // Search pages only qualify when they are PRODUCT searches — a blog/page
+    // search renders no product loop, so the grid assets were dead weight there.
+    $is_product_search = is_search()
+        && ('product' === get_query_var('post_type') || is_post_type_archive('product'));
+
+    return is_shop() || is_product_taxonomy() || $is_product_search;
 }
 
 add_action('wp_enqueue_scripts', 'ghb_shop_grid_assets');
@@ -39,14 +47,14 @@ function ghb_shop_grid_assets()
 
     wp_enqueue_style(
         'golden-hive-shop-grid',
-        GOLDEN_HIVE_BLOCKS_URL . 'shop-grid.css',
+        gh_asset_url('shop-grid.css'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION
     );
 
     wp_enqueue_script(
         'golden-hive-shop-grid',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/shop-grid.js',
+        gh_asset_url('js/shop-grid.js'),
         array('jquery'),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true)

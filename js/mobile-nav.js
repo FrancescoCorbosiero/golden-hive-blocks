@@ -44,6 +44,31 @@
         setExpanded(li, willOpen);
     }
 
+    // Parent rows open their submenu instead of navigating (Shopify-style),
+    // which made parent category pages unreachable on mobile. Inject a leading
+    // "Vedi tutto" item into each submenu so the parent page stays reachable.
+    // Idempotent (skips branches that already have one); hidden on desktop via
+    // mobile-nav.css, where parent links navigate normally.
+    function addViewAll(li) {
+        var link = li.querySelector(':scope > a');
+        if (!link) return;
+        var href = link.getAttribute('href');
+        if (!href || href === '#') return;
+
+        var wrap = li.querySelector(':scope > .sub-menu-wrapper');
+        if (!wrap) return;
+        var list = wrap.querySelector('ul') || wrap;
+        if (list.querySelector('.ghb-mnav-viewall')) return;
+
+        var item = document.createElement('li');
+        item.className = 'ghb-mnav-viewall';
+        var a = document.createElement('a');
+        a.href = link.href;
+        a.textContent = 'Vedi tutto in ' + (link.textContent || '').trim();
+        item.appendChild(a);
+        list.insertBefore(item, list.firstChild);
+    }
+
     function enhance(nav) {
         if (nav.dataset.cgBound) return;   // bind once per menu
         nav.dataset.cgBound = '1';
@@ -55,6 +80,9 @@
             c.setAttribute('aria-expanded', 'false');
             c.setAttribute('aria-label', 'Apri / chiudi sottomenu');
         });
+
+        // "Vedi tutto" escape hatch in every branch's submenu.
+        nav.querySelectorAll('.menu-item-has-children').forEach(addViewAll);
 
         // ONE delegated click handler for the whole menu.
         nav.addEventListener('click', function (e) {
