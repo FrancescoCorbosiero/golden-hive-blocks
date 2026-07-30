@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.6.0
+ * Version: 5.7.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,9 +18,15 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.6.0');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.7.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
+
+/**
+ * Shared render helpers (gh_asset_url, gh_button, gh_icon, gh_img,
+ * gh_kses_map_iframe) — loaded first, everything below uses them.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/render-helpers.php';
 
 /**
  * Frontend assets.
@@ -48,7 +54,7 @@ function golden_hive_blocks_enqueue_assets()
 
     wp_enqueue_script(
         'golden-hive-animations',
-        GOLDEN_HIVE_BLOCKS_URL . 'js/animations.js',
+        gh_asset_url('js/animations.js'),
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')
@@ -69,10 +75,16 @@ add_action('wp_enqueue_scripts', 'golden_hive_blocks_enqueue_assets');
  * `window.__ghAnimReady` shortly after load, force-revealing everything as a
  * last resort. `data-cfasync="false"` keeps Rocket Loader from deferring this
  * tiny bootstrap, so `gh-js` is set before first paint (no flash).
+ *
+ * The window is 3000ms (was 1500ms): the no-JS case is already covered by
+ * gating hidden states on `html.gh-js`, so the failsafe only needs to catch a
+ * script that *errored*, and on slow mobile connections the deferred engine
+ * routinely boots after 1.5s — which used to permanently disable animations
+ * for the whole pageview. The engine also removes the class if it boots late.
  */
 function golden_hive_blocks_anim_bootstrap()
 {
-    echo '<script data-cfasync="false">(function(d){var h=d.documentElement;h.className+=" gh-js";window.__ghAnimReady=false;window.setTimeout(function(){if(!window.__ghAnimReady){h.className+=" gh-anim-failsafe";}},1500);})(document);</script>' . "\n";
+    echo '<script data-cfasync="false">(function(d){var h=d.documentElement;h.className+=" gh-js";window.__ghAnimReady=false;window.setTimeout(function(){if(!window.__ghAnimReady){h.className+=" gh-anim-failsafe";}},3000);})(document);</script>' . "\n";
 }
 add_action('wp_head', 'golden_hive_blocks_anim_bootstrap', 1);
 
@@ -89,6 +101,23 @@ function golden_hive_blocks_editor_assets()
     );
 }
 add_action('enqueue_block_editor_assets', 'golden_hive_blocks_editor_assets');
+
+/**
+ * Shared editor utilities (window.ghEditorUtils) — registered early so each
+ * block's editor.asset.php can declare `gh-editor-utils` as a dependency and
+ * WordPress loads it before the per-block editor.js files.
+ */
+function golden_hive_blocks_register_editor_utils()
+{
+    wp_register_script(
+        'gh-editor-utils',
+        GOLDEN_HIVE_BLOCKS_URL . 'blocks/shared/editor-utils.js',
+        array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'),
+        GOLDEN_HIVE_BLOCKS_VERSION,
+        true
+    );
+}
+add_action('init', 'golden_hive_blocks_register_editor_utils', 5);
 
 /**
  * Register all blocks from the blocks/ directory.
@@ -142,6 +171,12 @@ function golden_hive_blocks_load_textdomain()
     );
 }
 add_action('plugins_loaded', 'golden_hive_blocks_load_textdomain');
+
+/**
+ * Include the newsletter signup endpoint (real subscriptions — the block's
+ * JS used to simulate success without sending anything).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/newsletter.php';
 
 /**
  * Include shortcodes.

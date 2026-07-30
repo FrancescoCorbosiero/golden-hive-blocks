@@ -354,3 +354,20 @@
     font-size: 14px;
     color: #999;
 }
+
+/* Strip of selected-image thumbnails inside the placeholder card */
+.gh-editor-placeholder__thumbs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.gh-editor-placeholder__thumbs img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
