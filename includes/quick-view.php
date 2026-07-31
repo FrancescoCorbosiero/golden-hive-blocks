@@ -45,6 +45,12 @@ function ghb_quick_view_should_load()
 add_action('woocommerce_before_shop_loop_item_title', 'ghb_quick_view_button', 11);
 function ghb_quick_view_button()
 {
+    // Stesso gate degli asset: dove CSS/JS/modale non caricano, nessun
+    // bottone quick-view orfano (invisibile senza stili, morto senza JS).
+    if (!ghb_quick_view_should_load()) {
+        return;
+    }
+
     global $product;
     if (!$product) {
         return;

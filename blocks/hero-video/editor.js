@@ -60,6 +60,16 @@
                             value: title,
                             onChange: function(val) { setAttributes({ title: val }); }
                         }),
+                        el(SelectControl, {
+                            label: 'Livello heading del titolo',
+                            help: 'Usa H1 se questo hero è il titolo principale della pagina (default), H2 se la pagina ha già un H1.',
+                            value: attributes.headingLevel || 'h1',
+                            options: [
+                                { label: 'H1', value: 'h1' },
+                                { label: 'H2', value: 'h2' }
+                            ],
+                            onChange: function(val) { setAttributes({ headingLevel: val }); }
+                        }),
                         el(TextControl, {
                             label: 'Sottotitolo',
                             value: subtitle,

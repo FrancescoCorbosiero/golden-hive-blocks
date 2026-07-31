@@ -4239,9 +4239,17 @@ a.gh-btn:visited {
     }
 }
 
-[data-gh-marquee-track] {
+/* L'animazione presuppone il track clonato da animations.js: senza JS (o con
+   l'engine in failsafe) c'è UN solo track e translateX(-100%) svuoterebbe la
+   fascia — quindi il loop parte solo sotto html.gh-js e si ferma in failsafe
+   (fermo = strip statica dei loghi, il comportamento pre-refactor no-JS). */
+html.gh-js [data-gh-marquee-track] {
     animation: gh-marquee var(--gh-marquee-duration, 30s) linear infinite;
     will-change: transform;
+}
+
+html.gh-anim-failsafe [data-gh-marquee-track] {
+    animation: none !important;
 }
 
 [data-gh-marquee][data-gh-marquee-direction="right"] [data-gh-marquee-track] {

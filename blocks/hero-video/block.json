@@ -42,6 +42,10 @@
             "type": "string",
             "default": "Sneakers Premium"
         },
+        "headingLevel": {
+            "type": "string",
+            "default": "h1"
+        },
         "subtitle": {
             "type": "string",
             "default": "La tua destinazione per sneakers autentiche e verified"

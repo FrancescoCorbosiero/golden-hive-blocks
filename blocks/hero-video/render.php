@@ -60,7 +60,14 @@ $block_id = 'gh-hero-video-' . wp_unique_id();
             </span>
         <?php endif; ?>
 
-        <h2 class="gh-section-title gh-hero-video__title" data-gh-split="chars"><?php echo esc_html($title); ?></h2>
+        <?php
+        // Il livello di heading è configurabile (default h1: questo blocco è
+        // un hero top-of-page e molte landing lo usano come unico H1 della
+        // pagina — retrocompatibile col comportamento storico). Passa a h2
+        // dall'editor se la pagina ha già un H1 visibile.
+        $heading = ($attributes['headingLevel'] ?? 'h1') === 'h2' ? 'h2' : 'h1';
+        ?>
+        <<?php echo $heading; ?> class="gh-section-title gh-hero-video__title" data-gh-split="chars"><?php echo esc_html($title); ?></<?php echo $heading; ?>>
 
         <?php if (!empty($subtitle)) : ?>
             <p class="gh-hero-video__subtitle"><?php echo esc_html($subtitle); ?></p>
