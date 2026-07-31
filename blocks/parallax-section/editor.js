@@ -1,65 +1,43 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
-    const { PanelBody, TextControl, ToggleControl, Button } = wp.components;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
+    const { PanelBody, TextControl, ToggleControl } = wp.components;
+    const { el, Fragment, MediaField, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/parallax-section', {
         edit: function({ attributes, setAttributes }) {
+            const blockProps = useBlockProps();
+
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Immagini', initialOpen: true },
                         el('div', { style: { marginBottom: '16px' } },
-                            el('label', { style: { display: 'block', marginBottom: '8px', fontWeight: '600' } }, 'Immagine di Sfondo'),
-                            attributes.backgroundImage
-                                ? el('div', {},
-                                    el('img', { src: attributes.backgroundImage, style: { width: '100%', height: 'auto', marginBottom: '8px', borderRadius: '4px' } }),
-                                    el(Button, {
-                                        isDestructive: true,
-                                        variant: 'secondary',
-                                        onClick: function() { setAttributes({ backgroundImage: '' }); },
-                                        style: { width: '100%', justifyContent: 'center' }
-                                    }, 'Rimuovi Immagine')
-                                )
-                                : el(MediaUploadCheck, {},
-                                    el(MediaUpload, {
-                                        onSelect: function(media) { setAttributes({ backgroundImage: media.url }); },
-                                        allowedTypes: ['image'],
-                                        render: function(obj) {
-                                            return el(Button, {
-                                                variant: 'secondary',
-                                                onClick: obj.open,
-                                                style: { width: '100%', justifyContent: 'center' }
-                                            }, 'Seleziona Immagine di Sfondo');
-                                        }
-                                    })
-                                )
+                            el(MediaField, {
+                                label: 'Immagine di Sfondo',
+                                value: attributes.backgroundImage || '',
+                                onSelect: function(media) {
+                                    setAttributes({ backgroundImage: media.url, backgroundImageId: media.id });
+                                },
+                                onRemove: function() {
+                                    setAttributes({ backgroundImage: '', backgroundImageId: 0 });
+                                },
+                                selectLabel: 'Seleziona Immagine di Sfondo',
+                                removeLabel: 'Rimuovi Immagine'
+                            })
                         ),
                         el('div', { style: { marginBottom: '16px' } },
-                            el('label', { style: { display: 'block', marginBottom: '8px', fontWeight: '600' } }, 'Immagine in Primo Piano'),
-                            attributes.foregroundImage
-                                ? el('div', {},
-                                    el('img', { src: attributes.foregroundImage, style: { width: '100%', height: 'auto', marginBottom: '8px', borderRadius: '4px' } }),
-                                    el(Button, {
-                                        isDestructive: true,
-                                        variant: 'secondary',
-                                        onClick: function() { setAttributes({ foregroundImage: '' }); },
-                                        style: { width: '100%', justifyContent: 'center' }
-                                    }, 'Rimuovi Immagine')
-                                )
-                                : el(MediaUploadCheck, {},
-                                    el(MediaUpload, {
-                                        onSelect: function(media) { setAttributes({ foregroundImage: media.url }); },
-                                        allowedTypes: ['image'],
-                                        render: function(obj) {
-                                            return el(Button, {
-                                                variant: 'secondary',
-                                                onClick: obj.open,
-                                                style: { width: '100%', justifyContent: 'center' }
-                                            }, 'Seleziona Immagine in Primo Piano');
-                                        }
-                                    })
-                                )
+                            el(MediaField, {
+                                label: 'Immagine in Primo Piano',
+                                value: attributes.foregroundImage || '',
+                                onSelect: function(media) {
+                                    setAttributes({ foregroundImage: media.url, foregroundImageId: media.id });
+                                },
+                                onRemove: function() {
+                                    setAttributes({ foregroundImage: '', foregroundImageId: 0 });
+                                },
+                                selectLabel: 'Seleziona Immagine in Primo Piano',
+                                removeLabel: 'Rimuovi Immagine'
+                            })
                         )
                     ),
                     el(PanelBody, { title: 'Contenuti', initialOpen: false },
@@ -90,14 +68,15 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M21 3H3v18h18V3zM5 19V5h14v14H5z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Parallax Section'),
-                    el('div', { className: 'gh-editor-placeholder__text' }, 'Configura questo blocco nel pannello laterale.')
+                        ),
+                        title: 'Parallax Section',
+                        text: 'Configura questo blocco nel pannello laterale.',
+                        thumbs: [attributes.backgroundImage, attributes.foregroundImage]
+                    })
                 )
             );
         },

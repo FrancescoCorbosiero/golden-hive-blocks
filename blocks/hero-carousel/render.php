@@ -20,14 +20,23 @@ $layout_class = $is_centered ? ' gh-hero-carousel--centered' : '';
 $btn_class = $is_centered ? 'gh-btn gh-btn--hero gh-btn--large' : 'gh-btn gh-btn--primary gh-btn--large';
 
 $block_id = 'gh-hero-' . wp_unique_id();
+$slide_count = count($slides);
 ?>
-<section class="gh-block gh-hero-carousel<?php echo esc_attr($layout_class); ?>"
+<section <?php echo get_block_wrapper_attributes(array(
+    'class' => 'gh-block gh-hero-carousel' . $layout_class,
+    'id'    => $block_id,
+)); ?>
     data-gh-hero-carousel
     data-gh-hero-autoplay="<?php echo esc_attr($autoplay); ?>"
-    id="<?php echo esc_attr($block_id); ?>">
+    aria-roledescription="carousel">
 
     <?php foreach ($slides as $index => $slide) : ?>
-        <div class="gh-hero-slide<?php echo $index === 0 ? ' gh-hero-slide--active' : ''; ?>" data-gh-hero-slide>
+        <div class="gh-hero-slide<?php echo $index === 0 ? ' gh-hero-slide--active' : ''; ?>"
+             data-gh-hero-slide
+             role="group"
+             aria-roledescription="slide"
+             aria-label="<?php echo esc_attr(sprintf('Slide %d di %d', $index + 1, $slide_count)); ?>"
+             <?php echo $index === 0 ? '' : 'aria-hidden="true" inert'; ?>>
             <div class="gh-hero-slide__bg">
                 <?php if (!empty($slide['image'])) :
                     $img_pos = !empty($slide['objectPosition']) ? $slide['objectPosition'] : 'center center';
@@ -35,24 +44,28 @@ $block_id = 'gh-hero-' . wp_unique_id();
                     if (strpos($img_pos, ' ') === false) {
                         $img_pos .= ' center';
                     }
-                ?>
-                    <img src="<?php echo esc_url($slide['image']); ?>"
-                         alt=""
-                         style="object-position: <?php echo esc_attr($img_pos); ?>;"
-                         loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>"
-                         fetchpriority="<?php echo $index === 0 ? 'high' : 'low'; ?>"
-                         decoding="async">
-                <?php endif; ?>
+                    echo gh_img(
+                        (int) ($slide['imageId'] ?? 0),
+                        $slide['image'],
+                        array(
+                            'alt'           => '',
+                            'style'         => 'object-position: ' . $img_pos . ';',
+                            'loading'       => $index === 0 ? 'eager' : 'lazy',
+                            'fetchpriority' => $index === 0 ? 'high' : 'low',
+                            'decoding'      => 'async',
+                        )
+                    );
+                endif; ?>
             </div>
             <div class="gh-hero-slide__overlay"></div>
 
             <div class="gh-hero-slide__content">
                 <?php if (!empty($slide['eyebrow'])) : ?>
-                    <span class="gh-hero-slide__eyebrow"><?php echo esc_html($slide['eyebrow']); ?></span>
+                    <span class="gh-eyebrow gh-hero-slide__eyebrow"><?php echo esc_html($slide['eyebrow']); ?></span>
                 <?php endif; ?>
 
                 <?php if (!empty($slide['title'])) : ?>
-                    <h2 class="gh-hero-slide__title" data-gh-split="words"><?php echo esc_html($slide['title']); ?></h2>
+                    <h2 class="gh-section-title gh-hero-slide__title" data-gh-split="words"><?php echo esc_html($slide['title']); ?></h2>
                 <?php endif; ?>
 
                 <?php if (!empty($slide['subtitle'])) : ?>
@@ -61,12 +74,12 @@ $block_id = 'gh-hero-' . wp_unique_id();
 
                 <?php if (!empty($slide['buttonUrl']) && !empty($slide['buttonText'])) : ?>
                     <div class="gh-hero-slide__cta">
-                        <a href="<?php echo esc_url($slide['buttonUrl']); ?>" class="<?php echo esc_attr($btn_class); ?>" data-gh-magnetic="0.2">
-                            <?php echo esc_html($slide['buttonText']); ?>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                            </svg>
-                        </a>
+                        <?php echo gh_button(array(
+                            'url'      => $slide['buttonUrl'],
+                            'text'     => $slide['buttonText'],
+                            'classes'  => $btn_class,
+                            'magnetic' => '0.2',
+                        )); ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -79,12 +92,12 @@ $block_id = 'gh-hero-' . wp_unique_id();
 
     <?php if ($show_arrows) : ?>
         <div class="gh-hero-arrows">
-            <button class="gh-hero-arrow" data-gh-hero-prev aria-label="Slide precedente">
+            <button class="gh-icon-circle gh-hero-arrow" data-gh-hero-prev aria-label="Slide precedente">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
             </button>
-            <button class="gh-hero-arrow" data-gh-hero-next aria-label="Slide successiva">
+            <button class="gh-icon-circle gh-hero-arrow" data-gh-hero-next aria-label="Slide successiva">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>

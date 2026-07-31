@@ -53,7 +53,11 @@ if (empty($GLOBALS['gh_cs_assets_done'])) {
     // even when an optimizer defers inline scripts.
 }
 ?>
-<section class="gh-block gh-category-slider" id="<?php echo esc_attr($block_id); ?>" style="<?php echo esc_attr($section_style); ?>">
+<section <?php echo get_block_wrapper_attributes(array(
+    'class' => 'gh-block gh-category-slider',
+    'id'    => $block_id,
+    'style' => $section_style,
+)); ?>>
     <div class="gh-category-slider__container">
         <?php if (!empty($title)) : ?>
             <header class="gh-category-slider__header">
@@ -71,13 +75,18 @@ if (empty($GLOBALS['gh_cs_assets_done'])) {
                     <li class="gh-cs__slide">
                         <a href="<?php echo esc_url($category['url'] ?? '#'); ?>" class="gh-category-slider__item">
                             <div class="gh-category-slider__image-wrapper" style="aspect-ratio: <?php echo esc_attr($image_ratio); ?>">
-                                <?php if (!empty($category['image'])) : ?>
-                                    <img src="<?php echo esc_url($category['image']); ?>"
-                                         alt="<?php echo esc_attr($category['name'] ?? ''); ?>"
-                                         class="gh-category-slider__image"
-                                         loading="lazy"
-                                         decoding="async">
-                                <?php endif; ?>
+                                <?php if (!empty($category['image'])) :
+                                    echo gh_img(
+                                        (int) ($category['imageId'] ?? 0),
+                                        $category['image'],
+                                        array(
+                                            'class'    => 'gh-category-slider__image',
+                                            'alt'      => $category['name'] ?? '',
+                                            'loading'  => 'lazy',
+                                            'decoding' => 'async',
+                                        )
+                                    );
+                                endif; ?>
                             </div>
                             <?php if (!empty($category['name'])) : ?>
                                 <p class="gh-category-slider__name"><?php echo esc_html($category['name']); ?></p>

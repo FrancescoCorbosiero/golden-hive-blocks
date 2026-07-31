@@ -1,39 +1,29 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
-    const { PanelBody, TextControl, Button } = wp.components;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
+    const { PanelBody, TextControl } = wp.components;
+    const { el, Fragment, MediaField, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/product-spotlight', {
         edit: function({ attributes, setAttributes }) {
+            const blockProps = useBlockProps();
+
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Contenuti', initialOpen: true },
                         el('div', { style: { marginBottom: '16px' } },
-                            el('label', { style: { display: 'block', marginBottom: '8px', fontWeight: '600' } }, 'Immagine Prodotto'),
-                            attributes.imageUrl
-                                ? el('div', {},
-                                    el('img', { src: attributes.imageUrl, style: { width: '100%', height: 'auto', marginBottom: '8px', borderRadius: '4px' } }),
-                                    el(Button, {
-                                        isDestructive: true,
-                                        variant: 'secondary',
-                                        onClick: function() { setAttributes({ imageUrl: '' }); },
-                                        style: { width: '100%', justifyContent: 'center' }
-                                    }, 'Rimuovi Immagine')
-                                )
-                                : el(MediaUploadCheck, {},
-                                    el(MediaUpload, {
-                                        onSelect: function(media) { setAttributes({ imageUrl: media.url }); },
-                                        allowedTypes: ['image'],
-                                        render: function(obj) {
-                                            return el(Button, {
-                                                variant: 'secondary',
-                                                onClick: obj.open,
-                                                style: { width: '100%', justifyContent: 'center' }
-                                            }, 'Seleziona Immagine');
-                                        }
-                                    })
-                                )
+                            el(MediaField, {
+                                label: 'Immagine Prodotto',
+                                value: attributes.imageUrl || '',
+                                onSelect: function(media) {
+                                    setAttributes({ imageUrl: media.url, imageUrlId: media.id });
+                                },
+                                onRemove: function() {
+                                    setAttributes({ imageUrl: '', imageUrlId: 0 });
+                                },
+                                selectLabel: 'Seleziona Immagine',
+                                removeLabel: 'Rimuovi Immagine'
+                            })
                         ),
                         el(TextControl, {
                             label: 'Categoria',
@@ -73,7 +63,7 @@
                             onChange: function(value) { setAttributes({ size: value }); }
                         }),
                         el(TextControl, {
-                            label: 'Autenticit\u00e0',
+                            label: 'Autenticità',
                             value: attributes.authenticity || '',
                             onChange: function(value) { setAttributes({ authenticity: value }); }
                         }),
@@ -89,14 +79,15 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Product Spotlight'),
-                    el('div', { className: 'gh-editor-placeholder__text' }, 'Configura questo blocco nel pannello laterale.')
+                        ),
+                        title: 'Product Spotlight',
+                        text: 'Configura questo blocco nel pannello laterale.',
+                        thumbs: [attributes.imageUrl]
+                    })
                 )
             );
         },

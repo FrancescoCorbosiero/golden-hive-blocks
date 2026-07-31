@@ -20,7 +20,7 @@ if (empty($title)) {
     return;
 }
 ?>
-<div class="gh-block gh-promo-modal"
+<div <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-promo-modal')); ?>
      data-gh-modal="<?php echo esc_attr($modal_id); ?>"
      <?php if ($auto_show) : ?>
      data-gh-promo-modal
@@ -29,20 +29,25 @@ if (empty($title)) {
      <?php endif; ?>
      role="dialog"
      aria-modal="true"
+     aria-hidden="true"
      aria-labelledby="<?php echo esc_attr($modal_id); ?>-title">
 
     <div class="gh-promo-modal__backdrop"></div>
 
     <div class="gh-promo-modal__container">
-        <button class="gh-promo-modal__close" data-gh-modal-close aria-label="Chiudi">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 6L6 18M6 6l12 12"/>
-            </svg>
+        <button class="gh-icon-circle gh-promo-modal__close" data-gh-modal-close aria-label="Chiudi">
+            <?php echo gh_icon('close', 24); ?>
         </button>
 
         <?php if (!empty($image_url)) : ?>
             <div class="gh-promo-modal__visual">
-                <img src="<?php echo esc_url($image_url); ?>" alt="" loading="lazy">
+                <?php
+                echo gh_img((int) ($attributes['imageUrlId'] ?? 0), $image_url, array(
+                    'alt'      => $title,
+                    'loading'  => 'lazy',
+                    'decoding' => 'async',
+                ));
+                ?>
             </div>
         <?php endif; ?>
 
@@ -51,7 +56,7 @@ if (empty($title)) {
                 <span class="gh-promo-modal__badge"><?php echo esc_html($badge); ?></span>
             <?php endif; ?>
 
-            <h3 class="gh-promo-modal__title" id="<?php echo esc_attr($modal_id); ?>-title">
+            <h3 class="gh-section-title gh-promo-modal__title" id="<?php echo esc_attr($modal_id); ?>-title">
                 <?php echo esc_html($title); ?>
             </h3>
 
@@ -64,12 +69,13 @@ if (empty($title)) {
             <?php endif; ?>
 
             <?php if (!empty($button_url)) : ?>
-                <a href="<?php echo esc_url($button_url); ?>" class="gh-btn gh-btn--primary gh-btn--large">
-                    <?php echo esc_html($button_text); ?>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
+                <?php
+                echo gh_button(array(
+                    'url'     => $button_url,
+                    'text'    => $button_text,
+                    'classes' => 'gh-btn gh-btn--primary gh-btn--large',
+                ));
+                ?>
             <?php endif; ?>
 
             <?php if (!empty($disclaimer)) : ?>

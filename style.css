@@ -67,7 +67,7 @@
     --gh-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     --gh-shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 10px -4px rgba(0, 0, 0, 0.04);
     --gh-shadow-xl: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
-    --gh-shadow-glow: 0 0 40px rgba(114, 17, 36, 0.2);
+    --gh-shadow-glow: 0 0 40px rgba(var(--gh-accent-rgb), 0.2);
 
     /* Surfaces */
     --gh-border-subtle: rgba(0, 0, 0, 0.06);
@@ -153,6 +153,49 @@ html.gh-scroll-lock {
 }
 
 /* ==========================================================================
+   COMPONENTI CONDIVISI
+   Pattern ripetuti in quasi tutti i blocchi, consolidati in classi singole.
+   I render.php le affiancano alla classe BEM del blocco
+   (es. class="gh-eyebrow gh-cta-banner__eyebrow"). Le regole per-blocco più
+   avanti nel file mantengono solo i veri override (colore su fondo scuro,
+   margini, letter-spacing particolari) e vincono il pareggio di specificità
+   perché dichiarate dopo.
+   ========================================================================== */
+
+/* Etichetta uppercase sopra i titoli di sezione */
+.gh-eyebrow {
+    font-size: var(--gh-text-xs);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gh-accent);
+}
+
+/* Titolo display fluido di sezione */
+.gh-section-title {
+    font-size: var(--gh-text-4xl);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+/* Header di sezione centrato */
+.gh-section-header {
+    text-align: center;
+    margin-bottom: var(--gh-space-3xl);
+}
+
+/* Cerchio icona: quadrato fisso, flex-center, raggio 50%.
+   La dimensione (width/height) resta definita per-blocco. */
+.gh-icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
    HERO CAROUSEL PREMIUM
    Carousel full-screen con crossfade e animazioni split-text
    ========================================================================== */
@@ -211,15 +254,12 @@ html.gh-scroll-lock {
     justify-content: center;
     height: 100%;
     padding: var(--gh-space-3xl);
-    max-width: 1400px;
+    max-width: var(--gh-max-width-wide);
     margin: 0 auto;
 }
 
 .gh-hero-slide__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
     letter-spacing: 0.3em;
-    text-transform: uppercase;
     color: rgba(255, 255, 255, 0.85);
     margin-bottom: var(--gh-space-lg);
     opacity: 0;
@@ -233,12 +273,9 @@ html.gh-scroll-lock {
 }
 
 .gh-hero-slide__title {
-
     font-size: var(--gh-text-7xl);
-    font-weight: 800;
     line-height: 0.9;
     letter-spacing: -0.02em;
-    text-transform: uppercase;
     color: var(--gh-white);
     margin-bottom: var(--gh-space-xl);
     overflow-wrap: normal;
@@ -377,11 +414,7 @@ html.gh-scroll-lock {
 .gh-hero-arrow {
     width: 52px;
     height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);
     color: var(--gh-white);
     cursor: pointer;
@@ -467,7 +500,7 @@ html.gh-scroll-lock {
     padding: 0.5rem 1.25rem;
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 50px;
+    border-radius: var(--gh-radius-pill);
     color: var(--gh-white);
     font-size: 0.75rem;
     font-weight: 700;
@@ -481,11 +514,7 @@ html.gh-scroll-lock {
 }
 
 .gh-hero-video__title {
-
     font-size: var(--gh-text-6xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-white);
     line-height: 1;
     margin-bottom: var(--gh-space-xl);
@@ -595,11 +624,7 @@ html.gh-scroll-lock {
 }
 
 .gh-parallax-section__title {
-
     font-size: var(--gh-text-6xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     line-height: 0.95;
     margin-bottom: var(--gh-space-xl);
     text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
@@ -663,17 +688,9 @@ html.gh-scroll-lock {
     padding: var(--gh-space-4xl) var(--gh-space-lg);
 }
 
-.gh-faq__header {
-    text-align: center;
-    margin-bottom: var(--gh-space-3xl);
-}
+/* .gh-faq__header → .gh-section-header (componente condiviso) */
 
 .gh-faq__title {
-
-    font-size: var(--gh-text-4xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-black);
     margin-bottom: var(--gh-space-md);
 }
@@ -805,7 +822,7 @@ html.gh-scroll-lock {
     background: linear-gradient(135deg,
             rgba(0, 0, 0, 0.9) 0%,
             rgba(0, 0, 0, 0.6) 40%,
-            rgba(114, 17, 36, 0.25) 100%);
+            rgba(var(--gh-accent-rgb), 0.25) 100%);
 }
 
 .gh-cta-banner__content {
@@ -817,20 +834,13 @@ html.gh-scroll-lock {
 }
 
 .gh-cta-banner__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
     letter-spacing: 0.3em;
-    text-transform: uppercase;
     color: rgba(255, 255, 255, 0.85);
     margin-bottom: var(--gh-space-lg);
 }
 
 .gh-cta-banner__title {
-
     font-size: var(--gh-text-5xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-white);
     line-height: 1;
     margin-bottom: var(--gh-space-xl);
@@ -854,7 +864,7 @@ html.gh-scroll-lock {
     width: 240px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--gh-accent), transparent);
-    box-shadow: 0 0 20px rgba(114, 17, 36, 0.4), 0 0 40px rgba(114, 17, 36, 0.2);
+    box-shadow: 0 0 20px rgba(var(--gh-accent-rgb), 0.4), 0 0 40px rgba(var(--gh-accent-rgb), 0.2);
 }
 
 /* ==========================================================================
@@ -901,20 +911,11 @@ html.gh-scroll-lock {
 }
 
 .gh-cta-image__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
     letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gh-accent);
     margin-bottom: var(--gh-space-lg);
 }
 
 .gh-cta-image__title {
-
-    font-size: var(--gh-text-4xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     line-height: 1;
     margin-bottom: var(--gh-space-xl);
 }
@@ -966,6 +967,8 @@ html.gh-scroll-lock {
    ========================================================================== */
 
 .gh-brand-marquee {
+    /* ritmo verticale: il respiro extra viene dall'header condiviso
+       (.gh-section-header, margin-bottom 3xl vs il vecchio 2xl) */
     padding: var(--gh-space-3xl) 0;
     background: var(--gh-white);
     border-top: 1px solid var(--gh-gray-100);
@@ -973,23 +976,17 @@ html.gh-scroll-lock {
     overflow: hidden;
 }
 
-.gh-brand-marquee__header {
-    text-align: center;
-    margin-bottom: var(--gh-space-2xl);
-}
+/* .gh-brand-marquee__header → .gh-section-header (componente condiviso) */
 
+/* La riga etichetta usa .gh-eyebrow; qui resta solo il colore muted. */
 .gh-brand-marquee__title {
-    font-size: var(--gh-text-sm);
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
     color: var(--gh-gray-400);
 }
 
 .gh-brand-marquee__track-wrapper {
     display: flex;
-    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
 .gh-brand-marquee__track {
@@ -1063,7 +1060,7 @@ html.gh-scroll-lock {
     max-width: 680px;
     max-height: 90vh;
     background: var(--gh-white);
-    border-radius: 12px;
+    border-radius: var(--gh-radius-md);
     overflow: hidden;
     transform: translateY(20px) scale(0.98);
     transition: transform 0.4s var(--gh-ease-out);
@@ -1100,7 +1097,7 @@ html.gh-scroll-lock {
     border: none;
     color: var(--gh-gray-500);
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: var(--gh-radius-sm);
     transition: all 0.15s ease;
 }
 
@@ -1121,6 +1118,10 @@ html.gh-scroll-lock {
 .gh-modal__body {
     padding: var(--gh-space-xl);
     overflow-y: auto;
+    /* Le tabelle larghe (guida taglie) scorrono dentro il body del modale
+       invece di sfondare il container. */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     max-height: calc(90vh - 140px);
 }
 
@@ -1146,16 +1147,35 @@ html.gh-scroll-lock {
     background: var(--gh-gray-50);
 }
 
+/* Header sticky dentro lo scroll del body del modale. Con border-collapse
+   il bordo del th non "aderisce" in scroll: lo replica il box-shadow. */
+.gh-size-chart thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 1px 0 var(--gh-gray-200);
+}
+
 .gh-size-chart td {
     color: var(--gh-gray-700);
 }
 
-.gh-size-chart tbody tr:hover {
+/* Prima colonna (taglia US) come colonna guida */
+.gh-size-chart tbody td:first-child {
+    font-weight: 600;
+}
+
+/* Righe zebrate + hover un gradino più scuro perché resti leggibile */
+.gh-size-chart tbody tr:nth-child(even) {
     background: var(--gh-gray-50);
 }
 
+.gh-size-chart tbody tr:hover {
+    background: var(--gh-gray-100);
+}
+
 .gh-size-chart__highlight {
-    background: rgba(114, 17, 36, 0.1) !important;
+    background: rgba(var(--gh-accent-rgb), 0.1) !important;
     font-weight: 600;
     color: var(--gh-accent) !important;
 }
@@ -1178,7 +1198,7 @@ html.gh-scroll-lock {
     justify-content: center;
     align-items: center;
     gap: 0;
-    max-width: 1200px;
+    max-width: var(--gh-max-width);
     margin: 0 auto;
     padding: 0 var(--gh-space-lg);
 }
@@ -1329,7 +1349,7 @@ html.gh-scroll-lock {
 }
 
 .gh-category-slider__container {
-    max-width: 1400px;
+    max-width: var(--gh-max-width-wide);
     margin: 0 auto;
     padding: 0 var(--gh-space-xl);
 }
@@ -1371,7 +1391,7 @@ html.gh-scroll-lock {
     aspect-ratio: 4 / 5;
     overflow: hidden;
     background: var(--gh-gray-100);
-    border-radius: 12px;
+    border-radius: var(--gh-radius-md);
     margin-bottom: var(--gh-space-md);
     min-height: 320px;
 }
@@ -1503,8 +1523,8 @@ html.gh-scroll-lock {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 20% 80%, rgba(114, 17, 36, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(114, 17, 36, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgba(var(--gh-accent-rgb), 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(var(--gh-accent-rgb), 0.05) 0%, transparent 50%);
 }
 
 .gh-product-spotlight__container {
@@ -1512,7 +1532,7 @@ html.gh-scroll-lock {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--gh-space-4xl);
-    max-width: 1200px;
+    max-width: var(--gh-max-width);
     margin: 0 auto;
     align-items: center;
 }
@@ -1523,7 +1543,7 @@ html.gh-scroll-lock {
 
 .gh-product-spotlight__image {
     position: relative;
-    border-radius: 16px;
+    border-radius: var(--gh-radius-lg);
     overflow: hidden;
     background: var(--gh-gray-900);
 }
@@ -1547,7 +1567,7 @@ html.gh-scroll-lock {
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.05em;
-    border-radius: 50px;
+    border-radius: var(--gh-radius-pill);
 }
 
 .gh-product-spotlight__verified svg {
@@ -1560,21 +1580,11 @@ html.gh-scroll-lock {
 }
 
 .gh-product-spotlight__category {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gh-accent);
     margin-bottom: var(--gh-space-md);
     display: block;
 }
 
 .gh-product-spotlight__title {
-
-    font-size: var(--gh-text-4xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     line-height: 1;
     margin-bottom: var(--gh-space-lg);
 }
@@ -1659,12 +1669,8 @@ html.gh-scroll-lock {
 .gh-newsletter__icon {
     width: 64px;
     height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--gh-gray-900);
     color: var(--gh-accent);
-    border-radius: 50%;
     margin: 0 auto var(--gh-space-xl);
 }
 
@@ -1674,11 +1680,7 @@ html.gh-scroll-lock {
 }
 
 .gh-newsletter__title {
-
     font-size: var(--gh-text-3xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-white);
     margin-bottom: var(--gh-space-md);
 }
@@ -1716,7 +1718,7 @@ html.gh-scroll-lock {
     outline: none;
     border-color: var(--gh-accent);
     background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(114, 17, 36, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--gh-accent-rgb), 0.15);
 }
 
 .gh-newsletter__feedback {
@@ -1757,7 +1759,7 @@ html.gh-scroll-lock {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--gh-space-4xl);
-    max-width: 1200px;
+    max-width: var(--gh-max-width);
     margin: 0 auto;
     align-items: center;
 }
@@ -1773,19 +1775,15 @@ html.gh-scroll-lock {
     align-items: center;
     padding: var(--gh-space-3xl);
     background: var(--gh-white);
-    border-radius: 24px;
+    border-radius: var(--gh-radius-xl);
     box-shadow: var(--gh-shadow-xl);
 }
 
 .gh-authenticity__badge-icon {
     width: 80px;
     height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--gh-accent);
     color: var(--gh-white);
-    border-radius: 50%;
     margin-bottom: var(--gh-space-lg);
 }
 
@@ -1811,21 +1809,11 @@ html.gh-scroll-lock {
 }
 
 .gh-authenticity__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gh-accent);
     margin-bottom: var(--gh-space-md);
     display: block;
 }
 
 .gh-authenticity__title {
-
-    font-size: var(--gh-text-4xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-black);
     line-height: 1;
     margin-bottom: var(--gh-space-lg);
@@ -1853,15 +1841,10 @@ html.gh-scroll-lock {
 .gh-authenticity__step-number {
     width: 40px;
     height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--gh-black);
     color: var(--gh-white);
     font-size: var(--gh-text-lg);
     font-weight: 700;
-    border-radius: 50%;
-    flex-shrink: 0;
 }
 
 .gh-authenticity__step-content h4 {
@@ -1939,6 +1922,17 @@ html.gh-scroll-lock {
     fill: var(--gh-white);
 }
 
+/* Stelle con stato: la classe legacy .gh-trustpilot__star dipinge il box
+   verde pieno (= --full); --half e --empty ridipingono solo lo sfondo del
+   box, la stella bianca sopra resta invariata. */
+.gh-tp-star--half {
+    background: linear-gradient(90deg, #00b67a 0%, #00b67a 50%, var(--gh-gray-200) 50%, var(--gh-gray-200) 100%);
+}
+
+.gh-tp-star--empty {
+    background: var(--gh-gray-200);
+}
+
 .gh-trustpilot__rating {
     font-size: var(--gh-text-2xl);
     font-weight: 700;
@@ -1951,13 +1945,39 @@ html.gh-scroll-lock {
     color: var(--gh-gray-500);
 }
 
+/* Logo: SVG inline (gh_icon star) + testo, non più <img>. */
 .gh-trustpilot__logo {
     margin-top: var(--gh-space-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
-.gh-trustpilot__logo img {
-    height: 24px;
-    width: auto;
+.gh-trustpilot__logo svg {
+    display: block;
+    color: #00b67a;
+    fill: #00b67a;
+}
+
+.gh-trustpilot__logo-text {
+    font-size: var(--gh-text-sm);
+    font-weight: 700;
+    color: var(--gh-black);
+    letter-spacing: 0.01em;
+}
+
+/* Wrapper link opzionale: il widget linkato deve apparire identico,
+   con un leggero lift al passaggio del mouse. */
+.gh-trustpilot__link {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    transition: transform var(--gh-duration-base) var(--gh-ease-out);
+}
+
+.gh-trustpilot__link:hover {
+    transform: translateY(-2px);
 }
 
 /* ==========================================================================
@@ -1980,31 +2000,17 @@ html.gh-scroll-lock {
     padding: 0;
 }
 
-.gh-shortcode-wrapper__content .ghb-carousel-section__link {
-    display: none;
-}
-
 .gh-shortcode-wrapper__cta {
     text-align: center;
     padding: var(--gh-space-xl) 0;
 }
 
 .gh-shortcode-wrapper__eyebrow {
-    font-size: clamp(0.8rem, 0.7rem + 0.5vw, 1rem);
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gh-accent);
     margin-bottom: var(--gh-space-md);
     display: block;
 }
 
 .gh-shortcode-wrapper__title {
-
-    font-size: clamp(2.25rem, 1.5rem + 3.5vw, 3.5rem);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-black);
 }
 
@@ -2017,7 +2023,7 @@ html.gh-scroll-lock {
 .gh-promo-modal {
     position: fixed;
     inset: 0;
-    z-index: calc(var(--gh-z-notification) + 100);
+    z-index: var(--gh-z-promo);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2045,7 +2051,7 @@ html.gh-scroll-lock {
     grid-template-columns: 1fr 1fr;
     max-width: 900px;
     background: var(--gh-white);
-    border-radius: 16px;
+    border-radius: var(--gh-radius-lg);
     overflow: hidden;
     transform: translateY(20px) scale(0.95);
     transition: transform 0.4s var(--gh-ease-out);
@@ -2090,12 +2096,8 @@ html.gh-scroll-lock {
     right: var(--gh-space-md);
     width: 40px;
     height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--gh-white);
     border: none;
-    border-radius: 50%;
     color: var(--gh-black);
     cursor: pointer;
     z-index: 10;
@@ -2129,11 +2131,6 @@ html.gh-scroll-lock {
 }
 
 .gh-promo-modal__title {
-
-    font-size: var(--gh-text-4xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
     color: var(--gh-black);
     line-height: 1;
     margin-bottom: var(--gh-space-lg);
@@ -2151,7 +2148,7 @@ html.gh-scroll-lock {
     padding: var(--gh-space-md) var(--gh-space-xl);
     background: var(--gh-gray-100);
     border: 2px dashed var(--gh-gray-300);
-    border-radius: 8px;
+    border-radius: var(--gh-radius-sm);
     font-family: monospace;
     font-size: var(--gh-text-xl);
     font-weight: 700;
@@ -2184,7 +2181,7 @@ html.gh-scroll-lock {
     position: fixed;
     bottom: var(--gh-space-xl);
     right: var(--gh-space-xl);
-    z-index: var(--gh-z-fixed);
+    z-index: var(--gh-z-whatsapp);
     display: flex;
     align-items: center;
     gap: var(--gh-space-md);
@@ -2194,7 +2191,7 @@ html.gh-scroll-lock {
     font-size: var(--gh-text-sm);
     font-weight: 600;
     text-decoration: none;
-    border-radius: 50px;
+    border-radius: var(--gh-radius-pill);
     box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
     transition: all 0.2s ease;
 }
@@ -2246,12 +2243,8 @@ html.gh-scroll-lock {
 .gh-social-btn {
     width: 44px;
     height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: var(--gh-white);
     color: var(--gh-black);
-    border-radius: 50%;
     box-shadow: var(--gh-shadow-sm);
     text-decoration: none;
     transition: all 0.2s ease;
@@ -2431,7 +2424,7 @@ a.gh-btn:visited {
     background: rgba(255, 255, 255, 0.06);
     color: var(--gh-white);
     border: 1px solid rgba(255, 255, 255, 0.55);
-    border-radius: 999px;
+    border-radius: var(--gh-radius-pill);
     padding: 1.125rem 2.5rem;
     letter-spacing: 0.14em;
     overflow: hidden;
@@ -2637,7 +2630,7 @@ a.gh-btn:visited {
 
 .gh-container {
     width: 100%;
-    max-width: 1400px;
+    max-width: var(--gh-max-width-wide);
     margin: 0 auto;
     padding: 0 var(--gh-space-xl);
 }
@@ -2671,125 +2664,126 @@ a.gh-btn:visited {
    ========================================================================== */
 
 .gh-social-proof {
-    position: fixed !important;
-    bottom: 24px !important;
-    left: 24px !important;
-    z-index: 9999 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    width: auto !important;
-    max-width: 340px !important;
-    padding: 14px 18px !important;
-    background: #ffffff !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.1) !important;
-    border: 1px solid rgba(0, 0, 0, 0.04) !important;
-    font-family: inherit !important;
-    transform: translateY(120%) !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: transform 0.45s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.45s ease, visibility 0.45s ease !important;
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: var(--gh-z-toast);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    max-width: 340px;
+    margin: 0;
+    padding: 14px 18px;
+    background: var(--gh-white);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    font-family: inherit;
+    transform: translateY(120%);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.45s var(--gh-ease-out), opacity 0.45s ease, visibility 0.45s ease;
 }
 
 .gh-social-proof.is-visible {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
 }
 
 .gh-social-proof__image {
-    width: 48px !important;
-    height: 48px !important;
-    border-radius: 4px !important;
-    overflow: hidden !important;
-    flex-shrink: 0 !important;
-    background: #f5f5f5 !important;
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--gh-gray-100);
 }
 
 .gh-social-proof__image img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .gh-social-proof__body {
-    flex: 1 !important;
-    min-width: 0 !important;
-    line-height: 1.4 !important;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
 }
 
 .gh-social-proof__text {
-    font-size: 13px !important;
-    color: #333333 !important;
-    margin: 0 0 2px 0 !important;
+    font-size: 13px;
+    color: #333333;
+    margin: 0 0 2px 0;
 }
 
 .gh-social-proof__text strong {
-    font-weight: 600 !important;
-    color: #000000 !important;
+    font-weight: 600;
+    color: #000000;
 }
 
 .gh-social-proof__meta {
-    font-size: 11px !important;
-    color: #888888 !important;
-    margin: 0 !important;
+    font-size: 11px;
+    color: #888888;
+    margin: 0;
 }
 
 .gh-social-proof__close {
-    position: absolute !important;
-    top: 6px !important;
-    right: 6px !important;
-    width: 20px !important;
-    height: 20px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    border: none !important;
-    color: #999999 !important;
-    cursor: pointer !important;
-    padding: 0 !important;
-    opacity: 0 !important;
-    transition: opacity 0.2s ease !important;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #999999;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .gh-social-proof:hover .gh-social-proof__close {
-    opacity: 1 !important;
+    opacity: 1;
 }
 
 .gh-social-proof__close:hover {
-    color: #333333 !important;
+    color: #333333;
 }
 
 .gh-social-proof__close svg {
-    width: 12px !important;
-    height: 12px !important;
+    width: 12px;
+    height: 12px;
 }
 
 /* Verified badge */
 .gh-social-proof__verified {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 3px !important;
-    font-size: 10px !important;
-    color: #16a34a !important;
-    margin-top: 2px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--gh-success);
+    margin-top: 2px;
 }
 
 .gh-social-proof__verified svg {
-    width: 12px !important;
-    height: 12px !important;
+    width: 12px;
+    height: 12px;
 }
 
 /* Mobile adjustments */
 @media (max-width: 480px) {
     .gh-social-proof {
-        left: 12px !important;
-        right: 12px !important;
-        bottom: 12px !important;
-        max-width: none !important;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        max-width: none;
     }
 }
 
@@ -2896,14 +2890,11 @@ a.gh-btn:visited {
 }
 
 .gh-contact-info__container {
-    max-width: 1200px;
+    max-width: var(--gh-max-width);
     margin: 0 auto;
 }
 
-.gh-contact-info__header {
-    text-align: center;
-    margin-bottom: var(--gh-space-3xl);
-}
+/* .gh-contact-info__header → .gh-section-header (componente condiviso) */
 
 .gh-contact-info__title {
     font-size: var(--gh-text-3xl);
@@ -2975,7 +2966,7 @@ a.gh-btn:visited {
 
 .gh-contact-info__map-wrapper {
     width: 100%;
-    border-radius: 12px;
+    border-radius: var(--gh-radius-md);
     overflow: hidden;
     box-shadow: var(--gh-shadow-md);
 }
@@ -3026,7 +3017,7 @@ a.gh-btn:visited {
 }
 
 .gh-map-embed>div {
-    max-width: 1200px;
+    max-width: var(--gh-max-width);
     margin: 0 auto;
     box-shadow: var(--gh-shadow-md);
 }
@@ -3052,7 +3043,7 @@ a.gh-btn:visited {
 }
 
 .gh-drop-countdown__inner {
-    max-width: var(--gh-max-width);
+    max-width: var(--gh-max-width, 1200px);
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3067,19 +3058,13 @@ a.gh-btn:visited {
 }
 
 .gh-drop-countdown__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
     letter-spacing: 0.3em;
-    text-transform: uppercase;
     color: rgba(255, 255, 255, 0.85);
 }
 
 .gh-drop-countdown__title {
-
     font-size: var(--gh-text-5xl);
-    font-weight: 800;
     line-height: 1;
-    text-transform: uppercase;
     letter-spacing: -0.02em;
 }
 
@@ -3105,7 +3090,7 @@ a.gh-btn:visited {
 
 .gh-drop-countdown__image {
     position: relative;
-    border-radius: 24px;
+    border-radius: var(--gh-radius-xl);
     overflow: hidden;
     aspect-ratio: 1;
 }
@@ -3114,16 +3099,16 @@ a.gh-btn:visited {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 24px;
+    border-radius: var(--gh-radius-xl);
 }
 
 .gh-drop-countdown__image-placeholder {
     width: 100%;
     height: 100%;
     min-height: 400px;
-    background: linear-gradient(135deg, rgba(114, 17, 36, 0.2) 0%, rgba(255, 255, 255, 0.03) 100%);
+    background: linear-gradient(135deg, rgba(var(--gh-accent-rgb), 0.2) 0%, rgba(255, 255, 255, 0.03) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
+    border-radius: var(--gh-radius-xl);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3170,21 +3155,14 @@ a.gh-btn:visited {
 }
 
 .gh-legit-check__container {
-    max-width: var(--gh-max-width);
+    max-width: var(--gh-max-width, 1200px);
     margin: 0 auto;
 }
 
-.gh-legit-check__header {
-    text-align: center;
-    margin-bottom: var(--gh-space-3xl);
-}
+/* .gh-legit-check__header → .gh-section-header (componente condiviso) */
 
 .gh-legit-check__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
     letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gh-accent);
     margin-bottom: var(--gh-space-md);
     display: block;
 }
@@ -3215,7 +3193,7 @@ a.gh-btn:visited {
 
 .gh-legit-check__card {
     background: var(--gh-white);
-    border-radius: 16px;
+    border-radius: var(--gh-radius-lg);
     padding: var(--gh-space-xl);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -3245,7 +3223,7 @@ a.gh-btn:visited {
 
 .gh-legit-check__col {
     padding: var(--gh-space-md);
-    border-radius: 12px;
+    border-radius: var(--gh-radius-md);
 }
 
 .gh-legit-check__col--real {
@@ -3268,20 +3246,15 @@ a.gh-btn:visited {
 .gh-legit-check__icon {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
 }
 
 .gh-legit-check__icon--check {
-    background: #38a169;
+    background: var(--gh-success);
     color: var(--gh-white);
 }
 
 .gh-legit-check__icon--x {
-    background: #e53e3e;
+    background: var(--gh-error);
     color: var(--gh-white);
 }
 
@@ -3298,11 +3271,11 @@ a.gh-btn:visited {
 }
 
 .gh-legit-check__col--real .gh-legit-check__col-label {
-    color: #38a169;
+    color: var(--gh-success);
 }
 
 .gh-legit-check__col--fake .gh-legit-check__col-label {
-    color: #e53e3e;
+    color: var(--gh-error);
 }
 
 .gh-legit-check__col-text {
@@ -3340,14 +3313,11 @@ a.gh-btn:visited {
 }
 
 .gh-instagram-feed__container {
-    max-width: var(--gh-max-width);
+    max-width: var(--gh-max-width, 1200px);
     margin: 0 auto;
 }
 
-.gh-instagram-feed__header {
-    text-align: center;
-    margin-bottom: var(--gh-space-3xl);
-}
+/* .gh-instagram-feed__header → .gh-section-header (componente condiviso) */
 
 .gh-instagram-feed__title {
 
@@ -3372,7 +3342,7 @@ a.gh-btn:visited {
 .gh-instagram-feed__cell {
     position: relative;
     aspect-ratio: 1;
-    border-radius: 12px;
+    border-radius: var(--gh-radius-md);
     overflow: hidden;
     cursor: pointer;
     text-decoration: none;
@@ -3383,7 +3353,7 @@ a.gh-btn:visited {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+    transition: transform 0.6s var(--gh-ease-out);
 }
 
 .gh-instagram-feed__cell:hover .gh-instagram-feed__image {
@@ -3499,6 +3469,7 @@ a.gh-btn:visited {
    SERVICES GRID
    Bento-style grid for service/category showcase cards
    ========================================================================== */
+/* legacy — kept: may be referenced by custom HTML blocks in saved content */
 
 .gh-services-grid {
     padding: 80px 24px;
@@ -3515,7 +3486,7 @@ a.gh-btn:visited {
 }
 
 .gh-services-grid__title {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-size: var(--gh-text-3xl);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.02em;
@@ -3544,13 +3515,13 @@ a.gh-btn:visited {
 
 .gh-services-grid__item {
     position: relative;
-    border-radius: 16px;
+    border-radius: var(--gh-radius-lg);
     overflow: hidden;
     min-height: 380px;
     display: flex;
     align-items: flex-end;
     cursor: pointer;
-    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 0.45s var(--gh-ease-out);
 }
 
 .gh-services-grid__item:hover {
@@ -3567,7 +3538,7 @@ a.gh-btn:visited {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: transform 0.6s var(--gh-ease-out);
 }
 
 .gh-services-grid__item:hover .gh-services-grid__item-bg img {
@@ -3595,7 +3566,7 @@ a.gh-btn:visited {
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: 12px;
+    border-radius: var(--gh-radius-md);
     background: rgba(255, 255, 255, 0.18);
     margin-bottom: 16px;
 }
@@ -3607,7 +3578,7 @@ a.gh-btn:visited {
 }
 
 .gh-services-grid__item-title {
-    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+    font-size: var(--gh-text-xl);
     font-weight: 700;
     margin: 0 0 10px;
     text-transform: uppercase;
@@ -3628,7 +3599,7 @@ a.gh-btn:visited {
     color: #fff;
     background: transparent;
     padding: 10px 22px;
-    border-radius: 8px;
+    border-radius: var(--gh-radius-sm);
     font-size: 0.85rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -3650,6 +3621,7 @@ a.gh-btn:visited {
    AUTHENTICITY BANNER
    Full-width banner with background image
    ========================================================================== */
+/* legacy — kept: may be referenced by custom HTML blocks in saved content */
 
 .gh-auth-banner {
     position: relative;
@@ -3704,7 +3676,7 @@ a.gh-btn:visited {
 }
 
 .gh-auth-banner__title {
-    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-size: var(--gh-text-2xl);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.02em;
@@ -3749,17 +3721,73 @@ a.gh-btn:visited {
 
 @media (prefers-reduced-motion: reduce) {
 
-    *,
-    *::before,
-    *::after {
+    /* Scoped alla UI del plugin: il wipe globale *,*::before,*::after
+       azzerava anche le animazioni del tema (Shoptimizer). Qui vengono
+       enumerati i root gh-/ghb-/rp-/rlv- e i loro discendenti; i delay
+       vengono azzerati esplicitamente così gli stagger (hero, reveal)
+       non restano "in coda" sotto reduced motion. */
+    .gh-block,
+    .gh-block *,
+    .gh-block *::before,
+    .gh-block *::after,
+    [data-gh-reveal],
+    [data-gh-image-reveal],
+    [data-gh-image-reveal] *,
+    .gh-modal,
+    .gh-modal *,
+    .gh-promo-modal,
+    .gh-promo-modal *,
+    .gh-social-proof,
+    .gh-social-proof *,
+    .gh-whatsapp-btn,
+    .gh-whatsapp-btn *,
+    .gh-social-buttons,
+    .gh-social-buttons *,
+    .gh-rail,
+    .gh-rail *,
+    .gh-cs,
+    .gh-cs *,
+    [class^="rp-"],
+    [class^="rp-"] *,
+    [class*=" rp-"],
+    [class*=" rp-"] *,
+    [class^="rlv-"],
+    [class^="rlv-"] *,
+    [class*=" rlv-"],
+    [class*=" rlv-"] *,
+    [class^="ghb-"],
+    [class^="ghb-"] *,
+    [class*=" ghb-"],
+    [class*=" ghb-"] * {
         animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+        /* !important: deve battere lo style inline --gh-reveal-delay
+           emesso da render.php sugli elementi con stagger. */
+        --gh-reveal-delay: 0s !important;
     }
 
     [data-gh-reveal] {
         opacity: 1 !important;
         transform: none !important;
+    }
+
+    /* Belt-and-braces: l'overlay dell'image reveal non deve mai restare
+       a coprire l'immagine sotto reduced motion. */
+    [data-gh-image-reveal]::after {
+        transform: scaleX(0) !important;
+    }
+
+    [data-gh-image-reveal] img {
+        transform: none !important;
+    }
+
+    /* Marquee: fermo del tutto (un loop infinito accelerato resterebbe
+       comunque in movimento). */
+    [data-gh-marquee-track] {
+        animation: none !important;
     }
 }
 
@@ -3871,20 +3899,13 @@ a.gh-btn:visited {
 }
 
 .gh-hero-split__eyebrow {
-    font-size: var(--gh-text-xs);
-    font-weight: 700;
     letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--gh-accent);
 }
 
 .gh-hero-split__title {
     margin: 0;
-    font-size: var(--gh-text-4xl);
-    font-weight: 800;
     line-height: 1;
     letter-spacing: -0.02em;
-    text-transform: uppercase;
     color: var(--gh-black);
 }
 
@@ -3965,5 +3986,389 @@ a.gh-btn:visited {
     }
     .gh-hero-split--h-full {
         min-height: 100svh;
+    }
+}
+
+/* ==========================================================================
+   ABOUT HERO — sezione "Chi Siamo"
+   Migrata dagli inline style del render.php: grid due colonne su desktop,
+   stack su mobile, immagine con radius/ombra/velo sfumato, lista valori
+   con bullet a cerchio-icona. Vedi blocks/about-hero.
+   ========================================================================== */
+
+.gh-about-hero {
+    padding: var(--gh-space-4xl) var(--gh-space-lg);
+    color: var(--gh-black);
+    overflow: hidden;
+}
+
+.gh-about-hero__inner {
+    max-width: var(--gh-max-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;          /* mobile: stack */
+    gap: var(--gh-space-2xl);
+    align-items: center;
+}
+
+.gh-about-hero__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gh-space-lg);
+}
+
+.gh-about-hero__title {
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--gh-black);
+}
+
+.gh-about-hero__text {
+    font-size: var(--gh-text-lg);
+    line-height: 1.7;
+    color: var(--gh-gray-600);
+    margin: 0;
+    max-width: 46ch;
+}
+
+.gh-about-hero__values {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gh-space-lg);
+    margin-top: var(--gh-space-sm);
+}
+
+.gh-about-hero__value {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gh-space-md);
+}
+
+.gh-about-hero__value-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(var(--gh-accent-rgb), 0.08);
+    color: var(--gh-accent);
+}
+
+.gh-about-hero__value-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-about-hero__value-title {
+    display: block;
+    font-size: var(--gh-text-base);
+    font-weight: 700;
+    color: var(--gh-black);
+    margin-bottom: var(--gh-space-xs);
+}
+
+.gh-about-hero__value-text {
+    font-size: var(--gh-text-sm);
+    line-height: 1.6;
+    color: var(--gh-gray-600);
+}
+
+.gh-about-hero__visual {
+    position: relative;
+    border-radius: var(--gh-radius-lg);
+    overflow: hidden;
+    min-height: 320px;
+    background: var(--gh-gray-100);
+    box-shadow: var(--gh-shadow-lg);
+}
+
+/* Velo sfumato sul bordo: ::before perché ::after è riservato al
+   sipario di [data-gh-image-reveal]. */
+.gh-about-hero__visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(var(--gh-accent-rgb), 0.10) 0%, transparent 45%);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.gh-about-hero__visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    object-fit: cover;
+}
+
+@media (min-width: 769px) {
+    .gh-about-hero__inner {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--gh-space-3xl);
+    }
+
+    .gh-about-hero__visual,
+    .gh-about-hero__visual img {
+        min-height: 480px;
+    }
+
+    /* Variante specchiata: cambia solo l'ordine visivo */
+    .gh-about-hero--reverse .gh-about-hero__content {
+        order: 2;
+    }
+
+    .gh-about-hero--reverse .gh-about-hero__visual {
+        order: 1;
+    }
+}
+
+/* ==========================================================================
+   STORE HOURS — orari di apertura
+   Migrata dagli inline style del render.php: card su superficie elevata,
+   righe con cifre tabellari e riga "oggi" evidenziata lato server.
+   Vedi blocks/store-hours.
+   ========================================================================== */
+
+.gh-store-hours {
+    background: var(--gh-gray-50);
+    padding: var(--gh-space-3xl) var(--gh-space-lg);
+}
+
+.gh-store-hours__container {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.gh-store-hours__title {
+    font-size: var(--gh-text-2xl);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--gh-gray-900);
+    margin: 0 0 var(--gh-space-xl) 0;
+    text-align: center;
+}
+
+.gh-store-hours__card {
+    background: var(--gh-surface-elevated);
+    border-radius: var(--gh-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--gh-shadow-md);
+    border: 1px solid var(--gh-border-subtle);
+}
+
+.gh-store-hours__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--gh-space-md);
+    padding: var(--gh-space-md) var(--gh-space-lg);
+    border-left: 3px solid transparent;
+}
+
+.gh-store-hours__row + .gh-store-hours__row {
+    border-top: 1px solid var(--gh-gray-200);
+}
+
+.gh-store-hours__day {
+    font-size: var(--gh-text-sm);
+    font-weight: 600;
+    color: var(--gh-gray-900);
+}
+
+.gh-store-hours__time {
+    font-size: var(--gh-text-sm);
+    font-weight: 400;
+    color: var(--gh-gray-600);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.gh-store-hours__time--closed {
+    font-size: var(--gh-text-xs);
+    font-weight: 600;
+    color: var(--gh-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Riga del giorno corrente (calcolata lato server: con page caching può
+   restare "ferma" al giorno di generazione della cache). */
+.gh-store-hours__row--today {
+    border-left-color: var(--gh-accent);
+    background: rgba(var(--gh-accent-rgb), 0.04);
+}
+
+.gh-store-hours__row--today .gh-store-hours__day,
+.gh-store-hours__row--today .gh-store-hours__time {
+    font-weight: 600;
+}
+
+.gh-store-hours__badge {
+    display: inline-block;
+    margin-left: var(--gh-space-sm);
+    padding: 2px 8px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gh-white);
+    background: var(--gh-accent);
+    border-radius: var(--gh-radius-pill);
+    vertical-align: middle;
+}
+
+.gh-store-hours__note {
+    margin: var(--gh-space-md) 0 0 0;
+    text-align: center;
+    font-size: var(--gh-text-xs);
+    color: var(--gh-gray-500);
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   MARQUEE — CONTRATTO CONDIVISO
+   js/animations.js clona il track una volta (clone aria-hidden="true") e
+   imposta solo --gh-marquee-duration sul contenitore [data-gh-marquee];
+   tutto il movimento vive qui. Con la struttura a due track fratelli
+   identici il loop è seamless con translateX(-100%) su ciascun track
+   (-50% farebbe saltare il loop a metà corsa).
+   ========================================================================== */
+
+@keyframes gh-marquee {
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+[data-gh-marquee-track] {
+    animation: gh-marquee var(--gh-marquee-duration, 30s) linear infinite;
+    will-change: transform;
+}
+
+[data-gh-marquee][data-gh-marquee-direction="right"] [data-gh-marquee-track] {
+    animation-direction: reverse;
+}
+
+/* La pausa è keyed sulla PRESENZA dell'attributo: render.php lo emette solo
+   quando pauseOnHover è attivo. */
+[data-gh-marquee][data-gh-marquee-pause]:hover [data-gh-marquee-track] {
+    animation-play-state: paused;
+}
+
+/* ==========================================================================
+   WHATSAPP — REVEAL ALLO SCROLL
+   Il JS non imposta più opacity/pointer-events inline: aggiunge/rimuove solo
+   .gh-whatsapp--visible. Gate su html.gh-js così senza JavaScript il bottone
+   resta sempre visibile; html.gh-anim-failsafe lo ripristina se l'engine
+   non parte.
+   ========================================================================== */
+
+html.gh-js .gh-whatsapp-btn {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity var(--gh-duration-base, 0.3s) ease,
+        transform var(--gh-duration-base, 0.3s) ease,
+        box-shadow 0.2s ease;
+}
+
+html.gh-js .gh-whatsapp-btn.gh-whatsapp--visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+/* Il transform base della regola sopra vince in specificità sugli stati
+   :hover/:active globali del bottone — vanno ridichiarati qui perché il
+   lift al passaggio del mouse continui a funzionare. */
+html.gh-js .gh-whatsapp-btn.gh-whatsapp--visible:hover {
+    transform: translateY(-2px);
+}
+
+html.gh-js .gh-whatsapp-btn.gh-whatsapp--visible:active {
+    transform: translateY(0);
+}
+
+html.gh-anim-failsafe .gh-whatsapp-btn {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+}
+
+/* ==========================================================================
+   HERO VIDEO — ENTRATA SPLIT-TEXT
+   Il titolo usa data-gh-split="chars" ma, a differenza del carousel, non ha
+   uno stato --active: i .gh-char (creati dal JS, quindi esistono solo con
+   .gh-js) entrano una sola volta al load con un'animazione CSS che rispecchia
+   pattern e timing di .gh-hero-slide__title .gh-char.
+   ========================================================================== */
+
+.gh-js .gh-hero-video__title .gh-char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(100%) rotateX(-90deg);
+    animation: gh-hero-video-char-in 0.6s var(--gh-ease-out) forwards;
+    animation-delay: calc(var(--char-index, 0) * 0.03s + 0.5s);
+}
+
+@keyframes gh-hero-video-char-in {
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+    }
+}
+
+/* Failsafe: engine mai partito dopo lo split — testo subito visibile. */
+.gh-anim-failsafe .gh-hero-video__title .gh-char {
+    animation: none;
+    opacity: 1;
+    transform: none;
+}
+
+/* ==========================================================================
+   BOTTONE OUTLINE SU FONDO CHIARO
+   .gh-btn--outline è tarato per sfondi scuri (testo/bordo chiari). Il trigger
+   della guida taglie si appoggiava a un inline style ora rimosso dal render:
+   la regola [data-gh-modal-trigger] replica oggi quel comportamento (bordo
+   grigio, testo nero); .gh-btn--outline-muted è il modificatore dedicato che
+   il render può aggiungere in futuro al posto del selettore ad attributo.
+   ========================================================================== */
+
+.gh-btn.gh-btn--outline-muted,
+.gh-btn.gh-btn--outline[data-gh-modal-trigger] {
+    color: var(--gh-black);
+    border-color: var(--gh-gray-300);
+}
+
+/* ==========================================================================
+   MODALI — COREOGRAFIA DI APERTURA/CHIUSURA (progressive enhancement)
+   Le transizioni base class-based (.gh-modal--open / .gh-promo-modal--open)
+   restano il fallback per i browser più vecchi e continuano a funzionare
+   identiche. Dove il browser supporta transition-behavior: allow-discrete,
+   visibility partecipa alla transizione in modo discreto e @starting-style
+   garantisce l'entrata animata anche quando la classe --open è già presente
+   al primo paint (es. modale aperto immediatamente all'inserimento nel DOM).
+   ========================================================================== */
+
+@supports (transition-behavior: allow-discrete) {
+    .gh-modal,
+    .gh-promo-modal {
+        transition:
+            opacity var(--gh-duration-base) var(--gh-ease-out),
+            visibility var(--gh-duration-base) allow-discrete;
+    }
+
+    @starting-style {
+        .gh-modal--open,
+        .gh-promo-modal--open {
+            opacity: 0;
+        }
+
+        .gh-modal--open .gh-modal__container {
+            transform: translateY(20px) scale(0.98);
+        }
+
+        .gh-promo-modal--open .gh-promo-modal__container {
+            transform: translateY(20px) scale(0.95);
+        }
     }
 }

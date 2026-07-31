@@ -17,20 +17,22 @@ if (empty($product_name)) {
 
 $block_id = 'gh-drop-countdown-' . wp_unique_id();
 ?>
-<section class="gh-block gh-drop-countdown"
-    id="<?php echo esc_attr($block_id); ?>"
-    style="background-color: <?php echo esc_attr($bg_color); ?>">
+<section <?php echo get_block_wrapper_attributes(array(
+    'class' => 'gh-block gh-drop-countdown',
+    'id'    => $block_id,
+    'style' => 'background-color: ' . $bg_color,
+)); ?>>
 
     <div class="gh-drop-countdown__inner">
         <div class="gh-drop-countdown__content">
             <?php if (!empty($eyebrow)) : ?>
-                <span class="gh-drop-countdown__eyebrow" data-gh-reveal="up"><?php echo esc_html(strtoupper($eyebrow)); ?></span>
+                <span class="gh-eyebrow gh-drop-countdown__eyebrow" data-gh-reveal="up"><?php echo esc_html(strtoupper($eyebrow)); ?></span>
             <?php endif; ?>
 
-            <h2 class="gh-drop-countdown__title" data-gh-reveal="up" data-gh-reveal-delay="100"><?php echo esc_html($product_name); ?></h2>
+            <h2 class="gh-section-title gh-drop-countdown__title" data-gh-reveal="up" data-gh-reveal-delay="100" style="--gh-reveal-delay: 100ms"><?php echo esc_html($product_name); ?></h2>
 
             <?php if (!empty($release_date)) : ?>
-                <div class="gh-drop-countdown__timer" data-gh-countdown="<?php echo esc_attr($release_date); ?>" data-gh-countdown-expired="DISPONIBILE ORA" data-gh-reveal="up" data-gh-reveal-delay="200">
+                <div class="gh-drop-countdown__timer" role="timer" aria-live="polite" aria-atomic="true" data-gh-countdown="<?php echo esc_attr($release_date); ?>" data-gh-countdown-expired="DISPONIBILE ORA" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms">
                     <div class="gh-countdown__item">
                         <span class="gh-countdown__value" data-gh-countdown-giorni>00</span>
                         <span class="gh-countdown__label">Giorni</span>
@@ -51,22 +53,23 @@ $block_id = 'gh-drop-countdown-' . wp_unique_id();
             <?php endif; ?>
 
             <?php if (!empty($button_url)) : ?>
-                <div class="gh-drop-countdown__cta" data-gh-reveal="up" data-gh-reveal-delay="300">
-                    <a href="<?php echo esc_url($button_url); ?>" class="gh-btn gh-btn--primary gh-btn--large" data-gh-magnetic="0.2">
-                        <?php echo esc_html($button_text); ?>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
+                <div class="gh-drop-countdown__cta" data-gh-reveal="up" data-gh-reveal-delay="300" style="--gh-reveal-delay: 300ms">
+                    <?php echo gh_button(array(
+                        'url'      => $button_url,
+                        'text'     => $button_text,
+                        'classes'  => 'gh-btn gh-btn--primary gh-btn--large',
+                        'magnetic' => '0.2',
+                    )); ?>
                 </div>
             <?php endif; ?>
         </div>
 
         <?php if (!empty($product_image)) : ?>
-            <div class="gh-drop-countdown__image" data-gh-reveal="up" data-gh-reveal-delay="150">
-                <img src="<?php echo esc_url($product_image); ?>"
-                     alt="<?php echo esc_attr($product_name); ?>"
-                     loading="lazy">
+            <div class="gh-drop-countdown__image" data-gh-reveal="up" data-gh-reveal-delay="150" style="--gh-reveal-delay: 150ms">
+                <?php echo gh_img((int) ($attributes['productImageId'] ?? 0), $product_image, array(
+                    'alt'     => $product_name,
+                    'loading' => 'lazy',
+                )); ?>
             </div>
         <?php endif; ?>
     </div>

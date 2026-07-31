@@ -47,25 +47,30 @@ $btn_class = $button_style === 'outline'
     ? 'gh-btn gh-btn--outline gh-btn--large'
     : 'gh-btn gh-btn--primary gh-btn--large';
 ?>
-<section class="<?php echo esc_attr($section_classes); ?>">
+<section <?php echo get_block_wrapper_attributes(array('class' => $section_classes)); ?>>
     <div class="gh-hero-split__media" data-gh-reveal="<?php echo $media_side === 'right' ? 'right' : 'left'; ?>">
-        <?php if (!empty($image_url)) : ?>
-            <img src="<?php echo esc_url($image_url); ?>"
-                 alt="<?php echo esc_attr($title); ?>"
-                 style="object-position: <?php echo esc_attr($image_pos); ?>;"
-                 loading="lazy"
-                 decoding="async">
-        <?php endif; ?>
+        <?php if (!empty($image_url)) :
+            echo gh_img(
+                (int) ($attributes['imageUrlId'] ?? 0),
+                $image_url,
+                array(
+                    'alt'      => $title,
+                    'style'    => 'object-position: ' . $image_pos . ';',
+                    'loading'  => 'lazy',
+                    'decoding' => 'async',
+                )
+            );
+        endif; ?>
     </div>
 
     <div class="gh-hero-split__content" data-gh-reveal="<?php echo $media_side === 'right' ? 'left' : 'right'; ?>">
         <div class="gh-hero-split__inner">
             <?php if (!empty($eyebrow)) : ?>
-                <span class="gh-hero-split__eyebrow"><?php echo esc_html($eyebrow); ?></span>
+                <span class="gh-eyebrow gh-hero-split__eyebrow"><?php echo esc_html($eyebrow); ?></span>
             <?php endif; ?>
 
             <?php if (!empty($title)) : ?>
-                <h2 class="gh-hero-split__title"><?php echo esc_html($title); ?></h2>
+                <h2 class="gh-section-title gh-hero-split__title"><?php echo esc_html($title); ?></h2>
             <?php endif; ?>
 
             <?php if (!empty($subtitle)) : ?>
@@ -74,12 +79,11 @@ $btn_class = $button_style === 'outline'
 
             <?php if (!empty($button_url) && !empty($button_text)) : ?>
                 <div class="gh-hero-split__cta">
-                    <a href="<?php echo esc_url($button_url); ?>" class="<?php echo esc_attr($btn_class); ?>">
-                        <?php echo esc_html($button_text); ?>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
+                    <?php echo gh_button(array(
+                        'url'     => $button_url,
+                        'text'    => $button_text,
+                        'classes' => $btn_class,
+                    )); ?>
                 </div>
             <?php endif; ?>
         </div>

@@ -1,12 +1,17 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
-    const { PanelBody, TextControl, TextareaControl, ToggleControl, Button } = wp.components;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
+    const { PanelBody, TextControl, TextareaControl, ToggleControl } = wp.components;
+    const utils = window.ghEditorUtils;
+    const el = utils.el;
+    const Fragment = utils.Fragment;
+    const MediaField = utils.MediaField;
+    const Placeholder = utils.Placeholder;
 
     registerBlockType('golden-hive/cta-banner', {
         edit: function({ attributes, setAttributes }) {
             const { eyebrow, title, text, buttonText, buttonUrl, backgroundImage, showGlow } = attributes;
+            const blockProps = useBlockProps();
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -28,22 +33,11 @@
                         })
                     ),
                     el(PanelBody, { title: 'Immagine di sfondo', initialOpen: false },
-                        el(MediaUploadCheck, {},
-                            el(MediaUpload, {
-                                onSelect: function(media) { setAttributes({ backgroundImage: media.url }); },
-                                allowedTypes: ['image'],
-                                render: function(obj) {
-                                    return el('div', {},
-                                        backgroundImage
-                                            ? el('div', {},
-                                                el('img', { src: backgroundImage, style: { maxWidth: '100%', height: 'auto', marginBottom: '4px' } }),
-                                                el(Button, { isSecondary: true, isSmall: true, onClick: function() { setAttributes({ backgroundImage: '' }); } }, 'Rimuovi immagine')
-                                            )
-                                            : el(Button, { isSecondary: true, onClick: obj.open }, 'Seleziona immagine')
-                                    );
-                                }
-                            })
-                        )
+                        el(MediaField, {
+                            value: backgroundImage,
+                            onSelect: function(media) { setAttributes({ backgroundImage: media.url, backgroundImageId: media.id || 0 }); },
+                            onRemove: function() { setAttributes({ backgroundImage: '', backgroundImageId: 0 }); }
+                        })
                     ),
                     el(PanelBody, { title: 'Pulsante', initialOpen: false },
                         el(TextControl, {
@@ -65,16 +59,15 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'CTA Banner'),
-                    el('div', { className: 'gh-editor-placeholder__text' },
-                        title ? '"' + title + '"' : 'Configura questo blocco nel pannello laterale.'
-                    )
+                        ),
+                        title: 'CTA Banner',
+                        text: title ? '"' + title + '"' : 'Configura questo blocco nel pannello laterale.',
+                        thumbs: [backgroundImage]
+                    })
                 )
             );
         },

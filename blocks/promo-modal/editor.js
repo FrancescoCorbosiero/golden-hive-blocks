@@ -1,11 +1,13 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
-    const { PanelBody, TextControl, TextareaControl, ToggleControl, RangeControl, Button } = wp.components;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
+    const { PanelBody, TextControl, TextareaControl, ToggleControl, RangeControl } = wp.components;
+    const { el, Fragment, MediaField, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/promo-modal', {
         edit: function({ attributes, setAttributes }) {
+            const blockProps = useBlockProps();
+
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Contenuti', initialOpen: true },
@@ -15,30 +17,18 @@
                             onChange: function(value) { setAttributes({ modalId: value }); }
                         }),
                         el('div', { style: { marginBottom: '16px' } },
-                            el('label', { style: { display: 'block', marginBottom: '8px', fontWeight: '600' } }, 'Immagine'),
-                            attributes.imageUrl
-                                ? el('div', {},
-                                    el('img', { src: attributes.imageUrl, style: { width: '100%', height: 'auto', marginBottom: '8px', borderRadius: '4px' } }),
-                                    el(Button, {
-                                        isDestructive: true,
-                                        variant: 'secondary',
-                                        onClick: function() { setAttributes({ imageUrl: '' }); },
-                                        style: { width: '100%', justifyContent: 'center' }
-                                    }, 'Rimuovi Immagine')
-                                )
-                                : el(MediaUploadCheck, {},
-                                    el(MediaUpload, {
-                                        onSelect: function(media) { setAttributes({ imageUrl: media.url }); },
-                                        allowedTypes: ['image'],
-                                        render: function(obj) {
-                                            return el(Button, {
-                                                variant: 'secondary',
-                                                onClick: obj.open,
-                                                style: { width: '100%', justifyContent: 'center' }
-                                            }, 'Seleziona Immagine');
-                                        }
-                                    })
-                                )
+                            el(MediaField, {
+                                label: 'Immagine',
+                                value: attributes.imageUrl || '',
+                                onSelect: function(media) {
+                                    setAttributes({ imageUrl: media.url, imageUrlId: media.id });
+                                },
+                                onRemove: function() {
+                                    setAttributes({ imageUrl: '', imageUrlId: 0 });
+                                },
+                                selectLabel: 'Seleziona Immagine',
+                                removeLabel: 'Rimuovi Immagine'
+                            })
                         ),
                         el(TextControl, {
                             label: 'Badge',
@@ -84,8 +74,8 @@
                         }),
                         el(RangeControl, {
                             label: 'Ritardo visualizzazione (secondi)',
-                            value: attributes.showDelay || 0,
-                            onChange: function(value) { setAttributes({ showDelay: value }); },
+                            value: (attributes.showDelay || 0) / 1000,
+                            onChange: function(value) { setAttributes({ showDelay: value * 1000 }); },
                             min: 0,
                             max: 60,
                             step: 1
@@ -97,14 +87,15 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Promo Modal'),
-                    el('div', { className: 'gh-editor-placeholder__text' }, 'Configura questo blocco nel pannello laterale.')
+                        ),
+                        title: 'Promo Modal',
+                        text: 'Configura questo blocco nel pannello laterale.',
+                        thumbs: [attributes.imageUrl]
+                    })
                 )
             );
         },

@@ -1,44 +1,17 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
-    const { PanelBody, TextControl, RangeControl, Button } = wp.components;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
+    const { PanelBody, TextControl, RangeControl, ToggleControl, Button } = wp.components;
+    const { el, Fragment, listOps, ItemControls, MediaField, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/social-proof', {
         edit: function({ attributes, setAttributes }) {
-            const { notifications, interval, initialDelay, title } = attributes;
+            const { notifications, interval, initialDelay, displayDuration, showVerified, title } = attributes;
+            const blockProps = useBlockProps();
 
-            var updateItem = function(index, field, value) {
-                var updated = notifications.map(function(item, i) {
-                    if (i === index) {
-                        var copy = Object.assign({}, item);
-                        copy[field] = value;
-                        return copy;
-                    }
-                    return item;
-                });
-                setAttributes({ notifications: updated });
-            };
-
-            var removeItem = function(index) {
-                var updated = notifications.filter(function(_, i) { return i !== index; });
-                setAttributes({ notifications: updated });
-            };
-
-            var addItem = function() {
-                var updated = notifications.concat([{ name: '', product: '', image: '', location: '', time: '' }]);
-                setAttributes({ notifications: updated });
-            };
-
-            var moveItem = function(index, direction) {
-                var updated = [].concat(notifications);
-                var target = index + direction;
-                if (target < 0 || target >= updated.length) return;
-                var temp = updated[index];
-                updated[index] = updated[target];
-                updated[target] = temp;
-                setAttributes({ notifications: updated });
-            };
+            var ops = listOps(notifications, function(next) {
+                setAttributes({ notifications: next });
+            });
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -63,70 +36,85 @@
                             min: 1000,
                             max: 30000,
                             step: 500
+                        }),
+                        el(RangeControl, {
+                            label: 'Durata visualizzazione (secondi)',
+                            value: (displayDuration || 0) / 1000,
+                            onChange: function(val) { setAttributes({ displayDuration: val * 1000 }); },
+                            min: 2,
+                            max: 20,
+                            step: 1
+                        }),
+                        el(ToggleControl, {
+                            label: 'Mostra badge "Acquisto verificato"',
+                            checked: !!showVerified,
+                            onChange: function(val) { setAttributes({ showVerified: val }); }
                         })
                     ),
                     el(PanelBody, { title: 'Notifiche (' + notifications.length + ')', initialOpen: false },
                         notifications.map(function(item, index) {
                             return el('div', { key: index, style: { marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #ddd' } },
-                                el('strong', {}, 'Notifica ' + (index + 1)),
+                                el(ItemControls, {
+                                    ops: ops,
+                                    index: index,
+                                    count: notifications.length,
+                                    label: 'Notifica ' + (index + 1)
+                                }),
                                 el(TextControl, {
                                     label: 'Nome',
                                     value: item.name || '',
-                                    onChange: function(val) { updateItem(index, 'name', val); }
+                                    onChange: function(val) { ops.update(index, 'name', val); }
                                 }),
                                 el(TextControl, {
                                     label: 'Prodotto',
                                     value: item.product || '',
-                                    onChange: function(val) { updateItem(index, 'product', val); }
+                                    onChange: function(val) { ops.update(index, 'product', val); }
                                 }),
-                                el(MediaUploadCheck, {},
-                                    el(MediaUpload, {
-                                        onSelect: function(media) { updateItem(index, 'image', media.url); },
-                                        allowedTypes: ['image'],
-                                        render: function(obj) {
-                                            return el('div', { style: { marginTop: '8px', marginBottom: '8px' } },
-                                                item.image
-                                                    ? el('div', {},
-                                                        el('img', { src: item.image, style: { maxWidth: '100%', height: 'auto', marginBottom: '4px' } }),
-                                                        el(Button, { isSecondary: true, isSmall: true, onClick: function() { updateItem(index, 'image', ''); } }, 'Rimuovi immagine')
-                                                    )
-                                                    : el(Button, { isSecondary: true, onClick: obj.open }, 'Seleziona immagine')
-                                            );
-                                        }
+                                el('div', { style: { marginTop: '8px', marginBottom: '8px' } },
+                                    el(MediaField, {
+                                        value: item.image || '',
+                                        onSelect: function(media) {
+                                            ops.updateMany(index, { image: media.url, imageId: media.id });
+                                        },
+                                        onRemove: function() {
+                                            ops.updateMany(index, { image: '', imageId: 0 });
+                                        },
+                                        selectLabel: 'Seleziona immagine',
+                                        removeLabel: 'Rimuovi immagine'
                                     })
                                 ),
                                 el(TextControl, {
                                     label: 'Localita',
                                     value: item.location || '',
-                                    onChange: function(val) { updateItem(index, 'location', val); }
+                                    onChange: function(val) { ops.update(index, 'location', val); }
                                 }),
                                 el(TextControl, {
                                     label: 'Tempo',
                                     value: item.time || '',
-                                    onChange: function(val) { updateItem(index, 'time', val); }
-                                }),
-                                el('div', { style: { display: 'flex', gap: '4px', marginTop: '8px' } },
-                                    el(Button, { isSmall: true, onClick: function() { moveItem(index, -1); }, disabled: index === 0 }, '\u2191'),
-                                    el(Button, { isSmall: true, onClick: function() { moveItem(index, 1); }, disabled: index === notifications.length - 1 }, '\u2193'),
-                                    el(Button, { isSmall: true, isDestructive: true, onClick: function() { removeItem(index); } }, 'Elimina')
-                                )
+                                    onChange: function(val) { ops.update(index, 'time', val); }
+                                })
                             );
                         }),
-                        el(Button, { isPrimary: true, onClick: addItem, style: { marginTop: '8px' } }, 'Aggiungi notifica')
+                        el(Button, {
+                            variant: 'primary',
+                            onClick: function() {
+                                ops.add({ name: '', product: '', image: '', imageId: 0, location: '', time: '' });
+                            },
+                            style: { marginTop: '8px' }
+                        }, 'Aggiungi notifica')
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Social Proof'),
-                    el('div', { className: 'gh-editor-placeholder__text' },
-                        notifications.length > 0
+                        ),
+                        title: 'Social Proof',
+                        text: notifications.length > 0
                             ? notifications.length + ' notifiche configurate'
-                            : 'Configura questo blocco nel pannello laterale.'
-                    )
+                            : 'Configura questo blocco nel pannello laterale.',
+                        thumbs: notifications.map(function(item) { return item.image; })
+                    })
                 )
             );
         },

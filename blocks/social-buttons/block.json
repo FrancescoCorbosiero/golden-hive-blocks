@@ -36,6 +36,7 @@
         "html": false,
         "multiple": false
     },
+    "example": {},
     "editorScript": "file:./editor.js",
     "render": "file:./render.php"
 }

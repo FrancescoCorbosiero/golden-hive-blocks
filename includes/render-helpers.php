@@ -111,15 +111,17 @@ function gh_button($args)
  * @param int    $id   Attachment ID (0/absent for legacy content).
  * @param string $url  Fallback image URL.
  * @param array  $args {
- *     @type string $size          WP image size. Default 'full'.
- *     @type string $class         CSS classes.
- *     @type string $alt           Alt text (fallback path; ID path uses the
- *                                 media library alt unless this is set).
- *     @type string $loading       'lazy' (default) or 'eager'.
- *     @type string $decoding      Default 'async'.
- *     @type string $fetchpriority '' or 'high'.
- *     @type string $sizes         Custom sizes attribute.
- *     @type string $style         Inline style.
+ *     @type string      $size          WP image size. Default 'full'.
+ *     @type string      $class         CSS classes.
+ *     @type string|null $alt           null (default) = let the media library
+ *                                      alt win on the ID path; '' = force an
+ *                                      empty alt (decorative image); any other
+ *                                      string = explicit alt text.
+ *     @type string      $loading       'lazy' (default) or 'eager'.
+ *     @type string      $decoding      Default 'async'.
+ *     @type string      $fetchpriority '' or 'high'.
+ *     @type string      $sizes         Custom sizes attribute.
+ *     @type string      $style         Inline style.
  * }
  * @return string <img> markup, empty string when no source available.
  */
@@ -128,7 +130,7 @@ function gh_img($id, $url, $args = array())
     $args = wp_parse_args($args, array(
         'size'          => 'full',
         'class'         => '',
-        'alt'           => '',
+        'alt'           => null,
         'loading'       => 'lazy',
         'decoding'      => 'async',
         'fetchpriority' => '',
@@ -143,10 +145,14 @@ function gh_img($id, $url, $args = array())
             'loading'  => $args['loading'],
             'decoding' => $args['decoding'],
         );
-        foreach (array('class', 'alt', 'fetchpriority', 'sizes', 'style') as $key) {
+        foreach (array('class', 'fetchpriority', 'sizes', 'style') as $key) {
             if ($args[$key] !== '') {
                 $attrs[$key] = $args[$key];
             }
+        }
+        // alt: null = media-library alt; '' or a string = explicit override.
+        if ($args['alt'] !== null) {
+            $attrs['alt'] = $args['alt'];
         }
 
         $html = wp_get_attachment_image($id, $args['size'], false, $attrs);
@@ -159,7 +165,8 @@ function gh_img($id, $url, $args = array())
         return '';
     }
 
-    $html = '<img src="' . esc_url($url) . '" alt="' . esc_attr($args['alt']) . '"';
+    $alt  = $args['alt'] === null ? '' : $args['alt'];
+    $html = '<img src="' . esc_url($url) . '" alt="' . esc_attr($alt) . '"';
     foreach (array('class', 'loading', 'decoding', 'fetchpriority', 'sizes', 'style') as $key) {
         if ($args[$key] !== '') {
             $html .= ' ' . $key . '="' . esc_attr($args[$key]) . '"';

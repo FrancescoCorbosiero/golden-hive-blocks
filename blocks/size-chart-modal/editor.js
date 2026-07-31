@@ -1,8 +1,8 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls } = wp.blockEditor;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
     const { PanelBody, TextControl, ToggleControl } = wp.components;
+    const { el, Fragment, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/size-chart-modal', {
         edit: function({ attributes, setAttributes }) {
@@ -11,6 +11,7 @@
             var description = attributes.description;
             var triggerText = attributes.triggerText;
             var showTrigger = attributes.showTrigger;
+            const blockProps = useBlockProps();
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -42,14 +43,14 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M10 10.02h5V21h-5zM17 21h3c1.1 0 2-.9 2-2v-9h-5v11zm3-18H4c-1.1 0-2 .9-2 2v3h20V5c0-1.1-.9-2-2-2zM2 19c0 1.1.9 2 2 2h3V10H2v9z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Size Chart Modal'),
-                    el('div', { className: 'gh-editor-placeholder__text' }, 'Configura questo blocco nel pannello laterale.')
+                        ),
+                        title: 'Size Chart Modal',
+                        text: 'Configura questo blocco nel pannello laterale.'
+                    })
                 )
             );
         },
