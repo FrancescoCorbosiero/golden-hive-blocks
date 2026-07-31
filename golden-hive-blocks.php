@@ -228,3 +228,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';
  * Include the lightweight product rail (CSS scroll-snap carousel).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-rail.php';
+
+/**
+ * Include the parallax archive hero (shop / category / tag pages).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/archive-hero.php';
