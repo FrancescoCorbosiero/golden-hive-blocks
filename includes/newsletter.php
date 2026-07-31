@@ -44,12 +44,15 @@ add_action('init', 'ghb_newsletter_register_cpt');
  */
 function ghb_newsletter_subscribe_handler()
 {
-    if (!check_ajax_referer('ghb_newsletter', 'nonce', false)) {
-        wp_send_json_error(
-            array('message' => __('Sessione scaduta — ricarica la pagina e riprova.', 'golden-hive-blocks')),
-            403
-        );
-    }
+    /*
+     * Niente hard-fail sul nonce: il nonce è stampato nell'HTML e con una
+     * page cache più vecchia della sua vita (12-24h) OGNI iscrizione di un
+     * visitatore anonimo fallirebbe in silenzio. Il CSRF su una iscrizione
+     * newsletter è a impatto trascurabile (stesso ragionamento del wc-ajax
+     * add_to_cart nonce-less di WooCommerce); le vere protezioni qui sono
+     * il rate limit per IP e la validazione dell'email. Il nonce resta nel
+     * markup e nel POST per forward-compat.
+     */
 
     // Cheap per-IP rate limit: 5 attempts per hour.
     $ip  = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';

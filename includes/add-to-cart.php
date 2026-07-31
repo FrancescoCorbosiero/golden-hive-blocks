@@ -50,8 +50,15 @@ if (!defined('ABSPATH')) {
  */
 function ghb_product_ui_should_load()
 {
+    // Called per loop product (button render) oltre che dagli enqueue:
+    // memoizza la decisione per request. Il filtro gira comunque una volta.
+    static $memo = null;
+    if ($memo !== null) {
+        return $memo;
+    }
+
     if (!class_exists('WooCommerce')) {
-        return (bool) apply_filters('ghb_product_ui_should_load', false);
+        return $memo = (bool) apply_filters('ghb_product_ui_should_load', false);
     }
 
     $load = (function_exists('is_woocommerce') && is_woocommerce())
@@ -63,6 +70,7 @@ function ghb_product_ui_should_load()
         $post = get_post();
         if ($post instanceof WP_Post) {
             $tags = array(
+                // Shortcode del plugin…
                 'gh_product_rail',
                 'product_carousel',
                 'carousel_section',
@@ -70,6 +78,15 @@ function ghb_product_ui_should_load()
                 'new_arrivals',
                 'on_sale',
                 'featured_products',
+                // …e gli shortcode loop nativi di WooCommerce, che sparano
+                // gli stessi hook woocommerce_after_shop_loop_item.
+                'products',
+                'product_category',
+                'sale_products',
+                'best_selling_products',
+                'recent_products',
+                'top_rated_products',
+                'related_products',
             );
             foreach ($tags as $tag) {
                 if (has_shortcode($post->post_content, $tag)) {
@@ -77,10 +94,16 @@ function ghb_product_ui_should_load()
                     break;
                 }
             }
+
+            // Blocchi prodotto Gutenberg (woocommerce/product-collection,
+            // product-on-sale, handpicked-products, …): match sul prefisso.
+            if (!$load && strpos($post->post_content, '<!-- wp:woocommerce/') !== false) {
+                $load = true;
+            }
         }
     }
 
-    return (bool) apply_filters('ghb_product_ui_should_load', $load);
+    return $memo = (bool) apply_filters('ghb_product_ui_should_load', $load);
 }
 
 /**
@@ -98,6 +121,12 @@ function ghb_atc_is_loop()
 add_action('wp', 'ghb_atc_replace_core_button');
 function ghb_atc_replace_core_button()
 {
+    // Stesso gate degli asset: dove CSS/JS/modali non caricano, il bottone
+    // core di WooCommerce resta al suo posto (fail-safe: mai bottoni morti).
+    if (!ghb_product_ui_should_load()) {
+        return;
+    }
+
     if (apply_filters('ghb_atc_remove_core_loop_button', true)) {
         remove_action('woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10);
     }
@@ -113,6 +142,11 @@ add_action('woocommerce_after_shop_loop_item', 'ghb_atc_render_button', 10);
  */
 function ghb_atc_render_button()
 {
+    // Niente bottoni senza gli asset che li fanno funzionare (vedi gate).
+    if (!ghb_product_ui_should_load()) {
+        return;
+    }
+
     global $product;
     if (!$product instanceof WC_Product) {
         return;

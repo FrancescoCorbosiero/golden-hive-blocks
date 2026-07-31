@@ -31,6 +31,7 @@
     var matchedVariation = null;
     var lastFocus = null;
     var fetchController = null;
+    var closeTimer = null;
 
     /* ── Scroll lock (shared GoldenHive helper, guarded fallback) ── */
     function lockScroll() {
@@ -73,6 +74,11 @@
     }
 
     function openModal() {
+        // Una riapertura entro 1.5s annulla l'auto-chiusura post-acquisto.
+        if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+        }
         if (!isOpen()) {
             lastFocus = document.activeElement;
             lockScroll();
@@ -84,6 +90,13 @@
     }
 
     function closeModal() {
+        // Idempotente: il timer di auto-chiusura post-acquisto può scattare
+        // dopo una chiusura manuale — senza guardia decrementerebbe il
+        // contatore condiviso dello scroll-lock sotto un altro overlay
+        // aperto e abortirebbe il fetch di una sheet riaperta.
+        if (!modal.classList.contains('active')) {
+            return;
+        }
         if (fetchController) {
             fetchController.abort();
             fetchController = null;
@@ -522,7 +535,7 @@
                 // mini-cart — no extra wc_fragment_refresh round-trip.
                 applyFragments(data ? data.fragments : null);
                 notifyAdded(data ? data.fragments : null, data ? data.cart_hash : null, btn);
-                setTimeout(closeModal, 1500);
+                closeTimer = setTimeout(closeModal, 1500);
             })
             .catch(function () {
                 fail('Errore di rete — riprova.');
