@@ -33,8 +33,13 @@
     },
     "supports": {
         "align": ["wide", "full"],
-        "html": false
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
     },
+    "example": {},
     "editorScript": "file:./editor.js",
     "render": "file:./render.php"
 }

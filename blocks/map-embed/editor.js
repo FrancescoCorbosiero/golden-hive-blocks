@@ -1,11 +1,13 @@
 (function (wp) {
     var registerBlockType = wp.blocks.registerBlockType;
-    var el = wp.element.createElement;
     var InspectorControls = wp.blockEditor.InspectorControls;
+    var useBlockProps = wp.blockEditor.useBlockProps;
     var PanelBody = wp.components.PanelBody;
     var TextareaControl = wp.components.TextareaControl;
     var RangeControl = wp.components.RangeControl;
-    var useBlockProps = wp.blockEditor.useBlockProps;
+    var el = window.ghEditorUtils.el;
+    var Fragment = window.ghEditorUtils.Fragment;
+    var Placeholder = window.ghEditorUtils.Placeholder;
 
     registerBlockType('golden-hive/map-embed', {
         edit: function (props) {
@@ -16,8 +18,8 @@
             var hasEmbed = attributes.embedCode && attributes.embedCode.trim().length > 0;
 
             return el(
-                'div',
-                blockProps,
+                Fragment,
+                {},
                 el(
                     InspectorControls,
                     null,
@@ -56,18 +58,14 @@
                 ),
                 el(
                     'div',
-                    { className: 'gh-editor-placeholder' },
-                    el(
-                        'span',
-                        { className: 'dashicons dashicons-location' }
-                    ),
-                    el(
-                        'p',
-                        null,
-                        hasEmbed
+                    blockProps,
+                    el(Placeholder, {
+                        icon: el('span', { className: 'dashicons dashicons-location' }),
+                        title: 'Map Embed',
+                        text: hasEmbed
                             ? 'Mappa configurata'
-                            : 'Incolla il codice embed di Google Maps'
-                    )
+                            : 'Incolla il codice embed di Google Maps',
+                    })
                 )
             );
         },

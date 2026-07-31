@@ -18,6 +18,10 @@
             "type": "string",
             "default": ""
         },
+        "imageUrlId": {
+            "type": "number",
+            "default": 0
+        },
         "badge": {
             "type": "string",
             "default": "Offerta Esclusiva"
@@ -64,6 +68,7 @@
         "html": false,
         "multiple": false
     },
+    "example": {},
     "editorScript": "file:./editor.js",
     "render": "file:./render.php"
 }

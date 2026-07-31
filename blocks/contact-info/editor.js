@@ -1,12 +1,16 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls } = wp.blockEditor;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
     const { PanelBody, TextControl, TextareaControl } = wp.components;
+    const utils = window.ghEditorUtils;
+    const el = utils.el;
+    const Fragment = utils.Fragment;
+    const Placeholder = utils.Placeholder;
 
     registerBlockType('golden-hive/contact-info', {
         edit: function({ attributes, setAttributes }) {
             const { title, subtitle, address, vat, phone, email, mapUrl, mapEmbed } = attributes;
+            const blockProps = useBlockProps();
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -58,16 +62,14 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Contact Info'),
-                    el('div', { className: 'gh-editor-placeholder__text' },
-                        address ? address : 'Configura questo blocco nel pannello laterale.'
-                    )
+                        ),
+                        title: 'Contact Info',
+                        text: address ? address : 'Configura questo blocco nel pannello laterale.'
+                    })
                 )
             );
         },

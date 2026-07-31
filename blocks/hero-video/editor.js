@@ -1,12 +1,17 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
-    const { PanelBody, TextControl, SelectControl, ToggleControl, Button } = wp.components;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
+    const { PanelBody, TextControl, SelectControl, ToggleControl } = wp.components;
+    const utils = window.ghEditorUtils;
+    const el = utils.el;
+    const Fragment = utils.Fragment;
+    const MediaField = utils.MediaField;
+    const Placeholder = utils.Placeholder;
 
     registerBlockType('golden-hive/hero-video', {
         edit: function({ attributes, setAttributes }) {
             const { mediaType, videoUrl, imageUrl, posterUrl, badge, title, subtitle, primaryButtonText, primaryButtonUrl, secondaryButtonText, secondaryButtonUrl, showScrollIndicator } = attributes;
+            const blockProps = useBlockProps();
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -26,42 +31,22 @@
                             onChange: function(val) { setAttributes({ videoUrl: val }); }
                         }),
                         mediaType === 'video' && el('div', { style: { marginBottom: '16px' } },
-                            el('label', { style: { display: 'block', marginBottom: '4px', fontWeight: '500' } }, 'Poster Video'),
-                            el(MediaUploadCheck, {},
-                                el(MediaUpload, {
-                                    onSelect: function(media) { setAttributes({ posterUrl: media.url }); },
-                                    allowedTypes: ['image'],
-                                    render: function(obj) {
-                                        return el('div', {},
-                                            posterUrl
-                                                ? el('div', {},
-                                                    el('img', { src: posterUrl, style: { maxWidth: '100%', height: 'auto', marginBottom: '4px' } }),
-                                                    el(Button, { isSecondary: true, isSmall: true, onClick: function() { setAttributes({ posterUrl: '' }); } }, 'Rimuovi poster')
-                                                )
-                                                : el(Button, { isSecondary: true, onClick: obj.open }, 'Seleziona poster')
-                                        );
-                                    }
-                                })
-                            )
+                            el(MediaField, {
+                                label: 'Poster Video',
+                                value: posterUrl,
+                                onSelect: function(media) { setAttributes({ posterUrl: media.url, posterUrlId: media.id || 0 }); },
+                                onRemove: function() { setAttributes({ posterUrl: '', posterUrlId: 0 }); },
+                                selectLabel: 'Seleziona poster',
+                                removeLabel: 'Rimuovi poster'
+                            })
                         ),
                         el('div', { style: { marginBottom: '16px' } },
-                            el('label', { style: { display: 'block', marginBottom: '4px', fontWeight: '500' } }, 'Immagine di sfondo'),
-                            el(MediaUploadCheck, {},
-                                el(MediaUpload, {
-                                    onSelect: function(media) { setAttributes({ imageUrl: media.url }); },
-                                    allowedTypes: ['image'],
-                                    render: function(obj) {
-                                        return el('div', {},
-                                            imageUrl
-                                                ? el('div', {},
-                                                    el('img', { src: imageUrl, style: { maxWidth: '100%', height: 'auto', marginBottom: '4px' } }),
-                                                    el(Button, { isSecondary: true, isSmall: true, onClick: function() { setAttributes({ imageUrl: '' }); } }, 'Rimuovi immagine')
-                                                )
-                                                : el(Button, { isSecondary: true, onClick: obj.open }, 'Seleziona immagine')
-                                        );
-                                    }
-                                })
-                            )
+                            el(MediaField, {
+                                label: 'Immagine di sfondo',
+                                value: imageUrl,
+                                onSelect: function(media) { setAttributes({ imageUrl: media.url, imageUrlId: media.id || 0 }); },
+                                onRemove: function() { setAttributes({ imageUrl: '', imageUrlId: 0 }); }
+                            })
                         )
                     ),
                     el(PanelBody, { title: 'Contenuto', initialOpen: false },
@@ -111,16 +96,15 @@
                         })
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M8 5v14l11-7z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Hero Video'),
-                    el('div', { className: 'gh-editor-placeholder__text' },
-                        title ? '"' + title + '" — ' + mediaType : 'Configura questo blocco nel pannello laterale.'
-                    )
+                        ),
+                        title: 'Hero Video',
+                        text: title ? '"' + title + '" — ' + mediaType : 'Configura questo blocco nel pannello laterale.',
+                        thumbs: [imageUrl, posterUrl]
+                    })
                 )
             );
         },

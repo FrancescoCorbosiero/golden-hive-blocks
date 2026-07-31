@@ -1,6 +1,11 @@
 <?php
 /**
  * Store Hours Block - Render lato server
+ *
+ * Gli stili vivono in style.css (.gh-store-hours). Il giorno corrente viene
+ * evidenziato lato server confrontando il nome del giorno (in italiano) con
+ * current_time('N'): con una page cache attiva l'evidenziazione può restare
+ * "ferma" al giorno di generazione della cache — comportamento accettato.
  */
 
 $title = $attributes['title'] ?? 'Orari di Apertura';
@@ -10,76 +15,68 @@ $note  = $attributes['note'] ?? '';
 if (empty($hours)) {
     return;
 }
+
+$wrapper_attributes = get_block_wrapper_attributes(array(
+    'class' => 'gh-block gh-store-hours',
+));
+
+// 1 (lunedì) ... 7 (domenica), nel fuso orario di WordPress.
+$weekday_names = array(
+    1 => 'lunedì',
+    2 => 'martedì',
+    3 => 'mercoledì',
+    4 => 'giovedì',
+    5 => 'venerdì',
+    6 => 'sabato',
+    7 => 'domenica',
+);
+$today_name = $weekday_names[(int) current_time('N')] ?? '';
 ?>
-<section class="gh-block gh-store-hours" style="
-    background: var(--gh-gray-50, #f9fafb);
-    padding: var(--gh-space-16, 4rem) var(--gh-space-6, 1.5rem);
-">
-    <div style="
-        max-width: 640px;
-        margin: 0 auto;
-    ">
+<section <?php echo $wrapper_attributes; ?>>
+    <div class="gh-store-hours__container">
         <?php if (!empty($title)) : ?>
-            <h2 data-gh-reveal="up" style="
-                font-size: clamp(1.5rem, 3vw, 2rem);
-                font-weight: 700;
-                letter-spacing: -0.02em;
-                color: var(--gh-gray-900, #111827);
-                margin: 0 0 var(--gh-space-8, 2rem) 0;
-                text-align: center;
-            "><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-store-hours__title" data-gh-reveal="up"><?php echo esc_html($title); ?></h2>
         <?php endif; ?>
 
-        <div style="
-            background: var(--gh-white, #ffffff);
-            border-radius: var(--gh-radius-lg, 12px);
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-        ">
+        <div class="gh-store-hours__card">
             <?php foreach ($hours as $index => $entry) :
                 $day  = $entry['day'] ?? '';
                 $time = $entry['time'] ?? '';
-                $is_closed = (strtolower(trim($time)) === 'chiuso');
-                $is_last = ($index === count($hours) - 1);
-            ?>
-                <div data-gh-reveal="up" data-gh-reveal-delay="<?php echo $index * 50; ?>" style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: var(--gh-space-4, 1rem) var(--gh-space-6, 1.5rem);
-                    <?php if (!$is_last) : ?>border-bottom: 1px solid var(--gh-gray-200, #e5e7eb);<?php endif; ?>
-                ">
-                    <span style="
-                        font-weight: 600;
-                        color: var(--gh-gray-900, #111827);
-                        font-size: 0.95rem;
-                    "><?php echo esc_html($day); ?></span>
 
-                    <span style="
-                        font-size: 0.9rem;
-                        <?php if ($is_closed) : ?>
-                            color: var(--gh-accent, #ef4444);
-                            font-weight: 600;
-                            text-transform: uppercase;
-                            letter-spacing: 0.05em;
-                            font-size: 0.8rem;
-                        <?php else : ?>
-                            color: var(--gh-gray-600, #4b5563);
-                            font-weight: 400;
+                $is_closed = (strtolower(trim($time)) === 'chiuso');
+
+                $day_norm = function_exists('mb_strtolower')
+                    ? mb_strtolower(trim($day), 'UTF-8')
+                    : strtolower(trim($day));
+                $is_today = ($today_name !== '' && $day_norm === $today_name);
+
+                $row_class = 'gh-store-hours__row' . ($is_today ? ' gh-store-hours__row--today' : '');
+
+                $time_class = 'gh-store-hours__time' . ($is_closed ? ' gh-store-hours__time--closed' : '');
+
+                $delay = $index * 50;
+            ?>
+                <div class="<?php echo esc_attr($row_class); ?>"
+                     data-gh-reveal="up"
+                     data-gh-reveal-delay="<?php echo (int) $delay; ?>"
+                     style="--gh-reveal-delay: <?php echo (int) $delay; ?>ms">
+                    <span class="gh-store-hours__day">
+                        <?php echo esc_html($day); ?>
+                        <?php if ($is_today) : ?>
+                            <span class="gh-store-hours__badge">Oggi</span>
                         <?php endif; ?>
-                    "><?php echo esc_html($time); ?></span>
+                    </span>
+
+                    <span class="<?php echo esc_attr($time_class); ?>"><?php echo esc_html($time); ?></span>
                 </div>
             <?php endforeach; ?>
         </div>
 
         <?php if (!empty($note)) : ?>
-            <p data-gh-reveal="up" data-gh-reveal-delay="<?php echo count($hours) * 50; ?>" style="
-                margin: var(--gh-space-4, 1rem) 0 0 0;
-                text-align: center;
-                font-size: 0.8rem;
-                color: var(--gh-gray-500, #6b7280);
-                line-height: 1.5;
-            "><?php echo esc_html($note); ?></p>
+            <p class="gh-store-hours__note"
+               data-gh-reveal="up"
+               data-gh-reveal-delay="<?php echo (int) (count($hours) * 50); ?>"
+               style="--gh-reveal-delay: <?php echo (int) (count($hours) * 50); ?>ms"><?php echo esc_html($note); ?></p>
         <?php endif; ?>
     </div>
 </section>

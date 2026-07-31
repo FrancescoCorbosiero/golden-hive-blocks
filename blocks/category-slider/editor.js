@@ -1,44 +1,21 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
-    const { createElement: el, Fragment } = wp.element;
-    const { InspectorControls, MediaUpload, MediaUploadCheck } = wp.blockEditor;
+    const { InspectorControls, useBlockProps } = wp.blockEditor;
     const { PanelBody, TextControl, ToggleControl, Button, SelectControl, RangeControl } = wp.components;
+    const utils = window.ghEditorUtils;
+    const el = utils.el;
+    const Fragment = utils.Fragment;
+    const listOps = utils.listOps;
+    const ItemControls = utils.ItemControls;
+    const MediaField = utils.MediaField;
+    const Placeholder = utils.Placeholder;
 
     registerBlockType('golden-hive/category-slider', {
         edit: function({ attributes, setAttributes }) {
-            const { title, categories, showNav, showDots, autoplay, loop, imageRatio, paddingTop, paddingBottom } = attributes;
+            const { title, categories, showNav, imageRatio, paddingTop, paddingBottom } = attributes;
+            const blockProps = useBlockProps();
 
-            var updateCategory = function(index, field, value) {
-                var updated = categories.map(function(cat, i) {
-                    if (i === index) {
-                        var copy = Object.assign({}, cat);
-                        copy[field] = value;
-                        return copy;
-                    }
-                    return cat;
-                });
-                setAttributes({ categories: updated });
-            };
-
-            var removeCategory = function(index) {
-                var updated = categories.filter(function(_, i) { return i !== index; });
-                setAttributes({ categories: updated });
-            };
-
-            var addCategory = function() {
-                var updated = categories.concat([{ name: '', image: '', url: '' }]);
-                setAttributes({ categories: updated });
-            };
-
-            var moveCategory = function(index, direction) {
-                var updated = [].concat(categories);
-                var target = index + direction;
-                if (target < 0 || target >= updated.length) return;
-                var temp = updated[index];
-                updated[index] = updated[target];
-                updated[target] = temp;
-                setAttributes({ categories: updated });
-            };
+            var ops = listOps(categories, function(next) { setAttributes({ categories: next }); });
 
             return el(Fragment, {},
                 el(InspectorControls, {},
@@ -53,21 +30,9 @@
                             checked: showNav,
                             onChange: function(val) { setAttributes({ showNav: val }); }
                         }),
-                        el(ToggleControl, {
-                            label: 'Mostra indicatori',
-                            checked: showDots,
-                            onChange: function(val) { setAttributes({ showDots: val }); }
-                        }),
-                        el(ToggleControl, {
-                            label: 'Autoplay',
-                            checked: autoplay,
-                            onChange: function(val) { setAttributes({ autoplay: val }); }
-                        }),
-                        el(ToggleControl, {
-                            label: 'Loop',
-                            checked: loop,
-                            onChange: function(val) { setAttributes({ loop: val }); }
-                        }),
+                        el('p', { style: { fontSize: '12px', fontStyle: 'italic', color: '#757575' } },
+                            'Le slide scorrono manualmente (scroll orizzontale).'
+                        ),
                         el(SelectControl, {
                             label: 'Proporzione immagine',
                             value: imageRatio || '4 / 5',
@@ -100,55 +65,42 @@
                     el(PanelBody, { title: 'Categorie (' + categories.length + ')', initialOpen: false },
                         categories.map(function(cat, index) {
                             return el('div', { key: index, style: { marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #ddd' } },
-                                el('strong', {}, 'Categoria ' + (index + 1)),
+                                el(ItemControls, { ops: ops, index: index, count: categories.length, label: 'Categoria ' + (index + 1) }),
                                 el(TextControl, {
                                     label: 'Nome',
                                     value: cat.name || '',
-                                    onChange: function(val) { updateCategory(index, 'name', val); }
+                                    onChange: function(val) { ops.update(index, 'name', val); }
                                 }),
-                                el(MediaUploadCheck, {},
-                                    el(MediaUpload, {
-                                        onSelect: function(media) { updateCategory(index, 'image', media.url); },
-                                        allowedTypes: ['image'],
-                                        render: function(obj) {
-                                            return el('div', { style: { marginTop: '8px', marginBottom: '8px' } },
-                                                cat.image
-                                                    ? el('div', {},
-                                                        el('img', { src: cat.image, style: { maxWidth: '100%', height: 'auto', marginBottom: '4px' } }),
-                                                        el(Button, { isSecondary: true, isSmall: true, onClick: function() { updateCategory(index, 'image', ''); } }, 'Rimuovi immagine')
-                                                    )
-                                                    : el(Button, { isSecondary: true, onClick: obj.open }, 'Seleziona immagine')
-                                            );
-                                        }
-                                    })
-                                ),
+                                el(MediaField, {
+                                    value: cat.image || '',
+                                    onSelect: function(media) { ops.updateMany(index, { image: media.url, imageId: media.id || 0 }); },
+                                    onRemove: function() { ops.updateMany(index, { image: '', imageId: 0 }); }
+                                }),
                                 el(TextControl, {
                                     label: 'URL',
                                     value: cat.url || '',
-                                    onChange: function(val) { updateCategory(index, 'url', val); }
-                                }),
-                                el('div', { style: { display: 'flex', gap: '4px', marginTop: '8px' } },
-                                    el(Button, { isSmall: true, onClick: function() { moveCategory(index, -1); }, disabled: index === 0 }, '\u2191'),
-                                    el(Button, { isSmall: true, onClick: function() { moveCategory(index, 1); }, disabled: index === categories.length - 1 }, '\u2193'),
-                                    el(Button, { isSmall: true, isDestructive: true, onClick: function() { removeCategory(index); } }, 'Elimina')
-                                )
+                                    onChange: function(val) { ops.update(index, 'url', val); }
+                                })
                             );
                         }),
-                        el(Button, { isPrimary: true, onClick: addCategory, style: { marginTop: '8px' } }, 'Aggiungi categoria')
+                        el(Button, {
+                            variant: 'primary',
+                            onClick: function() { ops.add({ name: '', image: '', url: '' }); },
+                            style: { marginTop: '8px' }
+                        }, 'Aggiungi categoria')
                     )
                 ),
-                el('div', { className: 'gh-editor-placeholder' },
-                    el('div', { className: 'gh-editor-placeholder__icon' },
-                        el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
+                el('div', blockProps,
+                    el(Placeholder, {
+                        icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M4 5h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm0 8h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z' })
-                        )
-                    ),
-                    el('div', { className: 'gh-editor-placeholder__title' }, 'Category Slider'),
-                    el('div', { className: 'gh-editor-placeholder__text' },
-                        categories.length > 0
+                        ),
+                        title: 'Category Slider',
+                        text: categories.length > 0
                             ? categories.length + ' categorie configurate'
-                            : 'Configura questo blocco nel pannello laterale.'
-                    )
+                            : 'Configura questo blocco nel pannello laterale.',
+                        thumbs: categories.map(function(cat) { return cat.image; })
+                    })
                 )
             );
         },

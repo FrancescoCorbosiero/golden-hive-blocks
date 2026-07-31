@@ -22,9 +22,17 @@
             "type": "string",
             "default": ""
         },
+        "imageUrlId": {
+            "type": "number",
+            "default": 0
+        },
         "posterUrl": {
             "type": "string",
             "default": ""
+        },
+        "posterUrlId": {
+            "type": "number",
+            "default": 0
         },
         "badge": {
             "type": "string",
@@ -61,8 +69,13 @@
     },
     "supports": {
         "align": ["full"],
-        "html": false
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
     },
+    "example": {},
     "editorScript": "file:./editor.js",
     "render": "file:./render.php"
 }

@@ -19,14 +19,20 @@ if (empty($title)) {
     return;
 }
 ?>
-<section class="gh-block gh-product-spotlight">
+<section <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-product-spotlight')); ?>>
     <div class="gh-product-spotlight__bg-pattern" aria-hidden="true"></div>
 
     <div class="gh-product-spotlight__container">
-        <div class="gh-product-spotlight__image-wrapper" data-gh-reveal="left">
+        <div class="gh-product-spotlight__image-wrapper" data-gh-reveal="left" data-gh-image-reveal>
             <div class="gh-product-spotlight__image">
                 <?php if (!empty($image_url)) : ?>
-                    <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($title); ?>" loading="lazy">
+                    <?php
+                    echo gh_img((int) ($attributes['imageUrlId'] ?? 0), $image_url, array(
+                        'alt'      => $title,
+                        'loading'  => 'lazy',
+                        'decoding' => 'async',
+                    ));
+                    ?>
                 <?php endif; ?>
 
                 <?php if (!empty($authenticity)) : ?>
@@ -43,10 +49,10 @@ if (empty($title)) {
 
         <div class="gh-product-spotlight__content" data-gh-reveal="right">
             <?php if (!empty($category)) : ?>
-                <span class="gh-product-spotlight__category"><?php echo esc_html($category); ?></span>
+                <span class="gh-eyebrow gh-product-spotlight__category"><?php echo esc_html($category); ?></span>
             <?php endif; ?>
 
-            <h2 class="gh-product-spotlight__title"><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-section-title gh-product-spotlight__title"><?php echo esc_html($title); ?></h2>
 
             <?php if (!empty($description)) : ?>
                 <p class="gh-product-spotlight__description"><?php echo esc_html($description); ?></p>
@@ -87,12 +93,13 @@ if (empty($title)) {
             <?php endif; ?>
 
             <?php if (!empty($button_url)) : ?>
-                <a href="<?php echo esc_url($button_url); ?>" class="gh-btn gh-btn--primary gh-btn--large">
-                    <?php echo esc_html($button_text); ?>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </a>
+                <?php
+                echo gh_button(array(
+                    'url'     => $button_url,
+                    'text'    => $button_text,
+                    'classes' => 'gh-btn gh-btn--primary gh-btn--large',
+                ));
+                ?>
             <?php endif; ?>
         </div>
     </div>

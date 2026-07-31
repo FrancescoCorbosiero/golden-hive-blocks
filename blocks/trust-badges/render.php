@@ -22,23 +22,40 @@ if (empty($badges)) {
 
 $variant_class = $variant === 'carousel' ? ' gh-trust-badges--carousel' : '';
 
-// For carousel, we duplicate badges for seamless infinite scroll
-$render_badges = $variant === 'carousel' ? array_merge($badges, $badges) : $badges;
+/**
+ * Render a single badge.
+ *
+ * @param array $badge       Badge data (icon, title).
+ * @param array $icons       Icon library.
+ * @param bool  $aria_hidden Whether the badge is a decorative clone.
+ */
+$gh_trust_badge_render = static function ($badge, $icons, $aria_hidden = false) {
+    ?>
+    <div class="gh-trust-badge"<?php echo $aria_hidden ? ' aria-hidden="true"' : ''; ?>>
+        <span class="gh-trust-badge__icon">
+            <?php
+            $icon_key = $badge['icon'] ?? 'authentic';
+            echo isset($icons[$icon_key]) ? $icons[$icon_key] : $icons['authentic'];
+            ?>
+        </span>
+        <?php if (!empty($badge['title'])) : ?>
+            <span class="gh-trust-badge__label"><?php echo esc_html($badge['title']); ?></span>
+        <?php endif; ?>
+    </div>
+    <?php
+};
 ?>
-<section class="gh-block gh-trust-badges<?php echo esc_attr($variant_class); ?>">
+<section <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-trust-badges' . $variant_class)); ?>>
     <div class="gh-trust-badges__strip">
-        <?php foreach ($render_badges as $badge) : ?>
-            <div class="gh-trust-badge">
-                <span class="gh-trust-badge__icon">
-                    <?php
-                    $icon_key = $badge['icon'] ?? 'authentic';
-                    echo isset($icons[$icon_key]) ? $icons[$icon_key] : $icons['authentic'];
-                    ?>
-                </span>
-                <?php if (!empty($badge['title'])) : ?>
-                    <span class="gh-trust-badge__label"><?php echo esc_html($badge['title']); ?></span>
-                <?php endif; ?>
-            </div>
+        <?php foreach ($badges as $badge) : ?>
+            <?php $gh_trust_badge_render($badge, $icons); ?>
         <?php endforeach; ?>
+
+        <?php if ($variant === 'carousel') : ?>
+            <?php /* Set duplicato solo per lo scroll infinito: nascosto alle tecnologie assistive. */ ?>
+            <?php foreach ($badges as $badge) : ?>
+                <?php $gh_trust_badge_render($badge, $icons, true); ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </section>

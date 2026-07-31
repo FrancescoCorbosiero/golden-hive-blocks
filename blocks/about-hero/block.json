@@ -26,6 +26,10 @@
             "type": "string",
             "default": ""
         },
+        "imageUrlId": {
+            "type": "number",
+            "default": 0
+        },
         "values": {
             "type": "array",
             "default": [
@@ -41,8 +45,13 @@
     },
     "supports": {
         "align": ["wide", "full"],
-        "html": false
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
     },
+    "example": {},
     "editorScript": "file:./editor.js",
     "render": "file:./render.php"
 }
