@@ -21,7 +21,13 @@ $query = (isset($relevanssi_query) && $relevanssi_query instanceof WP_Query)
     ? $relevanssi_query
     : $GLOBALS['wp_query'];
 
-if ($query->have_posts()) : ?>
+if ($query->have_posts()) :
+    // Resolve the site's brand taxonomies ONCE per response, not per result.
+    $brand_taxonomies = array_filter(
+        array('yith_product_brand', 'product_brand', 'pwb-brand', 'pa_brand'),
+        'taxonomy_exists'
+    );
+    ?>
     <ul class="rlv-results-list">
         <?php
         while ($query->have_posts()) :
@@ -32,15 +38,13 @@ if ($query->have_posts()) : ?>
                 continue;
             }
 
-            // Optional brand eyebrow. Tries the common brand taxonomies; skips silently if none exist.
+            // Optional brand eyebrow; skips silently if no brand taxonomy exists.
             $brand = '';
-            foreach (array('yith_product_brand', 'product_brand', 'pwb-brand', 'pa_brand') as $taxonomy) {
-                if (taxonomy_exists($taxonomy)) {
-                    $terms = get_the_terms(get_the_ID(), $taxonomy);
-                    if ($terms && !is_wp_error($terms)) {
-                        $brand = $terms[0]->name;
-                        break;
-                    }
+            foreach ($brand_taxonomies as $taxonomy) {
+                $terms = get_the_terms(get_the_ID(), $taxonomy);
+                if ($terms && !is_wp_error($terms)) {
+                    $brand = $terms[0]->name;
+                    break;
                 }
             }
             ?>

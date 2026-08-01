@@ -17,11 +17,24 @@
     // (ghb_live_search_trigger_selector); defaults to the header's .site-search.
     var cfg = window.ghbLiveSearch || {};
     var triggerSel = cfg.triggerSelector || '';
+    var warmed = false;
+
+    // Fire-and-forget warmup: opening the modal pings admin-ajax so the TLS
+    // connection, PHP worker e object cache sono già caldi quando parte la
+    // prima ricerca vera — toglie il costo di cold-start dal primo tasto.
+    function warm() {
+        if (warmed || !cfg.warmUrl) return;
+        warmed = true;
+        try {
+            fetch(cfg.warmUrl, { method: 'GET', credentials: 'same-origin', keepalive: true }).catch(function () {});
+        } catch (e) { /* fetch assente: nessun warmup, nessun danno */ }
+    }
 
     function open(returnFocusEl) {
         if (!modal.classList.contains('is-open')) {
             lastFocus = returnFocusEl || document.activeElement;
         }
+        warm();
         modal.classList.add('is-open');
         document.body.classList.add('rlv-open');
         setTimeout(function () { if (input) input.focus(); }, 60);
