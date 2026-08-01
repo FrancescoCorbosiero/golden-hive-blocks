@@ -233,3 +233,8 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-rail.php';
  * Include the parallax archive hero (shop / category / tag pages).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/archive-hero.php';
+
+/**
+ * Include the checkout bank-details drawer (bonifico / BACS).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/bank-details.php';
