@@ -101,21 +101,23 @@
     flex-direction: column !important;
 }
 
-/* Card image. Ratio + fit are driven by the shortcode (ratio="" / fit=""),
-   defaulting to the original square + crop when no variables are set. */
+/* Card image. Ratio + fit are driven by the shortcode (ratio="" / fit="");
+   the default is now contain: product shots (StockX-style, framing diverse)
+   were being cropped inconsistently card by card under cover. */
 .gh-rail__track > li.product img,
 .gh-rail__track > li.product .attachment-woocommerce_thumbnail {
     width: 100% !important;
     height: auto;
     aspect-ratio: var(--gh-ratio, 1 / 1);
-    object-fit: var(--gh-fit, cover);
+    object-fit: var(--gh-fit, contain);
     margin: 0 0 10px !important;
 }
-/* fit="contain" shows the whole image; a neutral backdrop fills the
-   letterboxed gaps so the card still reads as a clean tile. */
+/* fit="contain" shows the whole image; a white backdrop fills the letterboxed
+   gaps — seamless with the white-background product photography, and clean
+   letterboxing for the rare non-white shot. */
 .gh-rail--fit-contain .gh-rail__track > li.product img,
 .gh-rail--fit-contain .gh-rail__track > li.product .attachment-woocommerce_thumbnail {
-    background: var(--gh-gray-100, #f6f6f7);
+    background: var(--gh-white, #fff);
 }
 
 /* Tablet: fall back to the desktop column count unless columns_tablet was set. */
@@ -152,6 +154,51 @@
     .gh-rail--mcols .gh-rail__track > li.product {
         --_cols: var(--gh-cols-mobile, 2);
         flex: 0 0 calc((100% - (var(--_cols) - 1) * var(--gh-gap)) / var(--_cols)) !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Entrata — reveal a basso impatto. Il contenitore .gh-rail porta
+   data-gh-reveal solo come TRIGGER (l'IntersectionObserver di animations.js
+   gli aggiunge .gh-revealed): il contenitore stesso resta sempre visibile,
+   sono le card a salire in sequenza. Tutto gated su html.gh-js, con failsafe
+   e reduced-motion coperti, quindi senza JS le card sono semplicemente lì.
+   -------------------------------------------------------------------------- */
+html.gh-js .gh-rail[data-gh-reveal] {
+    opacity: 1;
+    transform: none;
+}
+
+html.gh-js .gh-rail[data-gh-reveal] .gh-rail__track > li.product {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.5s var(--gh-ease-out, ease), transform 0.5s var(--gh-ease-out, ease);
+}
+
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product {
+    opacity: 1;
+    transform: none;
+}
+
+/* Stagger: 60ms a card per le prime sei visibili, poi piatto. */
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(2) { transition-delay: 0.06s; }
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(3) { transition-delay: 0.12s; }
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(4) { transition-delay: 0.18s; }
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(5) { transition-delay: 0.24s; }
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(6) { transition-delay: 0.30s; }
+html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(n+7) { transition-delay: 0.36s; }
+
+/* Failsafe: engine mai partito → card visibili, nessuna transizione. */
+html.gh-anim-failsafe .gh-rail .gh-rail__track > li.product {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.gh-js .gh-rail[data-gh-reveal] .gh-rail__track > li.product {
+        transition-duration: 0.01ms;
+        transition-delay: 0s;
     }
 }
 

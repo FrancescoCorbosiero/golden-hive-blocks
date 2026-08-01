@@ -81,7 +81,12 @@ function ghb_product_rail_shortcode($atts)
             'columns_tablet' => '',         // optional; blank ⇒ inherit desktop columns
             'columns_mobile' => '',         // optional; blank ⇒ peek the next card (44vw)
             'ratio'          => '1/1',      // card image ratio: alias or "N/N" (e.g. 3/4)
-            'fit'            => 'cover',     // cover (crop) | contain (letterbox, no crop)
+            // cover (crop) | contain (whole image). Default contain: le foto
+            // prodotto in stile StockX hanno inquadrature diverse e il crop
+            // le tagliava in modo incoerente tra le card. Il vecchio default
+            // si ripristina per-rail con fit="cover" o globalmente via
+            // add_filter('ghb_rail_default_fit', fn() => 'cover').
+            'fit'            => apply_filters('ghb_rail_default_fit', 'contain'),
         ),
         $atts,
         'gh_product_rail'
@@ -115,7 +120,7 @@ function ghb_product_rail_shortcode($atts)
 
     // How the image fills its box. `cover` crops to fill (uniform cards);
     // `contain` shows the whole image, letterboxed against a neutral backdrop.
-    $fit = in_array($atts['fit'], array('cover', 'contain'), true) ? $atts['fit'] : 'cover';
+    $fit = in_array($atts['fit'], array('cover', 'contain'), true) ? $atts['fit'] : 'contain';
 
     // Wrapper classes + the CSS custom properties that drive the layout. Only
     // the breakpoints that were explicitly set emit a variable, so the CSS
@@ -141,7 +146,7 @@ function ghb_product_rail_shortcode($atts)
 
     ob_start();
     ?>
-    <div class="<?php echo esc_attr($rail_classes); ?>">
+    <div class="<?php echo esc_attr($rail_classes); ?>" data-gh-reveal="up">
         <?php if ('' !== $atts['title']) : ?>
             <h2 class="gh-rail__title"><?php echo esc_html($atts['title']); ?></h2>
         <?php endif; ?>
