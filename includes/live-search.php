@@ -41,6 +41,25 @@ add_filter('relevanssi_live_search_query_args', function ($args) {
     return $args;
 });
 
+/*
+ * Snappier as-you-type: the plugin's default engine config waits 500ms after
+ * the last keystroke and wants 3+ characters before firing. 250ms + 2 chars
+ * shaves a quarter second off EVERY search and lets short sneaker queries
+ * ("aj", "af") work. Defensive merge: only the two knobs are touched, and the
+ * filter is harmless if a plugin update renames the config keys.
+ */
+add_filter('relevanssi_live_search_configs', function ($configs) {
+    if (is_array($configs)) {
+        foreach ($configs as $key => $config) {
+            if (is_array($config) && isset($config['input']) && is_array($config['input'])) {
+                $configs[$key]['input']['delay']     = 250;
+                $configs[$key]['input']['min_chars'] = 2;
+            }
+        }
+    }
+    return $configs;
+});
+
 // Products shown in the panel.
 add_filter('relevanssi_live_search_posts_per_page', function () {
     return 6;
@@ -62,6 +81,98 @@ add_filter('relevanssi_live_search_results_template', function ($template) {
     $custom = GOLDEN_HIVE_BLOCKS_PATH . 'templates/search-results.php';
     return file_exists($custom) ? $custom : $template;
 });
+
+/* ══════════════════════════════════════════════════════════════════
+   PERFORMANCE — micro-cache + worker warmup for the live search AJAX
+   ══════════════════════════════════════════════════════════════════ */
+
+/**
+ * Micro-cache for the live-search AJAX response.
+ *
+ * Every keystroke-search pays a full WordPress bootstrap through
+ * admin-ajax.php plus a Relevanssi index query — typically the dominant cost
+ * of the "slow drawer". Identical queries within the TTL (popular terms,
+ * back-and-forth typing, other visitors searching the same thing) are served
+ * straight from a transient before the search plugin even runs.
+ *
+ * Trade-off: a result card's price/stock can be up to TTL minutes stale
+ * INSIDE THE DRAWER ONLY (product pages are always live). Tune or disable:
+ *     add_filter('ghb_live_search_cache_ttl', fn() => 0);     // off
+ *     add_filter('ghb_live_search_cache_ttl', fn() => 300);   // 5 min
+ *
+ * Implementation notes: hooked on admin_init (fires for every admin-ajax
+ * request, before wp_ajax_* handlers) and keyed on the plugin's AJAX action —
+ * name checked against the known SearchWP-fork spellings, filterable via
+ * ghb_live_search_cache_actions. Cache misses capture the plugin's HTML
+ * fragment with an output buffer callback that runs when the handler die()s.
+ * Logged-in users bypass the cache entirely (admin bar, previews).
+ */
+function ghb_live_search_microcache()
+{
+    if (!wp_doing_ajax() || is_user_logged_in()) {
+        return;
+    }
+
+    $action = isset($_REQUEST['action']) ? sanitize_key(wp_unslash($_REQUEST['action'])) : '';
+    $known  = apply_filters('ghb_live_search_cache_actions', array(
+        'relevanssi_live_search',
+        'rlv_live_search',
+        'searchwp_live_search',
+    ));
+    if (!in_array($action, $known, true)) {
+        return;
+    }
+
+    $ttl = (int) apply_filters('ghb_live_search_cache_ttl', 10 * MINUTE_IN_SECONDS);
+    if ($ttl <= 0) {
+        return;
+    }
+
+    // The SearchWP fork family posts the term as rlvquery/swpquery; fall back
+    // to s/q so a rename doesn't silently disable the cache.
+    $query = '';
+    foreach (array('rlvquery', 'swpquery', 's', 'q') as $param) {
+        if (isset($_REQUEST[$param]) && $_REQUEST[$param] !== '') {
+            $query = sanitize_text_field(wp_unslash($_REQUEST[$param]));
+            break;
+        }
+    }
+    if ($query === '') {
+        return;
+    }
+
+    $key = 'ghb_ls_' . md5(mb_strtolower(trim($query)) . '|' . $action);
+
+    $hit = get_transient($key);
+    if (is_string($hit) && $hit !== '') {
+        header('X-GHB-Live-Search-Cache: HIT');
+        echo $hit; // Already-rendered HTML fragment, escaped at render time.
+        wp_die();
+    }
+
+    header('X-GHB-Live-Search-Cache: MISS');
+    ob_start(function ($buffer) use ($key, $ttl) {
+        // Sanity bounds: never cache an empty error response or a runaway one.
+        if (is_string($buffer) && $buffer !== '' && strlen($buffer) < 200000) {
+            set_transient($key, $buffer, $ttl);
+        }
+        return $buffer;
+    });
+}
+add_action('admin_init', 'ghb_live_search_microcache', 0);
+
+/**
+ * Warmup endpoint: opening the modal fires a throwaway request (see
+ * js/live-search.js) so the TLS handshake, PHP worker, opcache and object
+ * cache are all hot BEFORE the first real keystroke-search — shaving the
+ * cold-start cost off the first query a visitor makes.
+ */
+function ghb_live_search_warm()
+{
+    wp_die('1');
+}
+add_action('wp_ajax_ghb_ls_warm', 'ghb_live_search_warm');
+add_action('wp_ajax_nopriv_ghb_ls_warm', 'ghb_live_search_warm');
 
 /* ══════════════════════════════════════════════════════════════════
    ASSETS — modal styles + behaviour (plain front-end files)
@@ -97,7 +208,10 @@ function ghb_live_search_enqueue_assets()
     wp_localize_script(
         'golden-hive-live-search',
         'ghbLiveSearch',
-        array('triggerSelector' => $trigger_selector)
+        array(
+            'triggerSelector' => $trigger_selector,
+            'warmUrl'         => admin_url('admin-ajax.php?action=ghb_ls_warm'),
+        )
     );
 }
 
