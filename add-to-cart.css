@@ -24,10 +24,13 @@
     text-align: center;
     cursor: pointer;
     text-decoration: none;
-    transition: filter .15s ease, background .15s ease;
+    background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+    transition: background-image .15s ease, background .15s ease;
 }
+/* Velo bianco invece di filter: brightness(), che su un accent nero puro
+   non produce alcun cambiamento visibile. */
 .ghb-atc-trigger:hover {
-    filter: brightness(1.1);
+    background-image: linear-gradient(rgba(255, 255, 255, .16), rgba(255, 255, 255, .16));
     color: #fff;
 }
 .ghb-atc--disabled .ghb-atc-trigger,

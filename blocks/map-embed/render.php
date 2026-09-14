@@ -15,21 +15,9 @@ if ( empty( trim( $embed_code ) ) ) {
     return;
 }
 
-/* Only allow <iframe> with a strict set of safe attributes. */
-$allowed_html = array(
-    'iframe' => array(
-        'src'              => true,
-        'width'            => true,
-        'height'           => true,
-        'style'            => true,
-        'allowfullscreen'  => true,
-        'loading'          => true,
-        'referrerpolicy'   => true,
-        'frameborder'      => true,
-    ),
-);
-
-$safe_embed = wp_kses( $embed_code, $allowed_html );
+/* Sanitise through the shared helper so map-embed and contact-info keep
+   exactly one allowlist (this copy also used to drop `title`). */
+$safe_embed = gh_kses_map_iframe( $embed_code );
 
 $container_style = sprintf(
     'width:100%%;height:%dpx;border-radius:%dpx;overflow:hidden;',

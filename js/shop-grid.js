@@ -8,7 +8,9 @@
  */
 jQuery(function($) {
     function equalizeCards() {
-        var cards = $('ul.products li.product').get();
+        // :not(.gh-rail__track) — i rail hanno il proprio layout (product-rail.css)
+        // e un min-height in px imposto qui ne romperebbe le card flex-column.
+        var cards = $('ul.products:not(.gh-rail__track) li.product').get();
         if (!cards.length) return;
 
         // WRITE pass: reset heights so the measurement is natural.
@@ -53,5 +55,5 @@ jQuery(function($) {
     });
 
     // Re-run after all images loaded
-    $('ul.products img').on('load', equalizeCards);
+    $('ul.products:not(.gh-rail__track) img').on('load', equalizeCards);
 });

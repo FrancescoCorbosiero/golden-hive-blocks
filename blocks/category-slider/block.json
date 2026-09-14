@@ -2,7 +2,7 @@
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 3,
     "name": "golden-hive/category-slider",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "title": "Category Slider",
     "category": "golden-hive",
     "icon": "category",
@@ -24,18 +24,6 @@
             ]
         },
         "showNav": {
-            "type": "boolean",
-            "default": true
-        },
-        "showDots": {
-            "type": "boolean",
-            "default": false
-        },
-        "autoplay": {
-            "type": "boolean",
-            "default": false
-        },
-        "loop": {
             "type": "boolean",
             "default": true
         },

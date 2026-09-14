@@ -1371,15 +1371,6 @@ html.gh-scroll-lock {
     position: relative;
 }
 
-.gh-category-slider__carousel .swiper {
-    overflow: visible;
-    padding: 10px 0;
-}
-
-.gh-category-slider__carousel .swiper-slide {
-    height: auto;
-}
-
 .gh-category-slider__item {
     display: block;
     text-decoration: none;
@@ -1393,7 +1384,6 @@ html.gh-scroll-lock {
     background: var(--gh-gray-100);
     border-radius: var(--gh-radius-md);
     margin-bottom: var(--gh-space-md);
-    min-height: 320px;
 }
 
 .gh-category-slider__image {
@@ -1422,61 +1412,6 @@ html.gh-scroll-lock {
     color: var(--gh-gray-600);
 }
 
-/* Swiper Navigation */
-.gh-category-slider__carousel .swiper-button-prev,
-.gh-category-slider__carousel .swiper-button-next {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--gh-white);
-    color: var(--gh-black);
-    border: 1px solid var(--gh-gray-200);
-    box-shadow: var(--gh-shadow-md);
-    transition: all 0.3s var(--gh-ease-out);
-}
-
-.gh-category-slider__carousel .swiper-button-prev:hover,
-.gh-category-slider__carousel .swiper-button-next:hover {
-    background: var(--gh-black);
-    color: var(--gh-white);
-    border-color: var(--gh-black);
-    box-shadow: var(--gh-shadow-lg);
-}
-
-.gh-category-slider__carousel .swiper-button-prev::after,
-.gh-category-slider__carousel .swiper-button-next::after {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.gh-category-slider__carousel .swiper-button-prev {
-    left: -10px;
-}
-
-.gh-category-slider__carousel .swiper-button-next {
-    right: -10px;
-}
-
-/* Swiper Pagination */
-.gh-category-slider__carousel .swiper-pagination {
-    position: relative;
-    margin-top: var(--gh-space-lg);
-}
-
-.gh-category-slider__carousel .swiper-pagination-bullet {
-    width: 8px;
-    height: 8px;
-    background: var(--gh-gray-300);
-    opacity: 1;
-    transition: all 0.2s ease;
-}
-
-.gh-category-slider__carousel .swiper-pagination-bullet-active {
-    background: var(--gh-black);
-    width: 24px;
-    border-radius: 4px;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .gh-category-slider {
@@ -1492,18 +1427,12 @@ html.gh-scroll-lock {
     }
 
     .gh-category-slider__image-wrapper {
-        min-height: 240px;
         border-radius: 10px;
     }
 
     .gh-category-slider__name {
         font-size: var(--gh-text-base);
         font-weight: 600;
-    }
-
-    .gh-category-slider__carousel .swiper-button-prev,
-    .gh-category-slider__carousel .swiper-button-next {
-        display: none;
     }
 }
 
@@ -1986,18 +1915,26 @@ html.gh-scroll-lock {
    ========================================================================== */
 
 .gh-shortcode-wrapper {
-    padding: var(--gh-space-lg) 0 0;
+    /* Il gutter laterale è indispensabile: il contenuto (di norma un
+       .gh-rail) è largo il 100% della sezione, quindi senza padding le card
+       toccano i bordi dello schermo e le frecce ‹ › del rail, posizionate a
+       left/right: 6px, finiscono mezze fuori viewport. */
+    padding: var(--gh-space-lg) clamp(16px, 3vw, 40px) 0;
 }
 
 .gh-shortcode-wrapper__header {
     text-align: center;
     margin-bottom: 0;
-    padding: 0 var(--gh-space-xl);
 }
 
 .gh-shortcode-wrapper__content {
     margin: 0;
     padding: 0;
+}
+
+/* Lo scroll-snap del rail si allinea al bordo interno del track. */
+.gh-shortcode-wrapper .gh-rail__track {
+    scroll-padding-inline-start: 2px;
 }
 
 .gh-shortcode-wrapper__cta {
@@ -2410,6 +2347,11 @@ a.gh-btn:visited {
 .gh-btn--large {
     padding: 1rem 2rem;
     font-size: 0.875rem;
+}
+
+.gh-btn--medium {
+    padding: 0.625rem 1.375rem;
+    font-size: 0.8125rem;
 }
 
 .gh-btn--small {
@@ -3713,6 +3655,176 @@ a.gh-btn:visited {
 .gh-auth-banner__badge svg {
     stroke: #fff;
     flex-shrink: 0;
+}
+
+/* ==========================================================================
+   CTA VIDEO
+   Sezione split video + testo. Nata come <style> inline dentro blocchi HTML
+   personalizzati: consolidata qui perché quel markup è già salvato in più
+   pagine e ogni copia divergeva. Varianti: --reversed, --alt (fondo scuro),
+   --light, --vertical (frame 9:16).
+   ========================================================================== */
+
+.gh-cta-video {
+    display: flex;
+    align-items: center;
+    min-height: 480px;
+    overflow: hidden;
+}
+
+.gh-cta-video__media {
+    position: relative;
+    flex: 1 1 55%;
+    min-height: 480px;
+    overflow: hidden;
+}
+
+.gh-cta-video__player {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 480px;
+    object-fit: cover;
+}
+
+.gh-cta-video__content {
+    flex: 1 1 45%;
+    padding: var(--gh-space-2xl) var(--gh-space-2xl);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.gh-cta-video__eyebrow {
+    display: block;
+    font-size: var(--gh-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.5;
+    margin-bottom: 12px;
+}
+
+.gh-cta-video__title {
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    margin: 0 0 var(--gh-space-md);
+}
+
+.gh-cta-video__text {
+    font-size: var(--gh-text-base);
+    line-height: 1.65;
+    opacity: 0.75;
+    margin: 0 0 28px;
+}
+
+.gh-cta-video__list {
+    margin: 0 0 28px;
+    padding-left: 1.2em;
+    font-size: var(--gh-text-base);
+    line-height: 1.75;
+    opacity: 0.75;
+}
+
+/* Contenuto a sinistra, video a destra */
+.gh-cta-video--reversed {
+    flex-direction: row-reverse;
+}
+
+/* Fondo scuro — il bottone va in .gh-btn--dark, non --primary (nero su nero) */
+.gh-cta-video--alt {
+    background: var(--gh-gray-900);
+}
+
+.gh-cta-video--alt .gh-cta-video__title,
+.gh-cta-video--alt .gh-cta-video__eyebrow,
+.gh-cta-video--alt .gh-cta-video__text,
+.gh-cta-video--alt .gh-cta-video__list {
+    color: var(--gh-white);
+}
+
+.gh-cta-video--light {
+    background: var(--gh-gray-100);
+}
+
+.gh-cta-video--light .gh-cta-video__title {
+    color: var(--gh-black);
+}
+
+.gh-cta-video--light .gh-cta-video__eyebrow,
+.gh-cta-video--light .gh-cta-video__text,
+.gh-cta-video--light .gh-cta-video__list {
+    color: var(--gh-gray-700);
+}
+
+/* Frame verticale 9:16 (reel / short) */
+.gh-cta-video--vertical .gh-cta-video__media {
+    flex: 0 0 auto;
+    width: clamp(260px, 30vw, 380px);
+    min-height: 0;
+    aspect-ratio: 9 / 16;
+    border-radius: var(--gh-radius-xl);
+    margin: var(--gh-space-2xl);
+    box-shadow: var(--gh-shadow-xl);
+}
+
+.gh-cta-video--vertical .gh-cta-video__player {
+    min-height: 0;
+    height: 100%;
+    border-radius: var(--gh-radius-xl);
+}
+
+.gh-cta-video--vertical .gh-cta-video__content {
+    flex: 1 1 auto;
+}
+
+@media (max-width: 768px) {
+    .gh-cta-video {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .gh-cta-video--reversed {
+        flex-direction: column-reverse;
+    }
+
+    .gh-cta-video__media {
+        flex: none;
+        width: 100%;
+        min-height: 280px;
+    }
+
+    .gh-cta-video__player {
+        min-height: 280px;
+    }
+
+    .gh-cta-video__content {
+        flex: none;
+        padding: var(--gh-space-xl) var(--gh-space-lg);
+    }
+
+    .gh-cta-video--vertical {
+        flex-direction: column;
+        align-items: center;
+        padding: var(--gh-space-xl) 0;
+    }
+
+    .gh-cta-video--vertical.gh-cta-video--reversed {
+        flex-direction: column-reverse;
+    }
+
+    .gh-cta-video--vertical .gh-cta-video__media {
+        width: clamp(220px, 60vw, 300px);
+        margin: var(--gh-space-lg);
+    }
+
+    .gh-cta-video--vertical .gh-cta-video__content {
+        text-align: center;
+        align-items: center;
+    }
 }
 
 /* ==========================================================================

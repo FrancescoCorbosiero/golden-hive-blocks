@@ -20,6 +20,16 @@ if (empty($title)) {
     return;
 }
 
+// posterUrlId was stored by the media picker but never read, so the poster
+// always went out as a bare URL. Prefer the attachment when we have one.
+$poster_id = (int) ($attributes['posterUrlId'] ?? 0);
+if ($poster_id && wp_attachment_is_image($poster_id)) {
+    $poster_from_id = wp_get_attachment_image_url($poster_id, 'full');
+    if ($poster_from_id) {
+        $poster_url = $poster_from_id;
+    }
+}
+
 $block_id = 'gh-hero-video-' . wp_unique_id();
 ?>
 <section <?php echo get_block_wrapper_attributes(array(

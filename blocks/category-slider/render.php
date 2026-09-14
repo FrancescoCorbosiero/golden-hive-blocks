@@ -7,8 +7,9 @@
  * Reuses the existing .gh-category-slider__item/__image-wrapper/__image/__name
  * styles; the scroll-snap layout + arrow behaviour are printed once per page.
  *
- * Note: the legacy autoplay/loop/dots options no longer apply (they were
- * Swiper features); the rail scrolls/snaps natively with optional arrows.
+ * The legacy autoplay/loop/dots attributes were dropped in 1.2.0: they were
+ * Swiper features the scroll-snap rail never implemented, so saved content
+ * carrying them is simply ignored by the block parser.
  */
 
 $title = $attributes['title'] ?? '';

@@ -61,11 +61,6 @@
                                     label: 'Notifica ' + (index + 1)
                                 }),
                                 el(TextControl, {
-                                    label: 'Nome',
-                                    value: item.name || '',
-                                    onChange: function(val) { ops.update(index, 'name', val); }
-                                }),
-                                el(TextControl, {
                                     label: 'Prodotto',
                                     value: item.product || '',
                                     onChange: function(val) { ops.update(index, 'product', val); }
@@ -98,7 +93,7 @@
                         el(Button, {
                             variant: 'primary',
                             onClick: function() {
-                                ops.add({ name: '', product: '', image: '', imageId: 0, location: '', time: '' });
+                                ops.add({ product: '', image: '', imageId: 0, location: '', time: '' });
                             },
                             style: { marginTop: '8px' }
                         }, 'Aggiungi notifica')

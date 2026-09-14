@@ -139,9 +139,11 @@ body.rlv-open { overflow: hidden; }
     width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer;
     background: var(--rlv-brand); color: #fff;
     font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
-    transition: filter .15s ease;
+    background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+    transition: background-image .15s ease;
 }
-.rlv-seeall:hover { filter: brightness(1.12); }
+/* Vedi add-to-cart.css: brightness() è inerte sul nero puro. */
+.rlv-seeall:hover { background-image: linear-gradient(rgba(255, 255, 255, .16), rgba(255, 255, 255, .16)); }
 .rlv-seeall:focus-visible {
     outline: 2px solid var(--gh-accent, #721124);
     outline-offset: 2px;

@@ -5,22 +5,27 @@
  * rule now targets our .ghb-atc control (replaces the old .button / .rp-quick-add-btn).
  */
 
+/* Escludiamo .gh-rail__track: il rail prodotti usa lo stesso markup
+   WooCommerce (<ul class="products">) ma ha il proprio layout in
+   product-rail.css, e queste regole — più specifiche — gli sovrascrivevano
+   aspect-ratio e object-fit (attributi `ratio` / `fit` dello shortcode). */
+
 /* Each card becomes a flex column */
-.woocommerce ul.products li.product {
+.woocommerce ul.products:not(.gh-rail__track) li.product {
     display: flex !important;
     flex-direction: column !important;
 }
 
 /* Image: uniform ratio */
-.woocommerce ul.products li.product a img,
-.woocommerce ul.products li.product .attachment-woocommerce_thumbnail {
+.woocommerce ul.products:not(.gh-rail__track) li.product a img,
+.woocommerce ul.products:not(.gh-rail__track) li.product .attachment-woocommerce_thumbnail {
     width: 100%;
     aspect-ratio: 4/3;
     object-fit: cover;
 }
 
 /* Title: fixed 2-line height */
-.woocommerce ul.products li.product .woocommerce-loop-product__title {
+.woocommerce ul.products:not(.gh-rail__track) li.product .woocommerce-loop-product__title {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -38,13 +43,13 @@
    button when the row-height equalizer makes a card taller than its content.
    Anchor the auto margin on the price; the button then flows directly beneath
    it. The grid override below also cancels the global .ghb-atc auto margin. */
-.woocommerce ul.products li.product .price {
+.woocommerce ul.products:not(.gh-rail__track) li.product .price {
     margin-top: auto;
     padding-top: 6px;
     padding-bottom: 8px;
 }
 
-.woocommerce ul.products li.product .button,
-.woocommerce ul.products li.product .ghb-atc {
+.woocommerce ul.products:not(.gh-rail__track) li.product .button,
+.woocommerce ul.products:not(.gh-rail__track) li.product .ghb-atc {
     margin-top: 0;
 }
