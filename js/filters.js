@@ -197,6 +197,36 @@
 	root.querySelectorAll('[data-bfl-term]').forEach(function(cb){ cb.addEventListener('change', function(){ toggleTerm(cb.dataset.key, cb.value, cb.checked); }); });
 	var stk0=root.querySelector('[data-bfl-stock]'); if(stk0) stk0.addEventListener('change', function(){ toggleStock(stk0.checked); });
 	root.querySelectorAll('.bfl-toggle').forEach(function(h){ h.addEventListener('click', function(){ h.setAttribute('aria-expanded', h.getAttribute('aria-expanded')==='true'?'false':'true'); }); });
+
+	// Long lists: "Mostra tutti (N)" ⇄ "Mostra meno".
+	root.querySelectorAll('[data-bfl-more]').forEach(function(b){
+		b.addEventListener('click', function(){
+			var facet=b.closest('[data-bfl-facet]'), all=!facet.classList.contains('is-all');
+			facet.classList.toggle('is-all', all);
+			b.setAttribute('aria-expanded', all?'true':'false');
+			b.textContent = all ? b.dataset.less : b.dataset.more;
+		});
+	});
+
+	// Search inside a long facet: case- and accent-insensitive, every match
+	// shown (the "Mostra tutti" fold steps aside while a search runs).
+	function fold(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
+	root.querySelectorAll('[data-bfl-search]').forEach(function(inp){
+		var facet=inp.closest('[data-bfl-facet]'), none=facet.querySelector('[data-bfl-nomatch]');
+		function run(){
+			var q=fold(inp.value), hits=0;
+			facet.classList.toggle('is-searching', q!=='');
+			facet.querySelectorAll('.bfl-opt').forEach(function(o){
+				var hit=!q || fold(o.querySelector('.bfl-name').textContent).indexOf(q)>-1;
+				o.classList.toggle('is-miss', !hit);
+				if(hit) hits++;
+			});
+			if(none) none.hidden = !q || hits>0;
+		}
+		inp.addEventListener('input', run);
+		// Escape clears the search first instead of closing the drawer.
+		inp.addEventListener('keydown', function(e){ if(e.key==='Escape' && inp.value){ e.preventDefault(); e.stopPropagation(); inp.value=''; run(); } });
+	});
 	var rb=root.querySelector('[data-bfl-reset]'); if(rb) rb.addEventListener('click', reset);
 	var sl0=root.querySelector('[data-bfl-slider]'); if(sl0) initSlider(sl0,false);
 	if(AJAX){

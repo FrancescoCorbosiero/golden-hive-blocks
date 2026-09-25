@@ -102,7 +102,7 @@ class GHB_Filters
                 'cat'      => array('type' => 'category', 'label' => 'Categoria', 'chip' => 'Categoria'),
                 'stock'    => array('type' => 'stock', 'label' => 'Stato', 'chip' => '', 'text' => 'Disponibile'),
                 'modello'  => array('type' => 'attribute', 'taxonomy' => 'pa_modello', 'label' => 'Filtra per Modello', 'chip' => 'Modello', 'collapsible' => true),
-                'taglia'   => array('type' => 'attribute', 'taxonomy' => 'pa_taglia', 'label' => 'Filtra per Taglia', 'chip' => 'Taglia', 'collapsible' => true, 'variation' => true),
+                'taglia'   => array('type' => 'attribute', 'taxonomy' => 'pa_taglia', 'label' => 'Filtra per Taglia', 'chip' => 'Taglia', 'collapsible' => true, 'variation' => true, 'ui' => 'chips'),
                 'anno'     => array('type' => 'attribute', 'taxonomy' => 'pa_anno', 'label' => 'Filtra per Anno', 'chip' => 'Anno', 'collapsible' => true),
                 'marca'    => array('type' => 'attribute', 'taxonomy' => 'pa_marca', 'label' => 'Filtra per Marca', 'chip' => 'Marca', 'collapsible' => true),
                 'colorway' => array('type' => 'attribute', 'taxonomy' => 'pa_colorway', 'label' => 'Filtra per Colorway', 'chip' => 'Colorway', 'collapsible' => true),
@@ -121,6 +121,12 @@ class GHB_Filters
             // selecting a value only returns products with an in-stock variation for
             // it (so the customer never needs to also tick "Disponibile" for sizes).
             'variant_stock_aware' => true,
+
+            // Long list facets show this many options before "Mostra tutti"
+            // (per facet: 'limit' => N, 0 = all) and get a search box from
+            // search_min options up. Facet layouts: 'ui' => list | chips | pills.
+            'list_limit' => 8,
+            'search_min' => 12,
 
             'button_label' => 'Filtri',
             'exclude_cats' => array('uncategorized'),
@@ -823,6 +829,9 @@ class GHB_Filters
     private function render_facets_html($cfg, $current, $base_counts, $cur_counts, $price, $names, &$labels)
     {
         $total = is_array($base_counts) ? (int) $base_counts['total'] : 0;
+        // Unique ids when the drawer and the inline panel share a page.
+        static $instance = 0;
+        $instance++;
 
         ob_start(); ?>
         <div class="bfl-activewrap" data-bfl-activewrap hidden>
@@ -918,23 +927,50 @@ class GHB_Filters
                 if (empty($options)) {
                     continue;
                 }
-                $ui          = ('category' === $f['type']) ? 'pills' : 'list';
-                $collapsible = !empty($f['collapsible']); ?>
-                <div class="bfl-facet bfl-facet--<?php echo esc_attr($ui); ?>">
+                // Layout: 'chips' (size grid), 'pills' (categories) or 'list'.
+                $ui          = isset($f['ui']) ? $f['ui'] : (('category' === $f['type']) ? 'pills' : 'list');
+                $collapsible = !empty($f['collapsible']);
+                $opts_id     = 'bfl-f-' . $instance . '-' . $key;
+
+                // Long lists show their first `limit` options, the rest behind
+                // "Mostra tutti" (never for just one or two leftovers), and get
+                // a search box past `search_min`. A ticked option in the hidden
+                // part opens the list, so every active filter stays visible.
+                $limit = ('list' === $ui) ? (int) (isset($f['limit']) ? $f['limit'] : $cfg['list_limit']) : 0;
+                $fold  = $limit > 0 && count($options) > $limit + 2;
+                $all   = $fold && in_array(true, array_column(array_slice($options, $limit), 'checked'), true);
+                $find  = 'list' === $ui && count($options) >= (int) $cfg['search_min']; ?>
+                <div class="bfl-facet bfl-facet--<?php echo esc_attr($ui); ?><?php echo $all ? ' is-all' : ''; ?>" data-bfl-facet>
                     <?php if ($collapsible) : ?>
-                        <button type="button" class="bfl-flabel bfl-toggle" aria-expanded="true"><span><?php echo esc_html($f['label']); ?></span><i class="bfl-pm" aria-hidden="true"></i></button>
+                        <button type="button" class="bfl-flabel bfl-toggle" aria-expanded="true" aria-controls="<?php echo esc_attr($opts_id); ?>"><span><?php echo esc_html($f['label']); ?></span><i class="bfl-pm" aria-hidden="true"></i></button>
                     <?php else : ?>
                         <div class="bfl-flabel"><?php echo esc_html($f['label']); ?></div>
                     <?php endif; ?>
-                    <div class="bfl-opts">
-                        <?php foreach ($options as $o) : ?>
-                            <label class="bfl-opt<?php echo $o['dis'] ? ' is-disabled' : ''; ?>">
-                                <input type="checkbox" data-bfl-term data-key="<?php echo esc_attr($o['sfx']); ?>" value="<?php echo esc_attr($o['slug']); ?>" <?php checked($o['checked']); ?> <?php disabled($o['dis']); ?>>
-                                <span class="bfl-mark"></span>
-                                <span class="bfl-name"><?php echo esc_html($o['name']); ?></span>
-                                <?php if (null !== $o['count']) : ?><span class="bfl-count" data-count><?php echo esc_html($o['count']); ?></span><?php endif; ?>
-                            </label>
-                        <?php endforeach; ?>
+                    <div class="bfl-opts" id="<?php echo esc_attr($opts_id); ?>">
+                        <div class="bfl-opts__inner">
+                            <?php if ($find) :
+                                $noun = strtolower(isset($f['chip']) && '' !== $f['chip'] ? $f['chip'] : $f['label']); ?>
+                                <input type="search" class="bfl-search" data-bfl-search placeholder="<?php echo esc_attr(sprintf(__('Cerca %s…', 'golden-hive-blocks'), $noun)); ?>" aria-label="<?php echo esc_attr(sprintf(__('Cerca %s', 'golden-hive-blocks'), $noun)); ?>" autocomplete="off">
+                            <?php endif; ?>
+                            <div class="bfl-opts__list">
+                                <?php foreach ($options as $i => $o) : ?>
+                                    <label class="bfl-opt<?php echo $o['dis'] ? ' is-disabled' : ''; ?><?php echo ($fold && $i >= $limit) ? ' is-extra' : ''; ?>">
+                                        <input type="checkbox" data-bfl-term data-key="<?php echo esc_attr($o['sfx']); ?>" value="<?php echo esc_attr($o['slug']); ?>" <?php checked($o['checked']); ?> <?php disabled($o['dis']); ?>>
+                                        <span class="bfl-mark"></span>
+                                        <span class="bfl-name"><?php echo esc_html($o['name']); ?></span>
+                                        <?php if (null !== $o['count']) : ?><span class="bfl-count" data-count><?php echo esc_html($o['count']); ?></span><?php endif; ?>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php if ($find) : ?>
+                                <p class="bfl-nomatch" data-bfl-nomatch hidden><?php esc_html_e('Nessun risultato', 'golden-hive-blocks'); ?></p>
+                            <?php endif; ?>
+                            <?php if ($fold) :
+                                $more = sprintf(__('Mostra tutti (%d)', 'golden-hive-blocks'), count($options));
+                                $less = __('Mostra meno', 'golden-hive-blocks'); ?>
+                                <button type="button" class="bfl-more" data-bfl-more aria-expanded="<?php echo $all ? 'true' : 'false'; ?>" data-more="<?php echo esc_attr($more); ?>" data-less="<?php echo esc_attr($less); ?>"><?php echo esc_html($all ? $less : $more); ?></button>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             <?php endif; ?>
