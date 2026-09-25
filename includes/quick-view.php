@@ -110,6 +110,7 @@ function ghb_quick_view_assets()
             'ajaxUrl'      => admin_url('admin-ajax.php'),
             'action'       => 'ghb_quick_view',
             'cartEndpoint' => class_exists('WC_AJAX') ? WC_AJAX::get_endpoint('add_to_cart') : '',
+            'cartUrl'      => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '',
         )
     );
 }

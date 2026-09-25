@@ -275,19 +275,29 @@ function ghb_atc_unique_size_options($product, $attribute = null, $only_ids = nu
 }
 
 /**
- * Build the size rows for a variable product: [ variation_id, label, in_stock ].
+ * Build the size rows for a variable product:
+ * [ variation_id, label, in_stock, price_html, price_text ].
  *
  * Sizes are deduplicated (see ghb_atc_unique_size_options) so each physical
- * size appears once, keeping the highest-priced variation on a conflict.
+ * size appears once, keeping the highest-priced variation on a conflict. The
+ * per-size price lets Quick View show what the picked size costs before the
+ * shopper confirms: sale-aware markup for the price line, plain text for the
+ * button label.
  */
 function ghb_atc_size_rows($product)
 {
     $rows = array();
     foreach (ghb_atc_unique_size_options($product) as $opt) {
+        $variation = wc_get_product($opt['variation_id']);
+        $priced    = $variation && '' !== $variation->get_price();
         $rows[] = array(
             'variation_id' => $opt['variation_id'],
             'label'        => $opt['label'],
             'in_stock'     => $opt['in_stock'],
+            'price_html'   => $priced ? $variation->get_price_html() : '',
+            'price_text'   => $priced
+                ? html_entity_decode(wp_strip_all_tags(wc_price(wc_get_price_to_display($variation))))
+                : '',
         );
     }
 

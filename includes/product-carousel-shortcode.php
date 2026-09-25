@@ -352,9 +352,19 @@ function ghb_quick_view_handler() {
         if ($url) $images[] = $url;
     }
 
+    // Size picker rows (variable products) — also used to skip the redundant
+    // size chip below, since the picker already lists every size.
+    $sizes = ($product->is_type('variable') && function_exists('ghb_atc_size_rows'))
+        ? ghb_atc_size_rows($product)
+        : array();
+    $size_attribute = apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+
     // Attributes
     $attributes = [];
     foreach ($product->get_attributes() as $attr) {
+        if ($sizes && $attr->get_name() === $size_attribute) {
+            continue;
+        }
         $attributes[] = [
             'label' => wc_attribute_label($attr->get_name()),
             'value' => $product->get_attribute($attr->get_name()),
@@ -380,9 +390,7 @@ function ghb_quick_view_handler() {
         // Cart-control data so the Quick View modal needs only ONE request.
         'type'        => $product->get_type(),
         'purchasable' => $product->is_purchasable() && $product->is_in_stock(),
-        'sizes'       => ($product->is_type('variable') && function_exists('ghb_atc_size_rows'))
-            ? ghb_atc_size_rows($product)
-            : array(),
+        'sizes'       => $sizes,
     ]);
 }
 

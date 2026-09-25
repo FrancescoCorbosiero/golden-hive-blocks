@@ -229,23 +229,27 @@ li.product:focus-within .rp-quick-view-btn {
     font-size: 11px;
     color: #bbb;
 }
+/* Secondary action — "Aggiungi al carrello" above is the primary one. */
 .rp-qv-view-full {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 12px 24px;
-    background: var(--gh-accent, #721124);
-    color: #fff;
-    text-decoration: none;
-    border-radius: 25px;
-    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: center;
+    padding: 4px 2px;
+    color: var(--gh-gray-700, #404040);
+    font-size: 13px;
     font-weight: 600;
-    text-align: center;
-    transition: background 0.2s;
+    text-decoration: underline;
+    text-decoration-color: var(--gh-gray-300, #d4d4d4);
+    text-underline-offset: 4px;
+    transition: color .15s ease, text-decoration-color .15s ease;
 }
 .rp-qv-view-full:hover {
-    background: var(--gh-accent-dark, #5a0d1d);
-    color: #fff;
+    color: var(--gh-accent, #721124);
+    text-decoration-color: currentColor;
 }
+.rp-qv-view-full__arrow { transition: transform .15s ease; }
+.rp-qv-view-full:hover .rp-qv-view-full__arrow { transform: translateX(3px); }
 
 /* Add-to-cart control inside the modal */
 .rp-qv-atc {
@@ -259,20 +263,27 @@ li.product:focus-within .rp-quick-view-btn {
 .rp-qv-add {
     display: block;
     width: 100%;
-    padding: 13px 20px;
+    padding: 14px 20px;
     border: none;
     border-radius: 25px;
-    background: var(--gh-gray-800, #262626);
+    background: var(--gh-accent, #721124);
     color: #fff;
     font-size: 14px;
     font-weight: 700;
     text-align: center;
     text-decoration: none;
     cursor: pointer;
-    transition: filter .15s ease;
+    transition: background .15s ease, box-shadow .15s ease;
 }
-.rp-qv-add:hover { filter: brightness(1.15); color: #fff; }
-.rp-qv-add[disabled] { background: var(--gh-gray-300, #d9d9de); color: var(--gh-gray-500, #8a8a90); cursor: not-allowed; }
+.rp-qv-add:hover {
+    background: var(--gh-accent-dark, #520c1a);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb, 114, 17, 36), .25);
+}
+.rp-qv-sizes ~ .rp-qv-add { margin-top: 16px; }
+.rp-qv-add.is-added,
+.rp-qv-add.is-added:hover { background: var(--gh-success, #16a34a); box-shadow: none; }
+.rp-qv-add[disabled] { background: var(--gh-gray-300, #d9d9de); color: var(--gh-gray-500, #8a8a90); cursor: not-allowed; box-shadow: none; }
 
 .rp-qv-sizes-label {
     font-size: 12px;
@@ -297,9 +308,16 @@ li.product:focus-within .rp-quick-view-btn {
     color: var(--gh-gray-800, #262626);
     text-align: center;
     cursor: pointer;
-    transition: border-color .12s ease, color .12s ease;
+    transition: border-color .12s ease, color .12s ease, background-color .12s ease;
 }
 .rp-qv-size:hover { border-color: var(--gh-accent, #721124); color: var(--gh-accent, #721124); }
+/* Picked size (select-then-confirm: nothing is added until the button). */
+.rp-qv-size.is-selected,
+.rp-qv-size.is-selected:hover {
+    border-color: var(--gh-accent, #721124);
+    background: var(--gh-accent, #721124);
+    color: #fff;
+}
 .rp-qv-size.is-oos {
     color: var(--gh-gray-300, #c3c3c8);
     background: var(--gh-gray-50, #f6f6f7);
@@ -307,16 +325,41 @@ li.product:focus-within .rp-quick-view-btn {
     text-decoration: line-through;
 }
 
+/* "Seleziona una taglia" — shown when adding without a size. Kept in the
+   layout (empty, zero height) so its live region is announced when filled. */
+.rp-qv-size-hint {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gh-error, #dc2626);
+}
+.rp-qv-size-hint.is-visible { margin-top: 8px; }
+.rp-qv-sizes.is-invalid .rp-qv-size[data-variation-id] { border-color: var(--gh-error, #dc2626); }
+.rp-qv-sizes.is-invalid { animation: rp-qv-nudge .35s ease; }
+@keyframes rp-qv-nudge {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .rp-qv-sizes.is-invalid { animation: none; }
+}
+
 .rp-qv-cart-msg {
-    margin-top: 10px;
     font-size: 13px;
     font-weight: 600;
     color: var(--gh-success, #2e7d32);
     opacity: 0;
     transition: opacity .2s ease;
 }
-.rp-qv-cart-msg.show { opacity: 1; }
+.rp-qv-cart-msg.show { opacity: 1; margin-top: 10px; }
 .rp-qv-cart-msg.is-error { color: var(--gh-error, #c62828); }
+.rp-qv-cart-link {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.rp-qv-cart-link:hover { color: var(--gh-accent, #721124); }
 
 /* Keyboard focus visibility on every interactive control */
 .rp-quick-view-btn:focus-visible,
@@ -324,7 +367,8 @@ li.product:focus-within .rp-quick-view-btn {
 .rp-qv-thumb:focus-visible,
 .rp-qv-size:focus-visible,
 .rp-qv-add:focus-visible,
-.rp-qv-view-full:focus-visible {
+.rp-qv-view-full:focus-visible,
+.rp-qv-cart-link:focus-visible {
     outline: 2px solid var(--gh-accent, #721124);
     outline-offset: 2px;
 }
