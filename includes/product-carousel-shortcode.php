@@ -57,10 +57,19 @@ function ghb_get_carousel_products($atts) {
 
     $tax_query = array();
 
+    // Mirror WooCommerce's own catalog queries: when the store hides sold-out
+    // products (Settings → Products → Inventory), the rails hide them too.
+    // Without this the homepage rails surfaced products the shop itself hides:
+    // no price, the theme's "Out of stock" label, a dead add-to-cart button.
+    $visibility_not_in = array('exclude-from-catalog');
+    if (apply_filters('ghb_carousel_hide_out_of_stock', 'yes' === get_option('woocommerce_hide_out_of_stock_items'), $atts)) {
+        $visibility_not_in[] = 'outofstock';
+    }
+
     $tax_query[] = array(
         'taxonomy' => 'product_visibility',
         'field'    => 'name',
-        'terms'    => 'exclude-from-catalog',
+        'terms'    => $visibility_not_in,
         'operator' => 'NOT IN',
     );
 
@@ -343,9 +352,19 @@ function ghb_quick_view_handler() {
         if ($url) $images[] = $url;
     }
 
+    // Size picker rows (variable products) — also used to skip the redundant
+    // size chip below, since the picker already lists every size.
+    $sizes = ($product->is_type('variable') && function_exists('ghb_atc_size_rows'))
+        ? ghb_atc_size_rows($product)
+        : array();
+    $size_attribute = apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+
     // Attributes
     $attributes = [];
     foreach ($product->get_attributes() as $attr) {
+        if ($sizes && $attr->get_name() === $size_attribute) {
+            continue;
+        }
         $attributes[] = [
             'label' => wc_attribute_label($attr->get_name()),
             'value' => $product->get_attribute($attr->get_name()),
@@ -371,9 +390,7 @@ function ghb_quick_view_handler() {
         // Cart-control data so the Quick View modal needs only ONE request.
         'type'        => $product->get_type(),
         'purchasable' => $product->is_purchasable() && $product->is_in_stock(),
-        'sizes'       => ($product->is_type('variable') && function_exists('ghb_atc_size_rows'))
-            ? ghb_atc_size_rows($product)
-            : array(),
+        'sizes'       => $sizes,
     ]);
 }
 
