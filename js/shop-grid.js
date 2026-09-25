@@ -54,4 +54,11 @@ jQuery(function($) {
 
     // Re-run after all images loaded
     $('ul.products img').on('load', equalizeCards);
+
+    // The filter panel swaps the grid in place (bfl:loaded, see js/filters.js):
+    // re-measure, and again as the new cards' images arrive.
+    $(document).on('bfl:loaded', function() {
+        $('ul.products img').off('load', equalizeCards).on('load', equalizeCards);
+        setTimeout(equalizeCards, 50);
+    });
 });

@@ -1,0 +1,580 @@
+/**
+ * Golden Hive Blocks — AJAX product filters (the "Advanced Filters" panel).
+ *
+ * Moved out of the Code Snippet's inline <style> (see includes/filters.php) so
+ * it is cached and minified like the rest of the plugin. The .bfl-* class
+ * names are unchanged. Accent: --gh-filters-accent (set from the config's
+ * 'accent', default #111111). Focus rings and a reduced-motion pass were added
+ * on the way over.
+ */
+
+.bfl-inline,
+.bfl-drawer,
+.bfl-trigger {
+    --bfl-accent: var(--gh-filters-accent, #111111);
+}
+.bfl-inline {
+    position: relative;
+    font-family: inherit;
+    color: #1a1a1a;
+    font-size: 14px;
+}
+.bfl-inline * {
+    box-sizing: border-box;
+}
+[data-bfl-root] {
+    position: relative;
+}
+.bfl-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1.5px solid #1a1a1a;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #1a1a1a;
+    transition: background .15s, color .15s;
+}
+.bfl-trigger:hover {
+    background: #1a1a1a;
+    color: #fff;
+}
+.bfl-badge {
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--bfl-accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.bfl-trigger:hover .bfl-badge {
+    background: #fff;
+    color: #1a1a1a;
+}
+.bfl-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 99990;
+    visibility: hidden;
+    pointer-events: none;
+}
+.bfl-drawer.is-open {
+    visibility: visible;
+    pointer-events: auto;
+}
+.bfl-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    opacity: 0;
+    transition: opacity .3s;
+}
+.bfl-drawer.is-open .bfl-backdrop {
+    opacity: 1;
+}
+.bfl-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 360px;
+    max-width: 88vw;
+    background: #fff;
+    box-shadow: 2px 0 24px rgba(0, 0, 0, .14);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+    font-family: inherit;
+    color: #1a1a1a;
+    font-size: 14px;
+}
+.bfl-drawer.is-open .bfl-panel {
+    transform: translateX(0);
+}
+.bfl-panel * {
+    box-sizing: border-box;
+}
+.bfl-dhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 22px;
+    border-bottom: 1px solid #ededed;
+    flex: 0 0 auto;
+}
+.bfl-dtitle {
+    font-size: 20px;
+    font-weight: 700;
+}
+.bfl-x {
+    background: none;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    color: #1a1a1a;
+    padding: 0 2px;
+}
+.bfl-dbody {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 8px 22px 22px;
+}
+.bfl-dfoot {
+    flex: 0 0 auto;
+    padding: 14px 22px;
+    border-top: 1px solid #ededed;
+}
+.bfl-apply {
+    width: 100%;
+    background: var(--bfl-accent);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 14px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.bfl-apply:hover {
+    opacity: .9;
+}
+.bfl-activewrap {
+    padding: 16px 0 4px;
+    border-bottom: 1px solid #ededed;
+    margin-bottom: 4px;
+}
+.bfl-sub {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+.bfl-active {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.bfl-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #dcdcdc;
+    border-radius: 999px;
+    padding: 7px 10px 7px 14px;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+    animation: bflIn .18s ease;
+}
+.bfl-chip button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    color: #333;
+}
+.bfl-chip button:hover {
+    color: var(--bfl-accent);
+}
+.bfl-reset {
+    width: 100%;
+    background: #fff;
+    border: 1.5px solid #1a1a1a;
+    border-radius: 999px;
+    padding: 12px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.bfl-reset:hover {
+    background: #1a1a1a;
+    color: #fff;
+}
+.bfl-facet {
+    padding: 18px 0;
+    border-bottom: 1px solid #ededed;
+}
+.bfl-facet:last-of-type {
+    border-bottom: none;
+}
+.bfl-flabel {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    display: block;
+}
+button.bfl-flabel {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 14px;
+    color: #1a1a1a;
+}
+.bfl-pm {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+}
+.bfl-pm::before,
+.bfl-pm::after {
+    content: "";
+    position: absolute;
+    background: #1a1a1a;
+    transition: opacity .2s;
+}
+.bfl-pm::before {
+    left: 0;
+    top: 6px;
+    width: 14px;
+    height: 2px;
+}
+.bfl-pm::after {
+    left: 6px;
+    top: 0;
+    width: 2px;
+    height: 14px;
+}
+button.bfl-flabel[aria-expanded=true] .bfl-pm::after {
+    opacity: 0;
+}
+.bfl-opts {
+    overflow: hidden;
+    transition: max-height .28s ease, opacity .2s;
+}
+button.bfl-flabel[aria-expanded=false] + .bfl-opts {
+    max-height: 0 !important;
+    opacity: 0;
+}
+.bfl-facet--list .bfl-opts {
+    display: grid;
+    gap: 12px;
+    max-height: 1200px;
+}
+.bfl-opt {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.15;
+}
+.bfl-opt input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.bfl-mark {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid #cdcdcd;
+    border-radius: 6px;
+    flex: 0 0 auto;
+    position: relative;
+    transition: border-color .15s, background .15s;
+}
+.bfl-opt input:checked + .bfl-mark {
+    background: var(--bfl-accent);
+    border-color: var(--bfl-accent);
+}
+.bfl-opt input:checked + .bfl-mark:after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.bfl-opt input:focus-visible + .bfl-mark {
+    outline: 2px solid var(--bfl-accent);
+    outline-offset: 2px;
+}
+.bfl-name {
+    flex: 1 1 auto;
+}
+.bfl-count {
+    font-size: 13px;
+    color: #9a9a9a;
+    font-variant-numeric: tabular-nums;
+}
+.bfl-opt.is-disabled {
+    opacity: .38;
+    cursor: not-allowed;
+}
+.bfl-facet--pills .bfl-opts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    max-height: 1200px;
+}
+.bfl-facet--pills .bfl-opt {
+    gap: 0;
+}
+.bfl-facet--pills .bfl-mark {
+    display: none;
+}
+.bfl-facet--pills .bfl-name {
+    border: 1.5px solid #dcdcdc;
+    border-radius: 999px;
+    padding: 8px 15px;
+    font-size: 13.5px;
+    transition:
+        border-color .15s,
+        background .15s,
+        color .15s;
+}
+.bfl-facet--pills .bfl-count {
+    display: none;
+}
+.bfl-facet--pills .bfl-opt input:checked + .bfl-mark + .bfl-name {
+    background: var(--bfl-accent);
+    border-color: var(--bfl-accent);
+    color: #fff;
+}
+.bfl-facet--pills .bfl-opt input:focus-visible + .bfl-mark + .bfl-name {
+    outline: 2px solid var(--bfl-accent);
+    outline-offset: 2px;
+}
+.bfl-facet--pills .bfl-opt.is-disabled .bfl-name {
+    opacity: .4;
+}
+.bfl-check {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    cursor: pointer;
+    user-select: none;
+}
+.bfl-check input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.bfl-check .bfl-box {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid #cdcdcd;
+    border-radius: 6px;
+    flex: 0 0 auto;
+    position: relative;
+    transition: .15s;
+}
+.bfl-check input:checked + .bfl-box {
+    background: var(--bfl-accent);
+    border-color: var(--bfl-accent);
+}
+.bfl-check input:checked + .bfl-box:after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.bfl-check input:focus-visible + .bfl-box {
+    outline: 2px solid var(--bfl-accent);
+    outline-offset: 2px;
+}
+.bfl-slider {
+    position: relative;
+    height: 24px;
+    margin: 2px 2px 16px;
+}
+.bfl-slider .bfl-track {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #e6e6e6;
+    border-radius: 4px;
+}
+.bfl-slider .bfl-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: var(--bfl-accent);
+    border-radius: 4px;
+}
+.bfl-slider input[type=range] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+}
+.bfl-slider input[type=range]:focus {
+    outline: none;
+}
+.bfl-slider input[type=range]::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    height: 24px;
+}
+.bfl-slider input[type=range]::-moz-range-track {
+    background: transparent;
+    border: none;
+    height: 24px;
+}
+.bfl-slider input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--bfl-accent);
+    cursor: grab;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+    box-sizing: border-box;
+}
+.bfl-slider input[type=range]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--bfl-accent);
+    cursor: grab;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+    box-sizing: border-box;
+}
+.bfl-slider input[type=range]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--bfl-accent);
+    outline-offset: 2px;
+}
+.bfl-nums {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.bfl-num {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 44px;
+}
+.bfl-num input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font: inherit;
+    font-size: 14px;
+    background: none;
+    -moz-appearance: textfield;
+}
+.bfl-num input::-webkit-outer-spin-button,
+.bfl-num input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.bfl-num:focus-within {
+    border-color: var(--bfl-accent);
+}
+.bfl-num span {
+    color: #888;
+    font-size: 14px;
+}
+.bfl-loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, .6);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 60px;
+    z-index: 5;
+}
+[data-bfl-root].bfl-busy .bfl-loading {
+    display: flex;
+}
+.bfl-loading span {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #e0e0e0;
+    border-top-color: var(--bfl-accent);
+    border-radius: 50%;
+    animation: bflSpin .7s linear infinite;
+}
+@keyframes bflSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes bflIn {
+    from {
+        opacity: 0;
+        transform: scale(.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+body.bfl-lock {
+    overflow: hidden;
+}
+.bfl-grid-loading {
+    opacity: .45;
+    transition: opacity .2s;
+    pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .bfl-panel,
+    .bfl-backdrop,
+    .bfl-opts {
+        transition: none;
+    }
+    .bfl-chip {
+        animation: none;
+    }
+    .bfl-loading span {
+        animation-duration: 1.5s;
+    }
+}
