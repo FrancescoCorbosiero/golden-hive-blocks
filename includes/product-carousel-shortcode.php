@@ -57,10 +57,19 @@ function ghb_get_carousel_products($atts) {
 
     $tax_query = array();
 
+    // Mirror WooCommerce's own catalog queries: when the store hides sold-out
+    // products (Settings → Products → Inventory), the rails hide them too.
+    // Without this the homepage rails surfaced products the shop itself hides:
+    // no price, the theme's "Out of stock" label, a dead add-to-cart button.
+    $visibility_not_in = array('exclude-from-catalog');
+    if (apply_filters('ghb_carousel_hide_out_of_stock', 'yes' === get_option('woocommerce_hide_out_of_stock_items'), $atts)) {
+        $visibility_not_in[] = 'outofstock';
+    }
+
     $tax_query[] = array(
         'taxonomy' => 'product_visibility',
         'field'    => 'name',
-        'terms'    => 'exclude-from-catalog',
+        'terms'    => $visibility_not_in,
         'operator' => 'NOT IN',
     );
 

@@ -152,13 +152,19 @@ function ghb_atc_render_button()
         return;
     }
 
+    // Sold-out (or unpriced) products get a disabled control, not a live
+    // button. Variable products need this too: with every size sold out the
+    // quick-add modal has nothing to offer, yet the card still said
+    // "Aggiungi al carrello".
+    if ($product->is_type(array('simple', 'variable'))
+        && (!$product->is_purchasable() || !$product->is_in_stock())) {
+        echo '<div class="ghb-atc ghb-atc--disabled"><span class="ghb-atc-trigger" aria-disabled="true">'
+            . esc_html__('Esaurito', 'golden-hive-blocks') . '</span></div>';
+        return;
+    }
+
     // Simple (and other directly-purchasable) products → direct add.
     if ($product->is_type('simple')) {
-        if (!$product->is_purchasable() || !$product->is_in_stock()) {
-            echo '<div class="ghb-atc ghb-atc--disabled"><span class="ghb-atc-trigger" aria-disabled="true">'
-                . esc_html__('Esaurito', 'golden-hive-blocks') . '</span></div>';
-            return;
-        }
         printf(
             '<div class="ghb-atc"><button type="button" class="ghb-atc-trigger ghb-simple-add-btn" data-product-id="%d">%s</button></div>',
             (int) $product->get_id(),
