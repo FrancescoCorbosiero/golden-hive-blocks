@@ -453,10 +453,21 @@ function ghb_hub_register_routes()
         'callback'            => 'ghb_hub_rest_rail',
         'args'                => array(
             'page_id' => array('type' => 'integer', 'required' => false),
-            'path'    => array('type' => 'string', 'required' => true),
+            // Either the block path read from /homepage, or the rail's stable
+            // key ("category:saldi-sneakers-outlet#0").
+            'path'    => array('type' => 'string', 'required' => false),
+            'key'     => array('type' => 'string', 'required' => false),
             'offset'  => array('type' => 'integer', 'required' => false, 'default' => 0, 'minimum' => 0),
             'count'   => array('type' => 'integer', 'required' => false, 'default' => 60, 'minimum' => 1, 'maximum' => 200),
+            // Preview another automatic order without saving it.
+            'fallback' => array('type' => 'string', 'required' => false, 'enum' => ghb_hub_fallbacks()),
         ),
+    ));
+    register_rest_route(GHB_HUB_NS, '/products', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'permission_callback' => 'ghb_hub_permission',
+        'callback'            => 'ghb_hub_rest_products',
+        'args'                => array('ids' => array('type' => 'string', 'required' => true)),
     ));
     register_rest_route(GHB_HUB_NS, '/homepage/block', array(
         'methods'             => WP_REST_Server::EDITABLE,
@@ -480,7 +491,7 @@ function ghb_hub_rest_capabilities()
         'plugin'            => 'golden-hive-blocks',
         'version'           => GOLDEN_HIVE_BLOCKS_VERSION,
         'api'               => GHB_HUB_API,
-        'features'          => array('homepage', 'rail', 'block-write', 'history', 'rail-pin', 'rail-exclude', 'rail-fallback', 'archive-follow'),
+        'features'          => array('homepage', 'rail', 'rail-visible', 'products', 'block-write', 'history', 'rail-pin', 'rail-exclude', 'rail-fallback', 'archive-follow'),
         'fallbacks'         => ghb_hub_fallbacks(),
         'max_ids'           => GHB_HUB_MAX_IDS,
         'hide_out_of_stock' => ghb_hub_hide_out_of_stock(),
@@ -540,10 +551,12 @@ function ghb_hub_rest_rail(WP_REST_Request $request)
         return $page;
     }
     $path   = (string) $request->get_param('path');
+    $wanted = (string) $request->get_param('key');
     $blocks = parse_blocks($page->post_content);
     $key    = null;
     foreach (ghb_hub_page_rails($blocks) as $rail_key => $entry) {
-        if ($entry['path'] === $path) {
+        if (('' !== $wanted && $rail_key === $wanted) || ('' === $wanted && $entry['path'] === $path)) {
+            $path = $entry['path'];
             $key  = $rail_key;
             $rail = $entry['rail'];
             $block = $entry['block'];
@@ -557,7 +570,9 @@ function ghb_hub_rest_rail(WP_REST_Request $request)
     $atts     = ghb_hub_rail_atts($rail['atts']);
     $terms    = ghb_hub_rail_terms($atts);
     $args     = ghb_carousel_query_args($atts);
-    $visible  = ghb_hub_rail_visible_ids($args, $rail['fallback'], true);
+    $preview  = (string) $request->get_param('fallback');
+    $fallback = '' !== $preview ? ghb_hub_normalize_fallback($preview, $rail['atts']) : $rail['fallback'];
+    $visible  = ghb_hub_rail_visible_ids($args, $fallback, true);
     $ordered  = ghb_hub_order_ids($visible, $rail['pin'], $rail['exclude']);
     $offset   = (int) $request->get_param('offset');
     $count    = (int) $request->get_param('count');
@@ -595,13 +610,26 @@ function ghb_hub_rest_rail(WP_REST_Request $request)
     $payload = ghb_hub_rail_payload($key, $path, $block, $rail, false);
     return rest_ensure_response(array_merge($payload, array(
         'page_id'           => (int) $page->ID,
+        'page_link'         => get_permalink($page),
         'modified_gmt'      => $page->post_modified_gmt,
         'hide_out_of_stock' => ghb_hub_hide_out_of_stock($atts),
         'total'             => count($ordered),
         'offset'            => $offset,
+        // Every visible member in automatic order (pins not applied): with it
+        // the Hub recomputes the rail after any pin or exclusion locally,
+        // using the same rule as ghb_hub_order_ids().
+        'visible'           => $visible,
+        'preview_fallback'  => $fallback,
         'items'             => $items,
         'hidden'            => $hidden,
     )));
+}
+
+/** Cards for up to 100 products by id — what the editor needs when a product scrolls into view. */
+function ghb_hub_rest_products(WP_REST_Request $request)
+{
+    $ids = ghb_hub_parse_id_list((string) $request->get_param('ids'));
+    return rest_ensure_response(array('products' => ghb_hub_product_cards($ids)));
 }
 
 /** Validate the rail values a write sends. */
