@@ -44,6 +44,11 @@ $slide_count = count($slides);
                     if (strpos($img_pos, ' ') === false) {
                         $img_pos .= ' center';
                     }
+                    // Slide 1 is the page's LCP image. The others sit stacked
+                    // inside the viewport, where loading="lazy" can't hold
+                    // them back: style.css keeps them display:none until
+                    // animations.js marks the carousel --ready (slide 1's
+                    // image has loaded), so they don't compete with it.
                     echo gh_img(
                         (int) ($slide['imageId'] ?? 0),
                         $slide['image'],
@@ -53,6 +58,7 @@ $slide_count = count($slides);
                             'loading'       => $index === 0 ? 'eager' : 'lazy',
                             'fetchpriority' => $index === 0 ? 'high' : 'low',
                             'decoding'      => 'async',
+                            'sizes'         => '100vw',
                         )
                     );
                 endif; ?>
