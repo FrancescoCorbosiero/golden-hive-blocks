@@ -104,9 +104,89 @@ function gh_button($args)
 }
 
 /**
+ * Attachment ID for an image URL from this site's media library, 0 when it
+ * isn't one.
+ *
+ * Content saved before blocks tracked image IDs stores only the URL, which
+ * used to render a bare <img src> with no srcset — so phones downloaded the
+ * full-size original (the homepage hero included). Resolving the ID gives
+ * that content srcset/sizes too. Lookups, misses included, are cached in the
+ * object cache so each URL costs at most one query.
+ */
+function gh_attachment_id_from_url($url)
+{
+    $url = (string) $url;
+    if ($url === '') {
+        return 0;
+    }
+
+    // Root-relative ("/wp-content/uploads/…") → absolute.
+    if ($url[0] === '/' && strpos($url, '//') !== 0) {
+        $url = home_url($url);
+    }
+
+    // Only files under the uploads dir can be attachments: skip the query for
+    // anything else (external images, theme assets). Scheme-agnostic.
+    $uploads = wp_get_upload_dir();
+    $base    = preg_replace('#^https?:#i', '', (string) $uploads['baseurl']) . '/';
+    if ($base === '/' || strpos(preg_replace('#^https?:#i', '', $url), $base) !== 0) {
+        return 0;
+    }
+
+    $key   = 'url2id_' . md5($url);
+    $found = false;
+    $id    = wp_cache_get($key, 'golden-hive', false, $found);
+    if ($found) {
+        return (int) $id;
+    }
+
+    $id = (int) attachment_url_to_postid($url);
+    wp_cache_set($key, $id, 'golden-hive', DAY_IN_SECONDS);
+
+    return $id;
+}
+
+/**
+ * srcset filter, attached only around gh_img()'s own render: drop resized
+ * copies that weigh more than the full-size file.
+ *
+ * WordPress re-encodes every resized copy itself, so an image squeezed with
+ * TinyPNG before upload can end up with resized copies HEAVIER than the
+ * original — serving one of those to a phone would slow the page down. Uses
+ * the per-file sizes WordPress (6.0+) stores in the attachment metadata;
+ * older uploads without them pass through untouched. If fewer than two
+ * candidates survive, WordPress drops srcset and the original is served.
+ */
+function gh_srcset_skip_heavier_copies($sources, $size_array, $image_src, $image_meta)
+{
+    if (!is_array($sources) || empty($image_meta['filesize']) || empty($image_meta['sizes'])) {
+        return $sources;
+    }
+
+    $original = (int) $image_meta['filesize'];
+    $weights  = array();
+    foreach ($image_meta['sizes'] as $sub) {
+        if (!empty($sub['file']) && !empty($sub['filesize'])) {
+            $weights[$sub['file']] = (int) $sub['filesize'];
+        }
+    }
+
+    foreach ($sources as $width => $source) {
+        $file = wp_basename($source['url']);
+        if (isset($weights[$file]) && $weights[$file] > $original) {
+            unset($sources[$width]);
+        }
+    }
+
+    return $sources;
+}
+
+/**
  * Render an <img>, preferring the attachment ID — which brings srcset,
  * sizes, width/height (CLS) and the media-library alt text — and falling
- * back to the stored URL for content saved before IDs were tracked.
+ * back to the stored URL for content saved before IDs were tracked. For that
+ * legacy content the ID is looked up from the URL (gh_attachment_id_from_url),
+ * so it gets srcset as well whenever the image lives in the media library.
  *
  * @param int    $id   Attachment ID (0/absent for legacy content).
  * @param string $url  Fallback image URL.
@@ -138,7 +218,12 @@ function gh_img($id, $url, $args = array())
         'style'         => '',
     ));
 
-    $id = (int) $id;
+    $id       = (int) $id;
+    $from_url = false;
+    if (!$id && $url !== '') {
+        $id       = gh_attachment_id_from_url($url);
+        $from_url = $id > 0;
+    }
 
     if ($id && wp_attachment_is_image($id)) {
         $attrs = array(
@@ -150,12 +235,20 @@ function gh_img($id, $url, $args = array())
                 $attrs[$key] = $args[$key];
             }
         }
+        // Legacy content resolved from its URL keeps the class-less markup it
+        // always had: WordPress's default attachment-/size-* classes would
+        // expose it to theme image rules it never matched before.
+        if ($from_url && !isset($attrs['class'])) {
+            $attrs['class'] = '';
+        }
         // alt: null = media-library alt; '' or a string = explicit override.
         if ($args['alt'] !== null) {
             $attrs['alt'] = $args['alt'];
         }
 
+        add_filter('wp_calculate_image_srcset', 'gh_srcset_skip_heavier_copies', 10, 4);
         $html = wp_get_attachment_image($id, $args['size'], false, $attrs);
+        remove_filter('wp_calculate_image_srcset', 'gh_srcset_skip_heavier_copies', 10);
         if ($html !== '') {
             return $html;
         }

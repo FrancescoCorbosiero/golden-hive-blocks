@@ -223,6 +223,15 @@ html.gh-scroll-lock {
     visibility: visible;
 }
 
+/* Hidden slides stay out of the layout until slide 1's image (the LCP
+   element) has loaded — animations.js then adds --ready. Stacked inside the
+   viewport, loading="lazy" couldn't hold them back, so every slide image used
+   to download at once and slow down the first. Without JS the carousel never
+   rotates, so the hidden slides are never needed. */
+.gh-hero-carousel:not(.gh-hero-carousel--ready) .gh-hero-slide:not(.gh-hero-slide--active) {
+    display: none;
+}
+
 .gh-hero-slide__bg {
     position: absolute;
     inset: 0;

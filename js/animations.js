@@ -825,6 +825,11 @@
      * - aria-current="true" sul dot attivo; aria-hidden + inert sulle slide
      *   inattive (il markup le spedisce già sulle slide 2+).
      * - Gli swipe più verticali che orizzontali vengono ignorati.
+     * - Le slide 2+ restano display:none (style.css) finché l'immagine della
+     *   slide 1 — l'elemento LCP — non ha finito di caricare: solo allora il
+     *   carousel riceve --ready, le loro immagini partono e l'autoplay inizia
+     *   a contare. Impilate nel viewport, loading="lazy" non le tratteneva e
+     *   scaricavano tutte insieme alla prima.
      */
     var HeroCarousel = {
         instances: [],
@@ -885,17 +890,33 @@
                     }
                 };
 
+                var ready = false;
+
                 var stop = function () {
                     if (state.timer) { clearInterval(state.timer); state.timer = null; }
                 };
 
                 var start = function () {
                     stop();
-                    if (!autoplay || state.hover || !state.visible || document.hidden) return;
+                    if (!ready || !autoplay || state.hover || !state.visible || document.hidden) return;
                     state.timer = setInterval(function () { goTo(state.current + 1); }, autoplay);
                 };
 
+                var markReady = function () {
+                    if (ready) return;
+                    ready = true;
+                    carousel.classList.add('gh-hero-carousel--ready');
+                    start();
+                };
+
                 var goTo = function (index) {
+                    // Navigazione prima del ready: mostra subito le slide e
+                    // forza un reflow, così la nuova slide parte da opacity:0
+                    // e il crossfade resta intatto.
+                    if (!ready) {
+                        markReady();
+                        void carousel.offsetWidth;
+                    }
                     state.current = (index + slides.length) % slides.length;
                     applyState();
                     start(); // reset del timer
@@ -955,7 +976,17 @@
                 }
 
                 applyState();
-                start();
+
+                // --ready quando l'immagine della slide 1 è arrivata (o è
+                // fallita); window load come rete di sicurezza.
+                var firstImg = slides[0].querySelector('.gh-hero-slide__bg img');
+                if (!firstImg || firstImg.complete) {
+                    markReady();
+                } else {
+                    firstImg.addEventListener('load', markReady);
+                    firstImg.addEventListener('error', markReady);
+                    window.addEventListener('load', markReady);
+                }
             });
 
             if (!this.visibilityBound) {
