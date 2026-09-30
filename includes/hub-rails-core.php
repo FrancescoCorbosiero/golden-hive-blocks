@@ -225,8 +225,119 @@ function ghb_hub_set_rail_atts(string $shortcode, array $values): ?string
     } else {
         $atts['fallback'] = $fallback;
     }
+    // How many products the rail shows: only when asked, never inferred.
+    if (isset($values['limit'])) {
+        $atts['limit'] = (string) max(1, (int) $values['limit']);
+    }
 
     return ghb_hub_build_shortcode($parsed['tag'], $atts);
+}
+
+/**
+ * The block fields the Hub may write, and how each is checked. Anything not
+ * listed here cannot be changed through wc-gh/v1, whatever the Hub sends:
+ * the list is the upper bound, the Hub's config picks from it.
+ *
+ * type "text": plain text (tags stripped), at most max characters;
+ * type "url":  an http(s) or site-relative link, or empty;
+ * type "enum": one of options.
+ */
+function ghb_hub_field_specs(): array
+{
+    return array(
+        GHB_HUB_RAIL_BLOCK            => array(
+            'eyebrow'         => array('type' => 'text', 'max' => 80),
+            'title'           => array('type' => 'text', 'max' => 120),
+            'backgroundColor' => array('type' => 'enum', 'options' => array('white', 'gray', 'black')),
+            'buttonText'      => array('type' => 'text', 'max' => 60),
+            'buttonUrl'       => array('type' => 'url', 'max' => 500),
+        ),
+        'golden-hive/category-slider' => array(
+            'title' => array('type' => 'text', 'max' => 120),
+        ),
+        'golden-hive/brand-marquee'   => array(
+            'title' => array('type' => 'text', 'max' => 120),
+        ),
+        'golden-hive/faq-schema'      => array(
+            'title'    => array('type' => 'text', 'max' => 120),
+            'subtitle' => array('type' => 'text', 'max' => 300),
+        ),
+        'golden-hive/social-proof'    => array(
+            'title' => array('type' => 'text', 'max' => 120),
+        ),
+        'golden-hive/whatsapp-button' => array(
+            'buttonText' => array('type' => 'text', 'max' => 60),
+            'message'    => array('type' => 'text', 'max' => 300),
+        ),
+    );
+}
+
+/**
+ * A block's editable fields as the site renders them: the saved value, or the
+ * block's default when the attribute is not saved.
+ *
+ * @param array<string, array>  $spec     field => rule (ghb_hub_field_specs)
+ * @param array<string, string> $defaults field => the block type's default
+ * @return array<string, string>
+ */
+function ghb_hub_block_fields(array $attrs, array $spec, array $defaults): array
+{
+    $fields = array();
+    foreach (array_keys($spec) as $field) {
+        $value          = array_key_exists($field, $attrs) ? $attrs[$field] : ($defaults[$field] ?? '');
+        $fields[$field] = is_scalar($value) ? (string) $value : '';
+    }
+    return $fields;
+}
+
+/**
+ * Apply field edits to a block's attributes. Every field must be in the
+ * block's spec; each value goes through $clean (WordPress's sanitizers,
+ * injected so this stays testable without WordPress) and is then checked
+ * against its rule. A value equal to the block's default is removed rather
+ * than written, as the rail shortcode does.
+ *
+ * @param array<string, mixed>  $changes  field => new value
+ * @param array<string, array>  $spec     field => rule
+ * @param array<string, string> $defaults field => the block type's default
+ * @param callable(string, string): string $clean (rule type, raw value) => clean value
+ * @return array{ok: true, attrs: array, changed: string[]}|array{ok: false, error: string, field: string}
+ */
+function ghb_hub_apply_fields(array $attrs, array $changes, array $spec, array $defaults, callable $clean): array
+{
+    $current = ghb_hub_block_fields($attrs, $spec, $defaults);
+    $changed = array();
+    foreach ($changes as $field => $raw) {
+        $field = (string) $field;
+        if (!isset($spec[$field])) {
+            return array('ok' => false, 'error' => 'not_editable', 'field' => $field);
+        }
+        if (!is_string($raw)) {
+            return array('ok' => false, 'error' => 'not_text', 'field' => $field);
+        }
+        $rule  = $spec[$field];
+        $value = (string) $clean($rule['type'], $raw);
+        if ('enum' === $rule['type'] && !in_array($value, $rule['options'], true)) {
+            return array('ok' => false, 'error' => 'not_an_option', 'field' => $field);
+        }
+        if ('url' === $rule['type'] && '' === $value && '' !== trim($raw)) {
+            return array('ok' => false, 'error' => 'bad_url', 'field' => $field);
+        }
+        if (isset($rule['max']) && mb_strlen($value) > (int) $rule['max']) {
+            return array('ok' => false, 'error' => 'too_long', 'field' => $field);
+        }
+        if ($value === $current[$field]) {
+            continue;
+        }
+        if ($value === (string) ($defaults[$field] ?? '')) {
+            unset($attrs[$field]);
+        } else {
+            $attrs[$field] = $value;
+        }
+        $current[$field] = $value;
+        $changed[]       = $field;
+    }
+    return array('ok' => true, 'attrs' => $attrs, 'changed' => $changed);
 }
 
 /**
