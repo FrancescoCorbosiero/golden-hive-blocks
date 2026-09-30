@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.8.1
+ * Version: 5.9.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.8.1');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.9.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -234,6 +234,12 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';
  * Include the lightweight product rail (CSS scroll-snap carousel).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-rail.php';
+
+/**
+ * Include the Store Hub bridge ("Vetrina"): rails honour pin / exclude /
+ * fallback, and the Hub reads and edits the homepage through wc-gh/v1.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/hub-rails.php';
 
 /**
  * Include the parallax archive hero (shop / category / tag pages).

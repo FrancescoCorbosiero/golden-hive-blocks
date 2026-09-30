@@ -61,6 +61,40 @@ function ghb_product_rail_assets()
     );
 }
 
+/**
+ * Every attribute [gh_product_rail] accepts, with its default. Shared with the
+ * Store Hub bridge (hub-rails.php), which must read a rail exactly the way the
+ * shortcode does.
+ */
+function ghb_product_rail_defaults()
+{
+    return array(
+        'title'          => '',
+        'type'           => 'recent',   // recent | featured | best_selling | sale | top_rated
+        'category'       => '',
+        'brand'          => '',
+        'tag'            => '',
+        'ids'            => '',
+        // Written by the Store Hub's Vetrina (see hub-rails.php): products
+        // shown first in this order, products never shown, and the order of
+        // everything after the pinned ones.
+        'pin'            => '',
+        'exclude'        => '',
+        'fallback'       => '',
+        'limit'          => 12,
+        'columns'        => 4,          // cards visible per view on desktop (1–8)
+        'columns_tablet' => '',         // optional; blank ⇒ inherit desktop columns
+        'columns_mobile' => '',         // optional; blank ⇒ peek the next card (44vw)
+        'ratio'          => '1/1',      // card image ratio: alias or "N/N" (e.g. 3/4)
+        // cover (crop) | contain (whole image). Default contain: le foto
+        // prodotto in stile StockX hanno inquadrature diverse e il crop
+        // le tagliava in modo incoerente tra le card. Il vecchio default
+        // si ripristina per-rail con fit="cover" o globalmente via
+        // add_filter('ghb_rail_default_fit', fn() => 'cover').
+        'fit'            => apply_filters('ghb_rail_default_fit', 'contain'),
+    );
+}
+
 add_shortcode('gh_product_rail', 'ghb_product_rail_shortcode');
 function ghb_product_rail_shortcode($atts)
 {
@@ -69,25 +103,7 @@ function ghb_product_rail_shortcode($atts)
     }
 
     $atts = shortcode_atts(
-        array(
-            'title'          => '',
-            'type'           => 'recent',   // recent | featured | best_selling | sale | top_rated
-            'category'       => '',
-            'brand'          => '',
-            'tag'            => '',
-            'ids'            => '',
-            'limit'          => 12,
-            'columns'        => 4,          // cards visible per view on desktop (1–8)
-            'columns_tablet' => '',         // optional; blank ⇒ inherit desktop columns
-            'columns_mobile' => '',         // optional; blank ⇒ peek the next card (44vw)
-            'ratio'          => '1/1',      // card image ratio: alias or "N/N" (e.g. 3/4)
-            // cover (crop) | contain (whole image). Default contain: le foto
-            // prodotto in stile StockX hanno inquadrature diverse e il crop
-            // le tagliava in modo incoerente tra le card. Il vecchio default
-            // si ripristina per-rail con fit="cover" o globalmente via
-            // add_filter('ghb_rail_default_fit', fn() => 'cover').
-            'fit'            => apply_filters('ghb_rail_default_fit', 'contain'),
-        ),
+        ghb_product_rail_defaults(),
         $atts,
         'gh_product_rail'
     );

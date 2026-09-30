@@ -36,7 +36,7 @@ function ghb_carousel_section_shortcode($atts) {
     }
     $src = is_array($atts) ? $atts : array();
     $rail_atts = array();
-    foreach (array('title', 'type', 'limit', 'category', 'tag', 'brand', 'ids', 'columns', 'columns_tablet', 'columns_mobile', 'ratio', 'fit') as $k) {
+    foreach (array('title', 'type', 'limit', 'category', 'tag', 'brand', 'ids', 'pin', 'exclude', 'fallback', 'columns', 'columns_tablet', 'columns_mobile', 'ratio', 'fit') as $k) {
         if (isset($src[$k]) && '' !== $src[$k]) {
             $rail_atts[$k] = $src[$k];
         }
@@ -49,6 +49,21 @@ function ghb_carousel_section_shortcode($atts) {
  * ═══════════════════════════════════════════════════════════════
  */
 function ghb_get_carousel_products($atts) {
+    // A rail edited from the Store Hub's Vetrina carries pin / exclude /
+    // fallback (see hub-rails.php); an explicit ids list keeps its own order.
+    if (empty($atts['ids']) && function_exists('ghb_hub_rail_has_ordering') && ghb_hub_rail_has_ordering($atts)) {
+        return ghb_hub_rail_query($atts);
+    }
+    return new WP_Query(ghb_carousel_query_args($atts));
+}
+
+/**
+ * The WP_Query arguments of a rail: which products it may show (published,
+ * visible, in the term) and today's order. Split out of
+ * ghb_get_carousel_products() so the Vetrina ordering filters exactly the same
+ * product set.
+ */
+function ghb_carousel_query_args($atts) {
     $args = array(
         'post_type'      => 'product',
         'posts_per_page' => intval($atts['limit']),
@@ -190,7 +205,7 @@ function ghb_get_carousel_products($atts) {
         $args['orderby']  = 'post__in';
     }
 
-    return new WP_Query($args);
+    return $args;
 }
 
 /**
