@@ -39,7 +39,7 @@ if (empty($GLOBALS['gh_cs_assets_done'])) {
     .gh-cs__track{display:flex;gap:16px;margin:0;padding:0 2px 8px;list-style:none;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
     .gh-cs__track::-webkit-scrollbar{display:none}
     .gh-cs__slide{flex:0 0 auto;width:clamp(140px,42vw,220px);margin:0;scroll-snap-align:start}
-    .gh-cs__nav{position:absolute;top:42%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid #e2e2e6;background:#fff;color:#1f2532;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.1);transition:border-color .15s,color .15s,opacity .15s}
+    .gh-cs__nav{position:absolute;top:42%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:calc(50% * var(--gh-round,1));border:1px solid #e2e2e6;background:#fff;color:#1f2532;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.1);transition:border-color .15s,color .15s,opacity .15s}
     .gh-cs__nav:hover{border-color:#721124;color:#721124}
     .gh-cs__nav[disabled]{opacity:.35;cursor:default}
     .gh-cs__nav--prev{left:6px}.gh-cs__nav--next{right:6px}

@@ -145,3 +145,8 @@
         transform: none !important;
     }
 }
+
+/* The hero replaces Shoptimizer's category banner (same title, a second h1). */
+body.ghb-has-archive-hero .shoptimizer-category-banner {
+    display: none;
+}

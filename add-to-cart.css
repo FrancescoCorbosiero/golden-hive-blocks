@@ -14,7 +14,7 @@
     width: 100%;
     padding: 10px 14px;
     border: none;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--gh-round, 1));
     background: var(--gh-accent, #721124);
     color: #fff;
     font-size: 13px;

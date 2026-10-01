@@ -28,7 +28,7 @@
     max-height: 85vh;
     overflow-y: auto;
     background: var(--ghb-white, #fff);
-    border-radius: 20px 20px 0 0;
+    border-radius: calc(20px * var(--gh-round, 1)) calc(20px * var(--gh-round, 1)) 0 0;
     z-index: var(--gh-z-quickadd, 1310);
     box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
     animation: ghb-qa-slide-up 0.3s ease;
@@ -45,7 +45,7 @@
     width: 40px;
     height: 4px;
     background: var(--gh-gray-300, #ddd);
-    border-radius: 4px;
+    border-radius: calc(4px * var(--gh-round, 1));
     margin: 10px auto 0;
 }
 
@@ -74,7 +74,7 @@
     width: 64px;
     height: 64px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--gh-round, 1));
     background: var(--gh-gray-100, #f5f5f5);
     flex-shrink: 0;
 }
@@ -134,7 +134,7 @@
     margin: 0;
     padding: 8px 16px;
     border: 1.5px solid var(--gh-gray-200, #e0e0e0);
-    border-radius: 8px;
+    border-radius: calc(8px * var(--gh-round, 1));
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -182,7 +182,7 @@
     display: flex;
     align-items: center;
     border: 1.5px solid var(--gh-gray-300, #ddd);
-    border-radius: 10px;
+    border-radius: calc(10px * var(--gh-round, 1));
     overflow: hidden;
 }
 .ghb-qa-qty-btn {
@@ -220,7 +220,7 @@
     width: 100%;
     padding: 15px;
     border: none;
-    border-radius: 12px;
+    border-radius: calc(12px * var(--gh-round, 1));
     background: var(--gh-gray-300, #d4d4d4);
     color: #fff;
     font-size: 14px;
@@ -297,7 +297,7 @@
         bottom: auto;
         top: 50%;
         transform: translate(-50%, -50%);
-        border-radius: 20px;
+        border-radius: calc(20px * var(--gh-round, 1));
         animation: ghb-qa-fade-in 0.25s ease;
     }
     @keyframes ghb-qa-fade-in {

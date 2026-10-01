@@ -32,7 +32,7 @@ $allowed_html = array(
 $safe_embed = wp_kses( $embed_code, $allowed_html );
 
 $container_style = sprintf(
-    'width:100%%;height:%dpx;border-radius:%dpx;overflow:hidden;',
+    'width:100%%;height:%dpx;border-radius:calc(%dpx * var(--gh-round, 1));overflow:hidden;',
     absint( $height ),
     absint( $border_radius )
 );

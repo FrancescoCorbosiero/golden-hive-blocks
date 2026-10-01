@@ -34,7 +34,7 @@
     .caret:focus-visible {
         outline: 2px solid #fff;
         outline-offset: -6px;
-        border-radius: 8px;
+        border-radius: calc(8px * var(--gh-round, 1));
     }
     .caret::before,
     .caret::after { display: none !important; content: none !important; }
@@ -64,7 +64,7 @@
         min-height: 46px;
         line-height: 1.35;
         font-size: .95rem;
-        border-radius: 8px;
+        border-radius: calc(8px * var(--gh-round, 1));
         transition: background-color .15s ease;
     }
     .main-navigation .sub-menu-wrapper a:hover,

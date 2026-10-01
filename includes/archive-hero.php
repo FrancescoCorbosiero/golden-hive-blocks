@@ -54,6 +54,20 @@ function ghb_archive_hero_assets()
 add_action('wp_enqueue_scripts', 'ghb_archive_hero_assets');
 
 /**
+ * The hero owns the archive header: a body class lets archive-hero.css hide
+ * Shoptimizer's own category banner (a second <h1> with the same title).
+ * Turning the hero off brings the theme's banner back by itself.
+ */
+function ghb_archive_hero_body_class($classes)
+{
+    if (ghb_archive_hero_enabled()) {
+        $classes[] = 'ghb-has-archive-hero';
+    }
+    return $classes;
+}
+add_filter('body_class', 'ghb_archive_hero_body_class');
+
+/**
  * Suppress the default archive title/description — the hero owns them.
  */
 function ghb_archive_hero_hide_default_title($show)
