@@ -39,7 +39,7 @@
   min-height: 60px;
   padding: 8px 4px;
   border: 1px solid var(--gh-gray-200, #e2e5ea);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--gh-round, 1));
   background: #fff;
   color: var(--gh-gray-800, #1f2532);
   text-indent: 0;

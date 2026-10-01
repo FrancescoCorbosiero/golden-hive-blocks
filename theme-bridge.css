@@ -1,0 +1,132 @@
+/**
+ * Golden Hive Blocks — Shoptimizer bridge.
+ *
+ * Loaded only with Shoptimizer as the parent theme (includes/design.php).
+ * 1. Puts the theme's own WooCommerce surfaces on the plugin's shape scale:
+ *    --gh-round is 1 for "Creativo" (rounded) and 0 for "Elegante" (sharp),
+ *    so product cards, buttons and fields change shape with the blocks.
+ * 2. "Filtri su desktop: pannello": the shop sidebar becomes a drawer opened
+ *    from the "Filtri" button, and the products take the full width. Phones
+ *    keep the theme's own filter drawer.
+ */
+
+/* ---- 1. Shape ------------------------------------------------------- */
+
+ul.products li.product {
+    border-radius: calc(16px * var(--gh-round, 1));
+}
+
+ul.products li.product img {
+    border-radius: calc(12px * var(--gh-round, 1));
+}
+
+ul.products li.product .onsale,
+.single-product .onsale {
+    border-radius: calc(999px * var(--gh-round, 1));
+}
+
+.woocommerce .button,
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit,
+.single_add_to_cart_button,
+.checkout-button,
+.woocommerce-ordering select,
+.woocommerce form .input-text,
+.woocommerce .quantity .qty,
+.widget_product_search input[type="search"],
+.site-search input[type="search"],
+.woocommerce-pagination ul li a,
+.woocommerce-pagination ul li span {
+    border-radius: calc(8px * var(--gh-round, 1));
+}
+
+/* ---- 2. Filters drawer on desktop ----------------------------------- */
+
+.ghb-filters-toggle.bfl-trigger,
+.ghb-filters-close {
+    display: none;
+}
+
+@media (min-width: 993px) {
+    body.ghb-filters-drawer .ghb-filters-toggle.bfl-trigger {
+        display: inline-flex;
+        margin: 0 1rem 1rem 0;
+    }
+
+    body.ghb-filters-drawer #primary,
+    body.ghb-filters-drawer .content-area {
+        float: none;
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    body.ghb-filters-drawer #secondary {
+        position: fixed;
+        z-index: 100000;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        float: none;
+        box-sizing: border-box;
+        width: min(400px, 92vw);
+        max-width: none;
+        margin: 0;
+        padding: 64px 24px 24px;
+        overflow-y: auto;
+        background: var(--gh-white, #fff);
+        box-shadow: 0 0 48px rgba(0, 0, 0, 0.18);
+        transform: translateX(-105%);
+        visibility: hidden;
+        transition: transform var(--gh-duration-base, 0.3s) var(--gh-ease-out, ease), visibility 0s linear var(--gh-duration-base, 0.3s);
+    }
+
+    body.ghb-filters-drawer.ghb-filters-open #secondary {
+        transform: none;
+        visibility: visible;
+        transition-delay: 0s;
+    }
+
+    body.ghb-filters-drawer .ghb-filters-close {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--gh-gray-200, #e5e5e5);
+        border-radius: calc(50% * var(--gh-round, 1));
+        background: var(--gh-white, #fff);
+        color: var(--gh-black, #0a0a0a);
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .ghb-filters-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.35);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--gh-duration-base, 0.3s) var(--gh-ease-out, ease);
+    }
+
+    body.ghb-filters-open .ghb-filters-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.ghb-filters-drawer #secondary,
+    .ghb-filters-backdrop {
+        transition: none;
+    }
+}

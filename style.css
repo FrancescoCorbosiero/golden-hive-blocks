@@ -80,12 +80,15 @@
     --gh-max-width: 1200px;
     --gh-max-width-wide: 1400px;
 
-    /* Raggi */
-    --gh-radius-sm: 8px;
-    --gh-radius-md: 12px;
-    --gh-radius-lg: 16px;
-    --gh-radius-xl: 24px;
-    --gh-radius-pill: 999px;
+    /* Raggi. --gh-round is the shape switch (Customizer → Golden Hive — Stile):
+       1 = "Creativo", rounded; 0 = "Elegante", sharp corners. Every radius in
+       the plugin is a multiple of it, so one value re-shapes everything. */
+    --gh-round: 1;
+    --gh-radius-sm: calc(8px * var(--gh-round));
+    --gh-radius-md: calc(12px * var(--gh-round));
+    --gh-radius-lg: calc(16px * var(--gh-round));
+    --gh-radius-xl: calc(24px * var(--gh-round));
+    --gh-radius-pill: calc(999px * var(--gh-round));
 
     /* Durate */
     --gh-duration-fast: 0.15s;
@@ -191,7 +194,7 @@ html.gh-scroll-lock {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    border-radius: calc(50% * var(--gh-round, 1));
     flex-shrink: 0;
 }
 
@@ -383,7 +386,7 @@ html.gh-scroll-lock {
     height: 8px;
     padding: 0;
     border: none;
-    border-radius: 50%;
+    border-radius: calc(50% * var(--gh-round, 1));
     background: rgba(255, 255, 255, 0.35);
     cursor: pointer;
     transition: all 0.35s var(--gh-ease-out);
@@ -408,7 +411,7 @@ html.gh-scroll-lock {
 .gh-hero-dot--active {
     background: var(--gh-white);
     width: 24px;
-    border-radius: 4px;
+    border-radius: calc(4px * var(--gh-round, 1));
 }
 
 .gh-hero-arrows {
@@ -1436,7 +1439,7 @@ html.gh-scroll-lock {
 .gh-category-slider__carousel .swiper-button-next {
     width: 48px;
     height: 48px;
-    border-radius: 50%;
+    border-radius: calc(50% * var(--gh-round, 1));
     background: var(--gh-white);
     color: var(--gh-black);
     border: 1px solid var(--gh-gray-200);
@@ -1483,7 +1486,7 @@ html.gh-scroll-lock {
 .gh-category-slider__carousel .swiper-pagination-bullet-active {
     background: var(--gh-black);
     width: 24px;
-    border-radius: 4px;
+    border-radius: calc(4px * var(--gh-round, 1));
 }
 
 /* Responsive */
@@ -1502,7 +1505,7 @@ html.gh-scroll-lock {
 
     .gh-category-slider__image-wrapper {
         min-height: 240px;
-        border-radius: 10px;
+        border-radius: calc(10px * var(--gh-round, 1));
     }
 
     .gh-category-slider__name {
@@ -1713,7 +1716,7 @@ html.gh-scroll-lock {
     padding: var(--gh-space-md) var(--gh-space-lg);
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
+    border-radius: calc(6px * var(--gh-round, 1));
     color: var(--gh-white);
     font-size: var(--gh-text-base);
     transition: border-color 0.3s var(--gh-ease-out), background 0.3s;
@@ -2135,7 +2138,7 @@ html.gh-scroll-lock {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.15em;
-    border-radius: 4px;
+    border-radius: calc(4px * var(--gh-round, 1));
     margin-bottom: var(--gh-space-lg);
 }
 
@@ -2226,7 +2229,7 @@ html.gh-scroll-lock {
 
 .gh-whatsapp-btn--icon-only {
     padding: var(--gh-space-md);
-    border-radius: 50%;
+    border-radius: calc(50% * var(--gh-round, 1));
 }
 
 .gh-whatsapp-btn--icon-only .gh-whatsapp-btn__text {
@@ -2317,7 +2320,7 @@ html.gh-scroll-lock {
     text-transform: uppercase;
     text-decoration: none;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: calc(4px * var(--gh-round, 1));
     cursor: pointer;
     transition: all 0.25s var(--gh-ease-out);
     position: relative;
@@ -2685,7 +2688,7 @@ a.gh-btn:visited {
     margin: 0;
     padding: 14px 18px;
     background: var(--gh-white);
-    border-radius: 10px;
+    border-radius: calc(10px * var(--gh-round, 1));
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.04);
     font-family: inherit;
@@ -2704,7 +2707,7 @@ a.gh-btn:visited {
 .gh-social-proof__image {
     width: 48px;
     height: 48px;
-    border-radius: 4px;
+    border-radius: calc(4px * var(--gh-round, 1));
     overflow: hidden;
     flex-shrink: 0;
     background: var(--gh-gray-100);
@@ -3088,7 +3091,7 @@ a.gh-btn:visited {
 .gh-drop-countdown .gh-countdown__value {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
+    border-radius: calc(14px * var(--gh-round, 1));
     color: var(--gh-white);
     padding: 0.75rem 1rem;
 }

@@ -41,7 +41,7 @@ body.rlv-open { overflow: hidden; }
 .rlv-input::placeholder { color: var(--gh-gray-400, #a8acb4); }
 .rlv-close {
     display: flex; padding: 6px; border: none; background: none; cursor: pointer;
-    color: var(--gh-gray-500, #6b7280); border-radius: 6px;
+    color: var(--gh-gray-500, #6b7280); border-radius: calc(6px * var(--gh-round, 1));
 }
 .rlv-close:hover { background: var(--gh-gray-100, #f3f4f6); color: var(--gh-gray-800, #1f2532); }
 .rlv-close:focus-visible {
@@ -86,7 +86,7 @@ body.rlv-open { overflow: hidden; }
 .rlv-modal.is-searching .rlv-progress { opacity: 1; }
 .rlv-progress::before {
     content: ''; position: absolute; top: 0; height: 100%; width: 40%;
-    background: var(--rlv-brand); border-radius: 2px;
+    background: var(--rlv-brand); border-radius: calc(2px * var(--gh-round, 1));
     animation: rlv-progress 1.1s ease-in-out infinite;
 }
 
@@ -102,7 +102,7 @@ body.rlv-open { overflow: hidden; }
 .rlv-results-list { list-style: none; margin: 0; padding: 0; }
 .rlv-result-link {
     display: flex; align-items: center; gap: 14px;
-    padding: 10px; border-radius: 10px; text-decoration: none; color: inherit;
+    padding: 10px; border-radius: calc(10px * var(--gh-round, 1)); text-decoration: none; color: inherit;
     transition: background .12s ease;
 }
 .rlv-result-link:hover, .rlv-result-link:focus-visible { background: var(--gh-gray-100, #f6f6f7); }
@@ -113,7 +113,7 @@ body.rlv-open { overflow: hidden; }
 .rlv-result-thumb {
     width: 64px; height: 64px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: var(--gh-gray-100, #f3f4f6); border-radius: 8px; overflow: hidden;
+    background: var(--gh-gray-100, #f3f4f6); border-radius: calc(8px * var(--gh-round, 1)); overflow: hidden;
 }
 .rlv-result-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .rlv-result-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -136,7 +136,7 @@ body.rlv-open { overflow: hidden; }
 }
 .rlv-modal.has-query .rlv-panel-footer { display: block; }
 .rlv-seeall {
-    width: 100%; padding: 14px; border: none; border-radius: 8px; cursor: pointer;
+    width: 100%; padding: 14px; border: none; border-radius: calc(8px * var(--gh-round, 1)); cursor: pointer;
     background: var(--rlv-brand); color: #fff;
     font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
     transition: filter .15s ease;

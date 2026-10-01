@@ -31,7 +31,7 @@
     z-index: 5;
     width: 44px;
     height: 44px;
-    border-radius: 50%;
+    border-radius: calc(50% * var(--gh-round, 1));
     border: 1px solid var(--gh-gray-200, #e2e2e6);
     background: #fff;
     color: var(--gh-gray-800, #1f2532);

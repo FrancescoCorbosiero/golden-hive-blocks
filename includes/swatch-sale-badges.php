@@ -95,7 +95,7 @@ function ghb_swatch_sale_badges_init()
                 top: 2px; right: 2px;
                 background: #e44; color: #fff;
                 font-size: 8px; font-weight: 700; line-height: 1;
-                padding: 1px 2px; border-radius: 2px;
+                padding: 1px 2px; border-radius: calc(2px * var(--gh-round, 1));
                 pointer-events: none; z-index: 2;
             }
         </style>';

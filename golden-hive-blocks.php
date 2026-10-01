@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.10.0
+ * Version: 5.11.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.10.0');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.11.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -27,6 +27,12 @@ define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
  * gh_kses_map_iframe) — loaded first, everything below uses them.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/render-helpers.php';
+
+/**
+ * Design switches (Customizer → Golden Hive — Stile): the shape of every
+ * element (rounded / sharp) and the shop filters' desktop layout.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/design.php';
 
 /**
  * Frontend assets.
