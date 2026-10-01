@@ -414,11 +414,85 @@ function ghb_hub_rail_payload(string $key, string $path, array $block, array $ra
         'fallback'         => $rail['fallback'],
         'fallback_default' => $rail['fallback_default'],
         'editable'         => empty($atts['ids']),
+        'fields'           => (object) (ghb_hub_fields_of($block) ?? array()),
     );
     if ($with_products) {
         $payload['products'] = ghb_hub_product_cards(ghb_hub_rail_ids($atts, true));
     }
     return $payload;
+}
+
+/**
+ * The block fields the Hub may edit (ghb_hub_field_specs), filterable for a
+ * site that wants fewer. Whatever the filter returns is still sanitized by
+ * type on write.
+ */
+function ghb_hub_editable_fields(): array
+{
+    return (array) apply_filters('ghb_hub_editable_fields', ghb_hub_field_specs());
+}
+
+/** The block type's own defaults (block.json) for the given fields. */
+function ghb_hub_field_defaults(string $block_name, array $spec): array
+{
+    $type     = WP_Block_Type_Registry::get_instance()->get_registered($block_name);
+    $defaults = array();
+    foreach (array_keys($spec) as $field) {
+        $default          = $type && isset($type->attributes[$field]['default']) ? $type->attributes[$field]['default'] : '';
+        $defaults[$field] = is_scalar($default) ? (string) $default : '';
+    }
+    return $defaults;
+}
+
+/**
+ * WordPress's sanitizer for each field type. The page is written back with
+ * kses off (it must keep its own markup), so this is what stands between a
+ * field and the page: text loses its tags, a link must be http(s) or local.
+ */
+function ghb_hub_clean_field(string $type, string $value): string
+{
+    switch ($type) {
+        case 'url':
+            $value = trim($value);
+            return '' === $value ? '' : esc_url_raw($value, array('http', 'https'));
+        case 'enum':
+            return trim($value);
+        default:
+            return sanitize_text_field($value);
+    }
+}
+
+/** A block's editable fields with their current values; null when it has none. */
+function ghb_hub_fields_of(array $block): ?array
+{
+    $specs = ghb_hub_editable_fields();
+    $name  = (string) ($block['blockName'] ?? '');
+    if (empty($specs[$name])) {
+        return null;
+    }
+    $attrs = isset($block['attrs']) && is_array($block['attrs']) ? $block['attrs'] : array();
+    return ghb_hub_block_fields($attrs, $specs[$name], ghb_hub_field_defaults($name, $specs[$name]));
+}
+
+/** What went wrong with a field, in the words the Hub shows. */
+function ghb_hub_field_error(array $applied, array $spec): WP_Error
+{
+    $field = $applied['field'];
+    $max   = isset($spec[$field]['max']) ? (int) $spec[$field]['max'] : 0;
+    switch ($applied['error']) {
+        case 'not_editable':
+            $message = "Il campo {$field} non si può modificare dalla Vetrina.";
+            break;
+        case 'bad_url':
+            $message = 'Il link non è valido: usa un indirizzo http(s) o un percorso del sito (/…).';
+            break;
+        case 'too_long':
+            $message = "Il testo di {$field} è troppo lungo (al massimo {$max} caratteri).";
+            break;
+        default:
+            $message = "Valore non valido per {$field}.";
+    }
+    return new WP_Error('ghb_bad_field', $message, array('status' => 400, 'field' => $field, 'reason' => $applied['error']));
 }
 
 /* ==================================================================== *
@@ -491,7 +565,8 @@ function ghb_hub_rest_capabilities()
         'plugin'            => 'golden-hive-blocks',
         'version'           => GOLDEN_HIVE_BLOCKS_VERSION,
         'api'               => GHB_HUB_API,
-        'features'          => array('homepage', 'rail', 'rail-visible', 'products', 'block-write', 'history', 'rail-pin', 'rail-exclude', 'rail-fallback', 'archive-follow'),
+        'features'          => array('homepage', 'rail', 'rail-visible', 'products', 'block-write', 'history', 'rail-pin', 'rail-exclude', 'rail-fallback', 'rail-limit', 'block-fields', 'archive-follow'),
+        'fields'            => (object) ghb_hub_editable_fields(),
         'fallbacks'         => ghb_hub_fallbacks(),
         'max_ids'           => GHB_HUB_MAX_IDS,
         'hide_out_of_stock' => ghb_hub_hide_out_of_stock(),
@@ -526,12 +601,20 @@ function ghb_hub_rest_homepage(WP_REST_Request $request)
             );
             continue;
         }
-        $items[] = array(
+        $item = array(
             'path'    => $path,
             'name'    => $block['blockName'],
             'kind'    => 'static',
             'summary' => ghb_hub_block_summary($block),
         );
+        $fields = ghb_hub_fields_of($block);
+        if (null !== $fields) {
+            // Editable from the Vetrina: its fields, and the fingerprint a
+            // write must quote back.
+            $item['fields']     = $fields;
+            $item['attrs_hash'] = ghb_hub_attrs_hash($block['attrs']);
+        }
+        $items[] = $item;
     }
 
     return rest_ensure_response(array(
@@ -650,21 +733,31 @@ function ghb_hub_validate_rail_input($input)
     if ('' !== $fallback && !in_array($fallback, ghb_hub_fallbacks(), true)) {
         return new WP_Error('ghb_bad_input', 'Ordinamento non riconosciuto.', array('status' => 400));
     }
+    $limit = null;
+    if (isset($input['limit'])) {
+        $limit = filter_var($input['limit'], FILTER_VALIDATE_INT);
+        if (false === $limit || $limit < 1 || $limit > GHB_HUB_MAX_IDS) {
+            return new WP_Error('ghb_bad_input', 'Numero di prodotti non valido (da 1 a ' . GHB_HUB_MAX_IDS . ').', array('status' => 400));
+        }
+    }
     return array(
         'pin'      => ghb_hub_parse_id_list($input['pin'] ?? array()),
         'exclude'  => ghb_hub_parse_id_list($input['exclude'] ?? array()),
         'fallback' => $fallback,
+        'limit'    => $limit,
     );
 }
 
 /**
- * Write one rail's pin / exclude / fallback into the page.
+ * Write one block of the page: a rail's pin / exclude / fallback / limit
+ * ("rail"), and/or the block's editable fields ("attrs", checked against
+ * ghb_hub_editable_fields and sanitized by type).
  *
  * Refuses rather than guesses at every step: the page must be the one the Hub
  * read (modified time), the block must be the one it read (path, name and an
  * attribute fingerprint), and its delimiter must be found exactly once. Only
- * the rail shortcode changes; the write is a normal wp_update_post, so the
- * page gets a revision.
+ * that block's attributes change; the write is a normal wp_update_post, so
+ * the page gets a revision.
  */
 function ghb_hub_rest_write_block(WP_REST_Request $request)
 {
@@ -685,32 +778,57 @@ function ghb_hub_rest_write_block(WP_REST_Request $request)
     if ((string) $request->get_param('expected_attrs_hash') !== ghb_hub_attrs_hash($block['attrs'])) {
         return new WP_Error('ghb_block_changed', 'La sezione è stata modificata nel frattempo: ricarica.', array('status' => 409));
     }
-    $rail = ghb_hub_rail_from_block($block);
-    if (!$rail) {
-        return new WP_Error('ghb_not_a_rail', 'Questo blocco non è una sezione prodotti.', array('status' => 422));
-    }
-    if (!empty($rail['atts']['ids'])) {
-        return new WP_Error('ghb_fixed_list', 'Questa sezione mostra una lista fissa di prodotti.', array('status' => 422));
+    $rail_input  = $request->get_param('rail');
+    $field_input = $request->get_param('attrs');
+    if (null === $rail_input && null === $field_input) {
+        return new WP_Error('ghb_bad_input', 'Niente da modificare.', array('status' => 400));
     }
 
-    $values = ghb_hub_validate_rail_input($request->get_param('rail'));
-    if (is_wp_error($values)) {
-        return $values;
-    }
-    $new_shortcode = ghb_hub_set_rail_atts($rail['shortcode'], $values);
-    if (null === $new_shortcode) {
-        return new WP_Error('ghb_unwritable', 'Lo shortcode della sezione non si può riscrivere in sicurezza.', array('status' => 422));
+    $rail      = ghb_hub_rail_from_block($block);
+    $new_attrs = $block['attrs'];
+
+    if (null !== $rail_input) {
+        if (!$rail) {
+            return new WP_Error('ghb_not_a_rail', 'Questo blocco non è una sezione prodotti.', array('status' => 422));
+        }
+        if (!empty($rail['atts']['ids'])) {
+            return new WP_Error('ghb_fixed_list', 'Questa sezione mostra una lista fissa di prodotti.', array('status' => 422));
+        }
+        $values = ghb_hub_validate_rail_input($rail_input);
+        if (is_wp_error($values)) {
+            return $values;
+        }
+        $new_shortcode = ghb_hub_set_rail_atts($rail['shortcode'], $values);
+        if (null === $new_shortcode) {
+            return new WP_Error('ghb_unwritable', 'Lo shortcode della sezione non si può riscrivere in sicurezza.', array('status' => 422));
+        }
+        $new_attrs['shortcode'] = $new_shortcode;
     }
 
-    $new_attrs              = $block['attrs'];
-    $new_attrs['shortcode'] = $new_shortcode;
-    $dry_run                = (bool) $request->get_param('dry_run');
-    $response               = array(
+    if (null !== $field_input) {
+        $specs = ghb_hub_editable_fields();
+        $name  = $block['blockName'];
+        if (!is_array($field_input)) {
+            return new WP_Error('ghb_bad_input', 'I campi vanno inviati come oggetto.', array('status' => 400));
+        }
+        if (empty($specs[$name])) {
+            return new WP_Error('ghb_no_fields', 'Questo blocco non ha campi modificabili dalla Vetrina.', array('status' => 422));
+        }
+        $applied = ghb_hub_apply_fields($new_attrs, $field_input, $specs[$name], ghb_hub_field_defaults($name, $specs[$name]), 'ghb_hub_clean_field');
+        if (!$applied['ok']) {
+            return ghb_hub_field_error($applied, $specs[$name]);
+        }
+        $new_attrs = $applied['attrs'];
+    }
+
+    $dry_run  = (bool) $request->get_param('dry_run');
+    $response = array(
         'dry_run' => $dry_run,
-        'changed' => $new_shortcode !== $rail['shortcode'],
+        'changed' => $new_attrs !== $block['attrs'],
         'path'    => $path,
-        'before'  => $rail['shortcode'],
-        'after'   => $new_shortcode,
+        'before'  => $rail ? $rail['shortcode'] : '',
+        'after'   => $rail ? (string) ($new_attrs['shortcode'] ?? '') : '',
+        'fields'  => (object) (ghb_hub_fields_of(array('blockName' => $block['blockName'], 'attrs' => $new_attrs)) ?? array()),
     );
 
     $replaced = ghb_hub_replace_block_attrs($page->post_content, $block['blockName'], $block['attrs'], $new_attrs, 'serialize_block_attributes');
@@ -753,7 +871,9 @@ function ghb_hub_rest_write_block(WP_REST_Request $request)
     $page = get_post($page->ID);
     $response['modified_gmt'] = $page->post_modified_gmt;
     $response['attrs_hash']   = ghb_hub_attrs_hash($new_attrs);
-    $response['rendered']     = ghb_hub_rail_ids(ghb_hub_rail_atts(ghb_hub_parse_shortcode($new_shortcode)['atts']), true);
+    $response['rendered']     = $rail
+        ? ghb_hub_rail_ids(ghb_hub_rail_atts(ghb_hub_parse_shortcode((string) $new_attrs['shortcode'])['atts']), true)
+        : array();
     return rest_ensure_response($response);
 }
 

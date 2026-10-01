@@ -238,6 +238,76 @@ same($missing['error'], 'not_found', 'a block that is not there is not rewritten
 same(ghb_hub_attrs_hash($saldi_block['attrs']), ghb_hub_attrs_hash(parse_blocks($html)[8]['innerBlocks'][1]['attrs']), 'the attribute hash is stable across parses');
 check(ghb_hub_attrs_hash($saldi_block['attrs']) !== ghb_hub_attrs_hash($new_attrs), 'the attribute hash sees a change');
 
+/* ---------------------------------------------------------------- *
+ * Rail size and editable fields.
+ * ---------------------------------------------------------------- */
+
+$saldi_shortcode = $saldi_block['attrs']['shortcode'];
+$nothing         = array('pin' => array(), 'exclude' => array(), 'fallback' => '');
+$resized         = ghb_hub_set_rail_atts($saldi_shortcode, $nothing + array('limit' => 24));
+same(ghb_hub_parse_shortcode($resized)['atts']['limit'], '24', 'limit is written when asked');
+$kept_before = ghb_hub_parse_shortcode($saldi_shortcode)['atts'];
+$kept_after  = ghb_hub_parse_shortcode($resized)['atts'];
+unset($kept_before['limit'], $kept_after['limit']);
+same($kept_after, $kept_before, 'resizing keeps every other rail attribute');
+same(ghb_hub_set_rail_atts($saldi_shortcode, $nothing), $saldi_shortcode, 'without limit the rail is untouched');
+
+// Stand-in for WordPress's sanitizers (hub-rails.php injects the real ones).
+$clean = function (string $type, string $value): string {
+    if ('url' === $type) {
+        $value = trim($value);
+        return ('' === $value || preg_match('#^(https?://|/)#', $value)) ? $value : '';
+    }
+    return 'enum' === $type ? trim($value) : trim(strip_tags($value));
+};
+$wrap = ghb_hub_field_specs()['golden-hive/shortcode-wrapper'];
+$defs = array('eyebrow' => '', 'title' => '', 'backgroundColor' => 'white', 'buttonText' => '', 'buttonUrl' => '');
+
+$read = ghb_hub_block_fields($saldi_block['attrs'], $wrap, $defs);
+same($read['title'], 'SALDI', 'fields read the saved title');
+same($read['eyebrow'], 'Saldi primaverili', 'and the saved eyebrow');
+same($read['buttonUrl'], $saldi_block['attrs']['buttonUrl'] ?? '', 'an unsaved field reads as its default');
+check(!isset($wrap['shortcode']), 'the shortcode itself is never an editable field');
+
+$applied = ghb_hub_apply_fields($saldi_block['attrs'], array('title' => '  Saldi <b>d\'autunno</b> ', 'eyebrow' => 'Fino al -50%'), $wrap, $defs, $clean);
+same($applied['ok'], true, 'text fields apply');
+same($applied['attrs']['title'], "Saldi d'autunno", 'text is cleaned before it is written');
+same($applied['changed'], array('title', 'eyebrow'), 'the changed fields are reported');
+same($applied['attrs']['shortcode'], $saldi_shortcode, 'editing texts leaves the rail alone');
+
+$refused = array(
+    'not_editable'  => array('shortcode' => '[gh_product_rail ids="1"]'),
+    'not_text'      => array('title' => array('x')),
+    'not_an_option' => array('backgroundColor' => 'pink'),
+    'bad_url'       => array('buttonUrl' => 'javascript:alert(1)'),
+    'too_long'      => array('title' => str_repeat('x', 121)),
+);
+foreach ($refused as $reason => $change) {
+    $result = ghb_hub_apply_fields($saldi_block['attrs'], $change, $wrap, $defs, $clean);
+    same($result['ok'] ? 'ok' : $result['error'], $reason, "refused: {$reason}");
+}
+
+$reset = ghb_hub_apply_fields(array('backgroundColor' => 'gray'), array('backgroundColor' => 'white'), $wrap, $defs, $clean);
+check(!array_key_exists('backgroundColor', $reset['attrs']), 'a field set back to its default is removed, not written');
+$noop = ghb_hub_apply_fields($saldi_block['attrs'], array('title' => 'SALDI'), $wrap, $defs, $clean);
+same($noop['changed'], array(), 'writing the current value changes nothing');
+same($noop['attrs'], $saldi_block['attrs'], 'and leaves the attributes identical');
+
+// On the real page: new texts for SALDI rewrite that block and nothing else.
+$texts    = ghb_hub_apply_fields($saldi_block['attrs'], array('title' => 'SALDI AUTUNNO', 'buttonText' => 'Vedi tutti', 'buttonUrl' => '/saldi'), $wrap, $defs, $clean);
+$retitled = ghb_hub_replace_block_attrs($html, $saldi_block['blockName'], $saldi_block['attrs'], $texts['attrs'], 'serialize_block_attributes');
+check($retitled['ok'], 'field edits are written into the page', $retitled);
+$saldi_path = $rails['category:saldi-sneakers-outlet#0']['path'];
+$reread     = ghb_hub_block_at_path(parse_blocks($retitled['content']), $saldi_path);
+same($reread['attrs']['title'], 'SALDI AUTUNNO', 'the page now carries the new title');
+same($reread['attrs']['buttonUrl'], '/saldi', 'and the new button link');
+same($reread['attrs']['shortcode'], $saldi_shortcode, 'and the same rail');
+foreach (ghb_hub_leaf_blocks(parse_blocks($retitled['content'])) as $i => $leaf) {
+    if ($leaf[0] !== $saldi_path) {
+        same($leaf, $before_leaves[$i], 'untouched by the retitle: ' . $leaf[0]);
+    }
+}
+
 /* ---------------------------------------------------------------- */
 
 echo sprintf("%d passed, %d failed\n", $GLOBALS['ghb_passes'], $GLOBALS['ghb_failures']);
