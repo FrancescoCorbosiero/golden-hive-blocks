@@ -12,10 +12,11 @@
  *   • .cgkit-swatch  with  data-attribute-value / data-attribute-text
  *   • the size attribute being the `pa_taglia` taxonomy
  *
- * It also formats prices for it-IT (e.g. "120 €"). If you switch away from
- * Shoptimizer/CommerceKit, rename the size attribute, or change locale, this
- * stops applying — but it fails silently (no errors; swatches just render
- * without the price labels), so it is safe to leave enabled.
+ * It also formats prices for it-IT (e.g. "120 €"). It loads with Shoptimizer
+ * as the theme only (theme module 'swatch-prices', theme-compat.php; force it
+ * on there if CommerceKit is kept on another theme). If you rename the size
+ * attribute or change locale it stops applying — silently (no errors;
+ * swatches just render without the price labels).
  *
  * What it does: reads WooCommerce's own data-product_variations JSON off the
  * variations form and renders the matching price under each in-stock size
@@ -37,7 +38,7 @@ add_action('wp_enqueue_scripts', 'ghb_variation_swatch_prices_assets');
 function ghb_variation_swatch_prices_assets()
 {
     // Single-product pages only — nothing to enhance elsewhere.
-    if (!function_exists('is_product') || !is_product()) {
+    if (!function_exists('is_product') || !is_product() || !ghb_theme_module('swatch-prices')) {
         return;
     }
 

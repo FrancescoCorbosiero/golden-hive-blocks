@@ -1018,11 +1018,13 @@ function ghb_hub_archive_follow($query)
         return;
     }
     $pins = implode(',', array_map('intval', $state['pin']));
-    $apply = function ($clauses, $target) use ($query, $pins, &$apply) {
+    // Stays hooked and acts on this query only. It used to remove itself
+    // mid-run, and WP_Hook then skips the next priority (sold-out-last.php's
+    // ordering at 50, or any other plugin's clauses).
+    $apply = function ($clauses, $target) use ($query, $pins) {
         if ($target !== $query) {
             return $clauses;
         }
-        remove_filter('posts_clauses', $apply, 20);
         global $wpdb;
         $field              = "FIELD({$wpdb->posts}.ID, {$pins})";
         $rest               = trim((string) $clauses['orderby']);

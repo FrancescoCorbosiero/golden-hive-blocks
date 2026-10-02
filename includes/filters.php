@@ -618,6 +618,10 @@ class GHB_Filters
             $args['orderby'] = 'menu_order title';
             $args['order']   = 'ASC';
         }
+        // Sold-out products last, as on the page (includes/sold-out-last.php).
+        if (function_exists('ghb_sold_out_last_enabled') && ghb_sold_out_last_enabled()) {
+            $args['ghb_sold_out_last'] = true;
+        }
 
         $q = new WP_Query($args);
         if ($ordering) {

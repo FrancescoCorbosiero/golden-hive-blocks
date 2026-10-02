@@ -12,9 +12,9 @@
  * and Shoptimizer's own `.cg-open` class (which controls submenu visibility —
  * we deliberately do not override that, only layer styling/behaviour on top).
  *
- * Loads site-wide on the front end (the nav is in every header). Fails harmlessly
- * if the markup isn't present. Migrated from a Code Snippet — disable that
- * snippet once this is active.
+ * Loads site-wide on the front end (the nav is in every header), with
+ * Shoptimizer as the theme only: theme module 'mobile-nav' (theme-compat.php).
+ * Migrated from a Code Snippet — disable that snippet once this is active.
  *
  * @package Golden_Hive_Blocks
  * @since   5.3.0
@@ -27,6 +27,10 @@ if (!defined('ABSPATH')) {
 add_action('wp_enqueue_scripts', 'ghb_mobile_nav_assets');
 function ghb_mobile_nav_assets()
 {
+    if (!ghb_theme_module('mobile-nav')) {
+        return;
+    }
+
     wp_enqueue_style(
         'golden-hive-mobile-nav',
         gh_asset_url('mobile-nav.css'),

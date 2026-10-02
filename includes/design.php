@@ -11,7 +11,9 @@
  *
  * "Filtri su desktop": the shop sidebar as the theme lays it out, or a drawer
  * opened from a "Filtri" button in the shop toolbar, with the products using
- * the full width. Phones keep the theme's own filter drawer either way.
+ * the full width. Phones keep the theme's own filter drawer either way. The
+ * drawer is Shoptimizer's #secondary sidebar restyled by theme-bridge.css, so
+ * the option exists only where that stylesheet loads.
  *
  * @package Golden_Hive_Blocks
  * @since   5.11.0
@@ -35,10 +37,24 @@ function ghb_filters_layout(): string
     return in_array($layout, array('sidebar', 'drawer'), true) ? $layout : 'sidebar';
 }
 
-/** The drawer layout applies to product archives only. */
+/**
+ * theme-bridge.css loads: Shoptimizer as the parent theme (theme module
+ * 'theme-bridge'), unless add_filter('ghb_design_theme_bridge',
+ * '__return_false') turns it off.
+ */
+function ghb_design_theme_bridge_enabled(): bool
+{
+    return ghb_theme_module('theme-bridge') && apply_filters('ghb_design_theme_bridge', true);
+}
+
+/**
+ * The drawer layout applies to product archives only, and needs
+ * theme-bridge.css: without it the "Filtri" button would open nothing.
+ */
 function ghb_filters_drawer_active(): bool
 {
     return 'drawer' === ghb_filters_layout()
+        && ghb_design_theme_bridge_enabled()
         && function_exists('is_shop')
         && (is_shop() || is_product_taxonomy());
 }
@@ -84,14 +100,16 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         },
     ));
     $wp_customize->add_control('ghb_filters_layout', array(
-        'section'     => 'ghb_design',
-        'type'        => 'radio',
-        'label'       => 'Filtri del negozio su desktop',
-        'description' => 'Con il pannello, i prodotti occupano tutta la larghezza e i filtri si aprono dal pulsante «Filtri». Su telefono non cambia nulla.',
-        'choices'     => array(
+        'section'         => 'ghb_design',
+        'type'            => 'radio',
+        'label'           => 'Filtri del negozio su desktop',
+        'description'     => 'Con il pannello, i prodotti occupano tutta la larghezza e i filtri si aprono dal pulsante «Filtri». Su telefono non cambia nulla.',
+        'choices'         => array(
             'sidebar' => 'Barra laterale sempre aperta',
             'drawer'  => 'Pulsante «Filtri» e pannello a scomparsa',
         ),
+        // The drawer is theme-bridge.css: hidden where that doesn't load.
+        'active_callback' => 'ghb_design_theme_bridge_enabled',
     ));
 }
 add_action('customize_register', 'ghb_design_customize_register');
@@ -124,13 +142,12 @@ function ghb_design_print_shape()
 add_action('wp_head', 'ghb_design_print_shape', 2);
 
 /**
- * Shoptimizer's own surfaces on the same scale, and the drawer layout. Only
- * with Shoptimizer as the parent theme; add_filter('ghb_design_theme_bridge',
- * '__return_false') turns it off. Enqueued late so it follows the theme.
+ * Shoptimizer's own surfaces on the same scale, and the drawer layout.
+ * Enqueued late so it follows the theme.
  */
 function ghb_design_theme_bridge_assets()
 {
-    if ('shoptimizer' !== get_template() || !apply_filters('ghb_design_theme_bridge', true)) {
+    if (!ghb_design_theme_bridge_enabled()) {
         return;
     }
     wp_enqueue_style('ghb-theme-bridge', gh_asset_url('theme-bridge.css'), array(), GOLDEN_HIVE_BLOCKS_VERSION);
