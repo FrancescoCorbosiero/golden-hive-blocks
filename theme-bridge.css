@@ -1,7 +1,8 @@
 /**
  * Golden Hive Blocks — Shoptimizer bridge.
  *
- * Loaded only with Shoptimizer as the parent theme (includes/design.php).
+ * Loaded only with Shoptimizer as the parent theme: theme module
+ * 'theme-bridge' (includes/theme-compat.php, includes/design.php).
  * 1. Puts the theme's own WooCommerce surfaces on the plugin's shape scale:
  *    --gh-round is 1 for "Creativo" (rounded) and 0 for "Elegante" (sharp),
  *    so product cards, buttons and fields change shape with the blocks.

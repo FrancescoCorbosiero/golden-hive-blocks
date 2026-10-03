@@ -8,9 +8,9 @@
  * sale and injects wp_head CSS that gives the matching CommerceKit swatches a
  * red border plus a small "%" badge. Relies on CommerceKit swatch markup
  * (`.cgkit-swatch` and `[data-attribute="..."] button[data-attribute-value="..."]`)
- * that is NOT WooCommerce core. If you switch away from Shoptimizer/CommerceKit
- * it simply stops applying — the CSS targets selectors that won't exist, so
- * there is no error and nothing else is affected.
+ * that is NOT WooCommerce core, so it runs with Shoptimizer as the theme only:
+ * theme module 'swatch-sale-badges' (theme-compat.php; force it on there if
+ * CommerceKit is kept on another theme).
  *
  * Migrated from a Code Snippet. Disable that snippet once this is active, or the
  * <style> block will be emitted twice.
@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) {
 add_action('wp', 'ghb_swatch_sale_badges_init');
 function ghb_swatch_sale_badges_init()
 {
-    if (!function_exists('is_product') || !is_product()) {
+    if (!function_exists('is_product') || !is_product() || !ghb_theme_module('swatch-sale-badges')) {
         return;
     }
 

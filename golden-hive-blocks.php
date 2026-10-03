@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.11.0
+ * Version: 5.12.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.11.0');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.12.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -27,6 +27,13 @@ define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
  * gh_kses_map_iframe) — loaded first, everything below uses them.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/render-helpers.php';
+
+/**
+ * Theme coupling: the modules written for Shoptimizer / CommerceKit ask
+ * ghb_theme_module() before loading, and stay off on any other theme.
+ * Map of every coupling point: THEME-COUPLING.md.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/theme-compat.php';
 
 /**
  * Design switches (Customizer → Golden Hive — Stile): the shape of every
@@ -200,12 +207,14 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/preload-speculation.php';
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/live-search.php';
 
 /**
- * Include per-variation prices on size swatches (Shoptimizer + CommerceKit).
+ * Include per-variation prices on size swatches (Shoptimizer + CommerceKit
+ * only: theme module 'swatch-prices').
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/variation-swatch-prices.php';
 
 /**
- * Include on-sale highlight on variation swatches (Shoptimizer + CommerceKit).
+ * Include on-sale highlight on variation swatches (Shoptimizer + CommerceKit
+ * only: theme module 'swatch-sale-badges').
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/swatch-sale-badges.php';
 
@@ -232,7 +241,14 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/shop-grid.php';
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/filters.php';
 
 /**
- * Include the mobile nav caret toggle + submenu polish (Shoptimizer).
+ * Include sold-out products last on the shop and its archives (Customizer →
+ * WooCommerce → Catalogo prodotti).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/sold-out-last.php';
+
+/**
+ * Include the mobile nav caret toggle + submenu polish (Shoptimizer only:
+ * theme module 'mobile-nav').
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';
 
