@@ -42,6 +42,16 @@ add_filter('relevanssi_live_search_query_args', function ($args) {
 });
 
 /*
+ * Let single-character terms through. Relevanssi drops any search term shorter
+ * than 2 characters by default, so "air jordan 3" searched as "air jordan" and
+ * every model number returned the same list. Sneaker names hinge on these
+ * digits. It needs the Relevanssi "Minimum word length" setting at 1 (and a
+ * rebuilt index) so the digits are in the index too. Applies to the live panel
+ * and the full results page alike.
+ */
+add_filter('relevanssi_block_one_letter_searches', '__return_false');
+
+/*
  * Snappier as-you-type: the plugin's default engine config waits 500ms after
  * the last keystroke and wants 3+ characters before firing. 250ms + 2 chars
  * shaves a quarter second off EVERY search and lets short sneaker queries
