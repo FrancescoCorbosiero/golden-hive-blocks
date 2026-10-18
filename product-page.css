@@ -1,0 +1,80 @@
+/**
+ * Golden Hive Blocks — product page additions (includes/product-page.php):
+ * WhatsApp + share, the delivery estimate, and the spacing of the
+ * "Altre colorway" / "Visti di recente" rails (the rails themselves are
+ * product-rail.css). Plugin tokens only, radii on the shape scale.
+ */
+
+/* ── Delivery estimate ── */
+.ghb-delivery {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--gh-gray-200, #e5e5e5);
+    border-radius: calc(8px * var(--gh-round, 1));
+    background: var(--gh-gray-50, #fafafa);
+    color: var(--gh-gray-700, #404040);
+    font-size: 14px;
+    line-height: 1.45;
+}
+.ghb-delivery[hidden] { display: none; }
+
+.ghb-delivery__line { margin: 0; }
+.ghb-delivery__line + .ghb-delivery__line { margin-top: 2px; }
+.ghb-delivery__line strong { color: var(--gh-gray-900, #171717); }
+.ghb-delivery__line:first-child strong { color: var(--gh-accent, #721124); }
+
+/* ── WhatsApp + share ── */
+.ghb-pp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 18px;
+}
+
+.ghb-pp-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 1px solid var(--gh-gray-200, #e5e5e5);
+    border-radius: calc(999px * var(--gh-round, 1));
+    background: #fff;
+    color: var(--gh-gray-800, #262626);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+.ghb-pp-action[hidden] { display: none; }
+.ghb-pp-action svg { flex: none; }
+
+.ghb-pp-action:hover {
+    border-color: currentColor;
+    color: var(--gh-accent, #721124);
+}
+.ghb-pp-action--whatsapp svg { color: #25d366; }
+.ghb-pp-action--whatsapp:hover { color: #128c4b; }
+
+.ghb-pp-action:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+}
+
+/* ── Rails under the product ── */
+.ghb-pp-rail {
+    clear: both;
+    width: 100%;
+}
+.ghb-pp-rail .gh-rail { margin: 40px 0; }
+
+/* Empty until js/product-page.js fills it; 1px so it can be observed. */
+.ghb-pp-rail--recent:empty { min-height: 1px; }
+
+@media (max-width: 767px) {
+    .ghb-pp-action { flex: 1 1 auto; justify-content: center; }
+    .ghb-pp-rail .gh-rail { margin: 28px 0; }
+}

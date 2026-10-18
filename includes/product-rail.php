@@ -108,6 +108,19 @@ function ghb_product_rail_shortcode($atts)
         'gh_product_rail'
     );
 
+    return ghb_product_rail_render(ghb_get_carousel_products($atts), $atts);
+}
+
+/**
+ * A rail's markup for an already-run product query. The shortcode's rails and
+ * the product page's own (includes/product-page.php) share it, so every rail
+ * has the same cards, layout and arrows. $atts is a full attribute set
+ * (ghb_product_rail_defaults() plus overrides). Empty query, empty string.
+ */
+function ghb_product_rail_render(WP_Query $query, array $atts): string
+{
+    $atts = array_merge(ghb_product_rail_defaults(), $atts);
+
     // Cards shown per view on desktop (drives the batch step too). 1–8.
     $cols = max(1, min(8, (int) $atts['columns']));
 
@@ -154,7 +167,6 @@ function ghb_product_rail_shortcode($atts)
         $track_vars .= sprintf(' --gh-cols-mobile: %d;', $cols_mobile);
     }
 
-    $query = ghb_get_carousel_products($atts);
     if (!$query->have_posts()) {
         wp_reset_postdata();
         return '';

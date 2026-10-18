@@ -637,6 +637,11 @@ class GHB_Filters
         if (function_exists('ghb_atc_replace_core_button')) {
             ghb_atc_replace_core_button();
         }
+        // The cards' size line and pre-picked size follow these filters, not
+        // the admin-ajax URL (includes/size-match.php).
+        if (function_exists('ghb_size_match_slugs')) {
+            ghb_size_match_slugs($query);
+        }
 
         wc_setup_loop(array(
             'columns'      => wc_get_default_products_per_row(),

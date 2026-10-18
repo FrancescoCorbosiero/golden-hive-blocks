@@ -85,15 +85,37 @@
   color: rgba(255, 255, 255, .85);
 }
 
-/* Out of stock */
+/* Out of stock: greyed, but still clickable. Selecting a sold-out size is
+   how CommerceKit's Waitlist shows its "Avvisami" form (and its wishlist
+   works per variation), so whether a swatch can be picked is CommerceKit's
+   call, not this stylesheet's. Until 5.13.0 a pointer-events: none here
+   made sold-out sizes dead and the waitlist unreachable. */
 .cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-oos,
 .cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-disabled,
 .cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-out-of-stock {
   background: var(--gh-gray-100, #f3f4f6);
   border-color: var(--gh-gray-100, #f3f4f6);
   color: var(--gh-gray-400, #b9bdc6);
-  cursor: not-allowed;
-  pointer-events: none;
+}
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-oos:hover,
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-out-of-stock:hover {
+  border-color: var(--gh-gray-400, #b9bdc6);
+  box-shadow: none;
+}
+
+/* A sold-out size that is selected (waitlist): outlined, not filled, so it
+   never reads as a size you can buy. */
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-swatch-oos.cgkit-swatch-selected,
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch.cgkit-out-of-stock.cgkit-swatch-selected {
+  background: var(--gh-gray-100, #f3f4f6);
+  border-color: var(--gh-gray-800, #1f2532);
+  box-shadow: inset 0 0 0 1px var(--gh-gray-800, #1f2532);
+  color: var(--gh-gray-800, #1f2532);
+}
+
+.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch-oos .cgkit-swatch-price {
+  color: inherit;
+  font-size: 11px;
 }
 
 /* Hide CommerceKit's diagonal cross */

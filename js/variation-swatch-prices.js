@@ -6,11 +6,17 @@
  * WooCommerce's own data-product_variations JSON off the variations form and
  * renders the matching price under each in-stock size swatch, greying out
  * out-of-stock sizes. Fails silently if the CommerceKit markup isn't present.
+ *
+ * Sold-out sizes stay clickable (greyed only): picking one is how
+ * CommerceKit's Waitlist offers its form. They carry a short note in the
+ * price slot instead (`ghbSwatchPrices.oosLabel`, filter
+ * ghb_swatch_oos_label).
  */
 (function () {
   // Same taxonomy the swatch selector below targets. Read it explicitly —
   // the size is not guaranteed to be the FIRST variation attribute.
   var SIZE_ATTR = 'attribute_pa_taglia';
+  var OOS_LABEL = (window.ghbSwatchPrices && window.ghbSwatchPrices.oosLabel) || '';
 
   // Never round prices: 99,90 € must display as 99,90 €, not 100 €.
   // Decimals are dropped only when they are ,00 (clean integer look).
@@ -83,6 +89,12 @@
         btn.appendChild(s);
       } else {
         btn.classList.add('cgkit-swatch-oos');
+        if (OOS_LABEL) {
+          var note = document.createElement('span');
+          note.className = 'cgkit-swatch-price';
+          note.textContent = OOS_LABEL;
+          btn.appendChild(note);
+        }
       }
     });
     return true;
