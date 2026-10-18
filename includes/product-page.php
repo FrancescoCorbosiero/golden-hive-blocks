@@ -15,12 +15,19 @@
  *     entro 2 h 15 min e spediamo oggi · Consegna stimata mar 21 – gio 23 ott".
  *     Computed in the browser (js/product-page.js) because product pages are
  *     page-cached, and off until switched on: it is a promise to customers.
+ *   • A band under the product description (after_single_product_summary
+ *     15): "Non trovi la tua taglia?", the sold-out sizes as chips that open
+ *     WhatsApp with the request written, next to "Acquista con fiducia"
+ *     tiles (authenticity, shipping, returns, payments) that open on a tap.
  *   • "Altre colorway": the other products of the same model (pa_modello),
- *     as a product rail (woocommerce_after_single_product_summary 12, before
- *     WooCommerce's upsells and related products).
+ *     as a product rail (woocommerce_after_single_product_summary 19, right
+ *     before WooCommerce's related products).
  *   • "Visti di recente": the products this shopper looked at, kept in their
  *     browser (localStorage) and rendered over AJAX into a product rail
  *     (after_single_product_summary 25, after related products).
+ *
+ * The band and the rails sit inside ghb_pp_container_class(): on Shoptimizer
+ * the theme's content container, so they line up with "Prodotti correlati".
  *
  * Settings: Customizer → "Golden Hive — Pagina prodotto".
  *
@@ -56,6 +63,30 @@ function ghb_pp_recent_enabled(): bool
     return (bool) apply_filters('ghb_recent_rail', ghb_pp_flag('ghb_pp_recent', 'yes'));
 }
 
+/** "Non trovi la tua taglia?" + "Acquista con fiducia" band on/off (default on). */
+function ghb_pp_band_enabled(): bool
+{
+    return (bool) apply_filters('ghb_pp_band', ghb_pp_flag('ghb_pp_band', 'yes'));
+}
+
+/**
+ * Classes of the box that holds the product page's sections (band, rails).
+ *
+ * THEME-SPECIFIC (theme module 'theme-bridge'): WooCommerce runs
+ * after_single_product_summary inside a full-width area on Shoptimizer, and
+ * the theme gives each of its own sections its .col-full container. Ours take
+ * the same class, so they keep the width the theme's Customizer sets. On
+ * other themes the plugin's own max-width applies (product-page.css).
+ */
+function ghb_pp_container_class(): string
+{
+    $class = 'ghb-pp-inner';
+    if (function_exists('ghb_theme_module') && ghb_theme_module('theme-bridge')) {
+        $class .= ' col-full';
+    }
+    return (string) apply_filters('ghb_pp_container_class', $class);
+}
+
 /** WhatsApp number, digits only with the country code ('' hides the button). */
 function ghb_whatsapp_number(): string
 {
@@ -78,8 +109,8 @@ function ghb_delivery_config(): ?array
     if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $cutoff)) {
         $cutoff = '13:00';
     }
-    $min = max(0, min(30, (int) get_option('ghb_delivery_days_min', 1)));
-    $max = max($min, min(30, (int) get_option('ghb_delivery_days_max', 3)));
+    $min = max(0, min(30, (int) get_option('ghb_delivery_days_min', 2)));
+    $max = max($min, min(30, (int) get_option('ghb_delivery_days_max', 5)));
 
     // Days the store doesn't ship (holiday closures), as Y-m-d. Weekends and
     // Italian national holidays are already skipped by the script.
@@ -137,11 +168,16 @@ function ghb_product_page_assets()
  * WhatsApp + share
  * -------------------------------------------------------------------- */
 
+/** A WhatsApp chat link with a message already written. */
+function ghb_whatsapp_url(string $number, string $text): string
+{
+    return 'https://wa.me/' . $number . '?text=' . rawurlencode($text);
+}
+
 /** The WhatsApp chat link with a message about a product. */
 function ghb_whatsapp_product_url(string $number, string $name, string $url): string
 {
-    $text = sprintf('Ciao! Vorrei informazioni su %s: %s', $name, $url);
-    return 'https://wa.me/' . $number . '?text=' . rawurlencode($text);
+    return ghb_whatsapp_url($number, sprintf('Ciao! Vorrei informazioni su %s: %s', $name, $url));
 }
 
 add_action('woocommerce_single_product_summary', 'ghb_product_actions', 35);
@@ -195,16 +231,172 @@ function ghb_delivery_estimate()
 }
 
 /* -------------------------------------------------------------------- *
+ * Band: "Non trovi la tua taglia?" + "Acquista con fiducia"
+ * -------------------------------------------------------------------- */
+
+/**
+ * The "Acquista con fiducia" tiles: icon, title, line under it, and the text
+ * a tap opens. The defaults restate the store's own FAQ (homepage) — change
+ * them with this filter when the policies change.
+ */
+function ghb_pp_trust_items(): array
+{
+    return (array) apply_filters('ghb_pp_trust_items', array(
+        array(
+            'icon'  => 'authentic',
+            'title' => 'Originali al 100%',
+            'sub'   => 'Verificati uno per uno',
+            'text'  => 'Ogni articolo passa il controllo di autenticità del nostro team prima della spedizione: materiali, cuciture, etichette e ogni dettaglio che distingue un originale da un falso.',
+        ),
+        array(
+            'icon'  => 'shipping',
+            'title' => 'Spedizione assicurata',
+            'sub'   => 'DHL o UPS, 2–5 giorni lavorativi',
+            'text'  => 'Spediamo in tutta Italia con DHL o UPS. Gli ordini vengono preparati entro 24–48 ore dal pagamento e ricevi il codice di tracking via email.',
+        ),
+        array(
+            'icon'  => 'returns',
+            'title' => 'Reso entro 14 giorni',
+            'sub'   => 'Dalla consegna',
+            'text'  => 'Hai 14 giorni dalla consegna per il reso: il prodotto deve essere nelle condizioni originali, non indossato e con tutti i tag. Scrivici via email o WhatsApp per avviarlo.',
+        ),
+        array(
+            'icon'  => 'secure',
+            'title' => 'Paga come vuoi',
+            'sub'   => 'Anche in 3 rate senza interessi',
+            'text'  => 'Carte di credito (Visa, Mastercard, American Express), PayPal, Apple Pay, Google Pay e bonifico bancario. Oppure in 3 rate senza interessi con Klarna o Scalapay.',
+        ),
+    ));
+}
+
+function ghb_pp_icon(string $name): string
+{
+    $icons = array(
+        'authentic' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
+        'shipping'  => '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+        'returns'   => '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>',
+        'secure'    => '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>',
+    );
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+        . ($icons[$name] ?? $icons['authentic']) . '</svg>';
+}
+
+/**
+ * "Non trovi la tua taglia?": this product's sold-out sizes as chips, each a
+ * WhatsApp chat asking the store to source that size, plus "Un'altra
+ * taglia". Variable products only, and only with a WhatsApp number. Not the
+ * CommerceKit waitlist (that waits for a restock): this asks the store to
+ * look for the pair.
+ */
+function ghb_pp_size_request_card(WC_Product $product, string $number): string
+{
+    if ('' === $number || !$product->is_type('variable') || !function_exists('ghb_atc_size_rows')) {
+        return '';
+    }
+
+    $name = $product->get_name();
+    $url  = $product->get_permalink();
+
+    $chips = '';
+    $shown = 0;
+    foreach (ghb_atc_size_rows($product) as $row) {
+        if ($row['in_stock'] || $shown >= 12) {
+            continue;
+        }
+        $shown++;
+        $text   = sprintf('Ciao! Cerco %s in taglia %s. Riuscite a trovarla? %s', $name, $row['label'], $url);
+        $chips .= sprintf(
+            '<a class="ghb-pp-size-card__chip" href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+            esc_url(ghb_whatsapp_url($number, $text)),
+            esc_html($row['label'])
+        );
+    }
+    $chips .= sprintf(
+        '<a class="ghb-pp-size-card__chip ghb-pp-size-card__chip--other" href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+        esc_url(ghb_whatsapp_url($number, sprintf('Ciao! Cerco %s in una taglia che non vedo disponibile: %s', $name, $url))),
+        $shown ? esc_html__('Un\'altra taglia', 'golden-hive-blocks') : esc_html__('Scrivici la tua taglia', 'golden-hive-blocks')
+    );
+
+    ob_start();
+    ?>
+    <div class="ghb-pp-size-card">
+        <p class="ghb-pp-size-card__eyebrow"><?php esc_html_e('Su richiesta', 'golden-hive-blocks'); ?></p>
+        <h3 class="ghb-pp-size-card__title"><?php esc_html_e('Non trovi la tua taglia?', 'golden-hive-blocks'); ?></h3>
+        <p class="ghb-pp-size-card__text">
+            <?php echo $shown
+                ? esc_html__('Te la cerchiamo noi. Tocca la taglia che ti serve e scrivici su WhatsApp: ti diciamo se riusciamo a trovarla e a che prezzo.', 'golden-hive-blocks')
+                : esc_html__('Te la cerchiamo noi. Scrivici su WhatsApp la taglia che ti serve: ti diciamo se riusciamo a trovarla e a che prezzo.', 'golden-hive-blocks'); ?>
+        </p>
+        <div class="ghb-pp-size-card__chips"><?php echo $chips; // Escaped while built above. ?></div>
+    </div>
+    <?php
+    return (string) ob_get_clean();
+}
+
+add_action('woocommerce_after_single_product_summary', 'ghb_pp_band', 15);
+function ghb_pp_band()
+{
+    global $product;
+    if (!$product instanceof WC_Product || !ghb_pp_band_enabled()) {
+        return;
+    }
+
+    $card  = ghb_pp_size_request_card($product, ghb_whatsapp_number());
+    $items = ghb_pp_trust_items();
+    if ('' === $card && !$items) {
+        return;
+    }
+    ?>
+    <section class="ghb-pp-band" data-gh-reveal="up">
+        <div class="<?php echo esc_attr(ghb_pp_container_class()); ?>">
+            <div class="ghb-pp-band__grid<?php echo '' === $card ? ' ghb-pp-band__grid--trust-only' : ''; ?>">
+                <?php echo $card; // Escaped in ghb_pp_size_request_card(). ?>
+                <?php if ($items) : ?>
+                    <div class="ghb-pp-trust">
+                        <h3 class="ghb-pp-trust__title"><?php esc_html_e('Acquista con fiducia', 'golden-hive-blocks'); ?></h3>
+                        <div class="ghb-pp-trust__grid">
+                            <?php foreach ($items as $item) : ?>
+                                <details class="ghb-pp-trust__item" name="ghb-pp-trust">
+                                    <summary>
+                                        <span class="ghb-pp-trust__icon"><?php echo ghb_pp_icon((string) ($item['icon'] ?? '')); // Fixed SVG markup. ?></span>
+                                        <span class="ghb-pp-trust__head">
+                                            <strong><?php echo esc_html((string) ($item['title'] ?? '')); ?></strong>
+                                            <?php if (!empty($item['sub'])) : ?>
+                                                <span><?php echo esc_html((string) $item['sub']); ?></span>
+                                            <?php endif; ?>
+                                        </span>
+                                        <span class="ghb-pp-trust__chevron" aria-hidden="true"></span>
+                                    </summary>
+                                    <p><?php echo esc_html((string) ($item['text'] ?? '')); ?></p>
+                                </details>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+    <?php
+}
+
+/* -------------------------------------------------------------------- *
  * Rails
  * -------------------------------------------------------------------- */
 
-/** Attributes for the product page's rails: the shortcode's defaults plus these. */
+/**
+ * Attributes for the product page's rails: the shortcode's defaults plus
+ * these. Five cards per view, like the theme's "Prodotti correlati".
+ */
 function ghb_pp_rail_atts(array $atts): array
 {
-    return array_merge(ghb_product_rail_defaults(), array('columns' => 4, 'limit' => GHB_RECENT_MAX), $atts);
+    return array_merge(
+        ghb_product_rail_defaults(),
+        array('columns' => 5, 'columns_tablet' => 3, 'limit' => GHB_RECENT_MAX),
+        $atts
+    );
 }
 
-add_action('woocommerce_after_single_product_summary', 'ghb_colorways_rail', 12);
+add_action('woocommerce_after_single_product_summary', 'ghb_colorways_rail', 19);
 function ghb_colorways_rail()
 {
     global $product;
@@ -232,9 +424,14 @@ function ghb_colorways_rail()
         $args['ghb_sold_out_last'] = true;
     }
 
-    echo '<section class="ghb-pp-rail ghb-pp-rail--colorways">'
-        . ghb_product_rail_render(new WP_Query($args), $atts)
-        . '</section>';
+    $rail = ghb_product_rail_render(new WP_Query($args), $atts);
+    if ('' !== $rail) {
+        printf(
+            '<section class="ghb-pp-rail ghb-pp-rail--colorways"><div class="%s">%s</div></section>',
+            esc_attr(ghb_pp_container_class()),
+            $rail // Rendered by the rail template, escaped there.
+        );
+    }
 }
 
 add_action('woocommerce_after_single_product_summary', 'ghb_recent_rail_slot', 25);
@@ -245,7 +442,11 @@ function ghb_recent_rail_slot()
         return;
     }
     // Empty until js/product-page.js fetches the shopper's own products.
-    printf('<section class="ghb-pp-rail ghb-pp-rail--recent" data-ghb-recent="%d"></section>', (int) $product->get_id());
+    printf(
+        '<section class="ghb-pp-rail ghb-pp-rail--recent"><div class="%s" data-ghb-recent="%d"></div></section>',
+        esc_attr(ghb_pp_container_class()),
+        (int) $product->get_id()
+    );
 }
 
 /**
@@ -338,6 +539,7 @@ function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
     };
 
     $checkbox('ghb_pp_colorways', 'yes', 'Mostra "Altre colorway"', 'Sotto il prodotto, gli altri prodotti dello stesso modello (attributo Modello).');
+    $checkbox('ghb_pp_band', 'yes', 'Mostra "Non trovi la tua taglia?" e "Acquista con fiducia"', 'Sotto la descrizione del prodotto: le taglie esaurite diventano richieste su WhatsApp, accanto ad autenticità, spedizione, reso e pagamenti. I testi riprendono le FAQ della homepage.');
     $checkbox('ghb_pp_recent', 'yes', 'Mostra "Visti di recente"', 'In fondo alla pagina, i prodotti che il cliente ha guardato. Restano nel suo browser: nessun dato personale sul sito.');
 
     $wp_customize->add_setting('ghb_whatsapp_number', array(
@@ -374,6 +576,6 @@ function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
         'label'       => 'Orario limite per la spedizione in giornata',
         'description' => 'Formato HH:MM, ora del negozio (es. 13:00). Dopo quest\'ora l\'ordine parte il giorno lavorativo successivo.',
     ));
-    $number('ghb_delivery_days_min', 1, 'Consegna: giorni lavorativi minimi', 'Dalla spedizione alla consegna, nel caso migliore.');
-    $number('ghb_delivery_days_max', 3, 'Consegna: giorni lavorativi massimi', 'Dalla spedizione alla consegna, nel caso peggiore.');
+    $number('ghb_delivery_days_min', 2, 'Consegna: giorni lavorativi minimi', 'Dalla spedizione alla consegna, nel caso migliore. Le FAQ dicono 2–5 giorni lavorativi.');
+    $number('ghb_delivery_days_max', 5, 'Consegna: giorni lavorativi massimi', 'Dalla spedizione alla consegna, nel caso peggiore.');
 }

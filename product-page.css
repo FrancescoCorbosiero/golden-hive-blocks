@@ -1,7 +1,8 @@
 /**
  * Golden Hive Blocks — product page additions (includes/product-page.php):
- * WhatsApp + share, the delivery estimate, and the spacing of the
- * "Altre colorway" / "Visti di recente" rails (the rails themselves are
+ * WhatsApp + share, the delivery estimate, the "Non trovi la tua taglia?" /
+ * "Acquista con fiducia" band, and the box and spacing of the "Altre
+ * colorway" / "Visti di recente" rails (the rails themselves are
  * product-rail.css). Plugin tokens only, radii on the shape scale.
  */
 
@@ -64,17 +65,248 @@
     outline-offset: 2px;
 }
 
+/* ── Sections under the product (band + rails) ──
+   On Shoptimizer the inner box also carries the theme's .col-full, whose
+   width and padding win over this zero-specificity fallback. */
+:where(.ghb-pp-inner) {
+    max-width: 1400px;
+    margin-inline: auto;
+    padding-inline: 16px;
+}
+
+/* ── "Non trovi la tua taglia?" + "Acquista con fiducia" ── */
+.ghb-pp-band {
+    clear: both;
+    width: 100%;
+    margin: 48px 0;
+}
+
+.ghb-pp-band__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 20px;
+    align-items: stretch;
+}
+.ghb-pp-band__grid--trust-only { grid-template-columns: minmax(0, 1fr); }
+
+.ghb-pp-size-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 28px;
+    overflow: hidden;
+    border-radius: calc(16px * var(--gh-round, 1));
+    background: var(--gh-gray-900, #171717);
+    color: #fff;
+    isolation: isolate;
+}
+/* A soft glow of the brand colour in the corner. */
+.ghb-pp-size-card::before {
+    content: "";
+    position: absolute;
+    inset: auto -20% -45% auto;
+    z-index: -1;
+    width: 70%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--gh-accent, #721124) 0%, transparent 70%);
+    opacity: .55;
+}
+
+.ghb-pp-size-card__eyebrow {
+    margin: 0;
+    color: rgba(255, 255, 255, .6);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+.ghb-pp-size-card__title {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.15;
+}
+.ghb-pp-size-card__text {
+    margin: 0;
+    color: rgba(255, 255, 255, .78);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.ghb-pp-size-card__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 8px;
+}
+.ghb-pp-size-card__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: calc(8px * var(--gh-round, 1));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
+}
+.ghb-pp-size-card__chip:hover {
+    border-color: #25d366;
+    background: #25d366;
+    color: #0b2e17;
+    transform: translateY(-1px);
+}
+.ghb-pp-size-card__chip--other {
+    border-style: dashed;
+    font-weight: 600;
+}
+.ghb-pp-size-card__chip:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+.ghb-pp-trust {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.ghb-pp-trust__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+.ghb-pp-trust__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: start;
+}
+
+.ghb-pp-trust__item {
+    border: 1px solid var(--gh-gray-200, #e5e5e5);
+    border-radius: calc(12px * var(--gh-round, 1));
+    background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.ghb-pp-trust__item:hover,
+.ghb-pp-trust__item[open] {
+    border-color: var(--gh-gray-300, #d4d4d4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .06);
+}
+
+.ghb-pp-trust__item summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    list-style: none;
+    cursor: pointer;
+}
+.ghb-pp-trust__item summary::-webkit-details-marker { display: none; }
+.ghb-pp-trust__item summary:focus-visible {
+    outline: 2px solid var(--gh-accent, #721124);
+    outline-offset: 2px;
+    border-radius: inherit;
+}
+
+.ghb-pp-trust__icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: calc(10px * var(--gh-round, 1));
+    background: color-mix(in srgb, var(--gh-accent, #721124) 9%, #fff);
+    color: var(--gh-accent, #721124);
+}
+
+.ghb-pp-trust__head {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.ghb-pp-trust__head strong {
+    color: var(--gh-gray-900, #171717);
+    font-size: 14px;
+    line-height: 1.25;
+}
+.ghb-pp-trust__head span {
+    color: var(--gh-gray-500, #737373);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+/* Plus that turns into a minus when the tile is open. */
+.ghb-pp-trust__chevron {
+    position: relative;
+    flex: none;
+    width: 12px;
+    height: 12px;
+}
+.ghb-pp-trust__chevron::before,
+.ghb-pp-trust__chevron::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 12px;
+    height: 2px;
+    margin-top: -1px;
+    border-radius: 1px;
+    background: var(--gh-gray-500, #737373);
+    transition: transform .2s ease;
+}
+.ghb-pp-trust__chevron::after { transform: rotate(90deg); }
+.ghb-pp-trust__item[open] .ghb-pp-trust__chevron::after { transform: rotate(0deg); }
+
+.ghb-pp-trust__item p {
+    margin: 0;
+    padding: 0 16px 16px 70px;
+    color: var(--gh-gray-600, #525252);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
 /* ── Rails under the product ── */
 .ghb-pp-rail {
     clear: both;
     width: 100%;
 }
 .ghb-pp-rail .gh-rail { margin: 40px 0; }
+/* Left-aligned, like the theme's "Prodotti correlati". */
+.ghb-pp-rail .gh-rail__title { text-align: left; }
 
 /* Empty until js/product-page.js fills it; 1px so it can be observed. */
-.ghb-pp-rail--recent:empty { min-height: 1px; }
+.ghb-pp-rail--recent [data-ghb-recent]:empty { min-height: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ghb-pp-size-card__chip,
+    .ghb-pp-trust__chevron::after { transition: none; }
+    .ghb-pp-size-card__chip:hover { transform: none; }
+}
+
+@media (max-width: 1024px) {
+    .ghb-pp-band__grid { grid-template-columns: minmax(0, 1fr); }
+}
 
 @media (max-width: 767px) {
     .ghb-pp-action { flex: 1 1 auto; justify-content: center; }
+    .ghb-pp-band { margin: 32px 0; }
+    .ghb-pp-size-card { padding: 22px; }
+    .ghb-pp-trust__grid { grid-template-columns: minmax(0, 1fr); }
     .ghb-pp-rail .gh-rail { margin: 28px 0; }
 }
