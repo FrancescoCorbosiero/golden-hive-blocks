@@ -13,7 +13,7 @@ Last checked: plugin 5.12.0, WooCommerce 9.9.5, WordPress 6.8.
 
 | Module key | Files | Written against | On another theme |
 |---|---|---|---|
-| `theme-bridge` | `theme-bridge.css`, `includes/design.php` | Shoptimizer's product cards, sale badges, buttons, fields and pagination; its `#secondary` sidebar and `#primary` / `.content-area` | Off. The shape switch still re-shapes everything the plugin draws, but the theme's own surfaces keep their shape. The "Filtri su desktop" option leaves the Customizer, because the drawer *is* this stylesheet. |
+| `theme-bridge` | `theme-bridge.css`, `includes/design.php`, `ghb_pp_container_class()` in `includes/product-page.php` | Shoptimizer's product cards, sale badges, buttons, fields and pagination; its `#secondary` sidebar and `#primary` / `.content-area`; its `.col-full` container, which the product page's band and rails take so they line up with "Prodotti correlati" | Off. The product page's sections fall back to the plugin's own max-width. The shape switch still re-shapes everything the plugin draws, but the theme's own surfaces keep their shape. The "Filtri su desktop" option leaves the Customizer, because the drawer *is* this stylesheet. |
 | `mobile-nav` | `includes/mobile-nav.php`, `mobile-nav.css`, `js/mobile-nav.js` | Shoptimizer's menu: `.main-navigation`, `.menu-item-has-children`, `.caret`, `.sub-menu-wrapper`, `.cg-open` | Off |
 | `swatch-prices` | `includes/variation-swatch-prices.php`, `variation-swatch-prices.css`, `js/variation-swatch-prices.js` | CommerceKit's swatches: `.cgkit-attribute-swatches`, `.cgkit-swatch`. Sold-out sizes are greyed but stay clickable: CommerceKit's Waitlist shows its form when one is selected. | Off |
 | `swatch-sale-badges` | `includes/swatch-sale-badges.php` | CommerceKit's swatch buttons: `[data-attribute] button[data-attribute-value]` | Off |
@@ -46,7 +46,7 @@ Astra, Blocksy…):
 | Quick View button | `woocommerce_before_shop_loop_item_title` |
 | Filtered size on the card ("Taglia 42 · 180 €"), size pre-picked in Quick View / Quick Add | `woocommerce_after_shop_loop_item_title`, the `filter_taglia` URL param |
 | "Chiedi su WhatsApp", "Condividi", delivery estimate | `woocommerce_single_product_summary` (35, 31); the WhatsApp message reads the variations form's `<select>` |
-| "Altre colorway", "Visti di recente" rails | `woocommerce_after_single_product_summary` (12, 25) |
+| "Non trovi la tua taglia?" + "Acquista con fiducia" band, "Altre colorway" and "Visti di recente" rails | `woocommerce_after_single_product_summary` (15, 19, 25) |
 | Archive hero | `woocommerce_before_main_content`, `woocommerce_show_page_title` |
 | "Filtri" button (desktop drawer) | `woocommerce_before_shop_loop`, plus `theme-bridge` (section 1) |
 | Shop grid alignment | `ul.products li.product` (`shop-grid.css`, `js/shop-grid.js`) |
