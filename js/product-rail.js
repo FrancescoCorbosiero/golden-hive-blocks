@@ -5,6 +5,9 @@
  * native CSS scroll-snap does the scrolling; this only wires the optional
  * prev/next arrows, disables them at the ends, and advances by a full batch
  * (the number of whole cards visible). No slider library.
+ *
+ * Rails added after load (the product page's "Visti di recente", fetched by
+ * js/product-page.js) are wired with window.ghbProductRail.init(root).
  */
 (function () {
     function initScroller(rail, trackSel, navSel) {
@@ -45,18 +48,25 @@
         update();
     }
 
-    function boot() {
-        document.querySelectorAll('.gh-rail').forEach(function (r) {
+    function boot(root) {
+        var scope = root && root.querySelectorAll ? root : document;
+        scope.querySelectorAll('.gh-rail').forEach(function (r) {
+            if (r.hasAttribute('data-gh-rail-ready')) return;
+            r.setAttribute('data-gh-rail-ready', '');
             initScroller(r, '.gh-rail__track', '.gh-rail__nav');
         });
-        document.querySelectorAll('.gh-cs').forEach(function (r) {
+        scope.querySelectorAll('.gh-cs').forEach(function (r) {
+            if (r.hasAttribute('data-gh-rail-ready')) return;
+            r.setAttribute('data-gh-rail-ready', '');
             initScroller(r, '.gh-cs__track', '.gh-cs__nav');
         });
     }
 
+    window.ghbProductRail = { init: boot };
+
     if (document.readyState !== 'loading') {
         boot();
     } else {
-        document.addEventListener('DOMContentLoaded', boot);
+        document.addEventListener('DOMContentLoaded', function () { boot(); });
     }
 })();

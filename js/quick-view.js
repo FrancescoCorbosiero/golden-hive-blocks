@@ -131,6 +131,8 @@
         e.stopPropagation();
 
         var productId = btn.getAttribute('data-product-id');
+        // The size the shop's size filter asked for (includes/size-match.php).
+        var preselect = btn.getAttribute('data-size-variation') || '';
 
         setLoading('Caricamento...');
         openModal();
@@ -153,7 +155,7 @@
                     setLoading('Prodotto non trovato');
                     return;
                 }
-                renderProduct(productId, response.data);
+                renderProduct(productId, response.data, preselect);
             })
             .catch(function (err) {
                 if (err && err.name === 'AbortError') return;
@@ -162,7 +164,7 @@
     });
 
     /* ── Render (createElement/textContent — no injection) ── */
-    function renderProduct(productId, p) {
+    function renderProduct(productId, p, preselect) {
         content.textContent = '';
         sizeData = {};
         selectedSize = null;
@@ -247,10 +249,59 @@
         viewFull.appendChild(arrow);
         info.appendChild(viewFull);
 
+        var actions = renderActions(p);
+        if (actions) info.appendChild(actions);
+
         body.appendChild(info);
         content.appendChild(body);
 
         renderCartControl(productId, p);
+
+        if (preselect) {
+            var picked = content.querySelector('.rp-qv-size[data-variation-id="' + parseInt(preselect, 10) + '"]');
+            if (picked) pickSize(picked);
+        }
+    }
+
+    // "Chiedi su WhatsApp" + "Condividi", as on the product page
+    // (includes/product-page.php). The WhatsApp message is written on click,
+    // so it names the size picked by then.
+    function renderActions(p) {
+        var canShare = !!(navigator.share || (navigator.clipboard && window.isSecureContext));
+        if (!cfg.whatsapp && !canShare) return null;
+
+        var row = el('div', 'rp-qv-actions');
+        row.setAttribute('data-name', p.title || '');
+        row.setAttribute('data-url', p.url || '');
+        if (cfg.whatsapp) {
+            var wa = el('a', 'rp-qv-action rp-qv-action--whatsapp', 'Chiedi su WhatsApp');
+            wa.href = whatsappUrl(p.title, '', p.url);
+            wa.target = '_blank';
+            wa.rel = 'noopener noreferrer';
+            row.appendChild(wa);
+        }
+        if (canShare) {
+            var shareBtn = el('button', 'rp-qv-action rp-qv-action--share', 'Condividi');
+            shareBtn.type = 'button';
+            row.appendChild(shareBtn);
+        }
+        return row;
+    }
+
+    function whatsappUrl(name, size, url) {
+        var text = 'Ciao! Vorrei informazioni su ' + (name || '') + (size ? ', taglia ' + size : '') + ': ' + (url || '');
+        return 'https://wa.me/' + cfg.whatsapp + '?text=' + encodeURIComponent(text);
+    }
+
+    function share(btn, name, url) {
+        if (navigator.share) {
+            navigator.share({ title: name, url: url }).catch(function () {});
+            return;
+        }
+        navigator.clipboard.writeText(url).then(function () {
+            btn.textContent = 'Link copiato';
+            setTimeout(function () { btn.textContent = 'Condividi'; }, 2000);
+        }).catch(function () {});
     }
 
     // Build the add-to-cart control (simple button or size pills) straight
@@ -492,6 +543,20 @@
 
     /* ── Delegated clicks inside the modal ── */
     document.addEventListener('click', function (e) {
+        var action = e.target.closest('.rp-qv-action');
+        if (action && modal.contains(action)) {
+            var row = action.closest('.rp-qv-actions');
+            var name = row.getAttribute('data-name');
+            var url = row.getAttribute('data-url');
+            if (action.classList.contains('rp-qv-action--whatsapp')) {
+                // Rewritten before the browser follows it.
+                action.href = whatsappUrl(name, selectedSize ? selectedSize.label : '', url);
+            } else {
+                share(action, name, url);
+            }
+            return;
+        }
+
         // Simple product → add directly.
         var addBtn = e.target.closest('.rp-qv-atc .rp-qv-add[data-product-id]');
         if (addBtn) {

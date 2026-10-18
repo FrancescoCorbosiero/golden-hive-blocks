@@ -20,7 +20,9 @@
  *
  * What it does: reads WooCommerce's own data-product_variations JSON off the
  * variations form and renders the matching price under each in-stock size
- * swatch, greying out the out-of-stock sizes.
+ * swatch, greying out the out-of-stock sizes. Greyed sizes stay clickable:
+ * CommerceKit's Waitlist shows its form when a sold-out size is selected, so
+ * blocking the click (as this module did until 5.13.0) hid the waitlist.
  *
  * Migrated here from a Code Snippet so it lives in version control alongside
  * the rest of the store's UI. NOTE: disable the old Code Snippet once this is
@@ -55,5 +57,13 @@ function ghb_variation_swatch_prices_assets()
         array(),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')
+    );
+
+    // Note shown in a sold-out size's price slot ('' = none). E.g. with the
+    // Waitlist on: add_filter('ghb_swatch_oos_label', fn() => 'Avvisami').
+    wp_localize_script(
+        'golden-hive-variation-swatch-prices',
+        'ghbSwatchPrices',
+        array('oosLabel' => (string) apply_filters('ghb_swatch_oos_label', __('Esaurito', 'golden-hive-blocks')))
     );
 }

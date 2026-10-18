@@ -230,6 +230,10 @@
         e.stopPropagation();
 
         var productId = btn.getAttribute('data-product-id');
+        // The size the shop's size filter asked for (includes/size-match.php).
+        var preselect = btn.hasAttribute('data-size-value')
+            ? { attr: btn.getAttribute('data-size-attr'), value: btn.getAttribute('data-size-value') }
+            : null;
 
         // Reset the picker state BEFORE fetching, so a reopened modal can
         // never add the previously matched variation.
@@ -254,7 +258,7 @@
                     setLoading('Prodotto non trovato');
                     return;
                 }
-                renderModal(response.data, productId);
+                renderModal(response.data, productId, preselect);
             })
             .catch(function (err) {
                 if (err && err.name === 'AbortError') return;
@@ -263,7 +267,7 @@
     });
 
     /* ── Modal content (createElement — no string HTML) ── */
-    function renderModal(data, productId) {
+    function renderModal(data, productId, preselect) {
         currentVariations = Array.isArray(data.variations) ? data.variations : [];
         selectedAttrs = {};
         matchedVariation = null;
@@ -342,6 +346,25 @@
         content.appendChild(footer);
 
         updateAvailability();
+
+        // Pick the filtered size up front, if this product still offers it.
+        if (preselect) {
+            var match = Array.prototype.find.call(
+                content.querySelectorAll('.ghb-qa-attr-option'),
+                function (opt) {
+                    return opt.getAttribute('data-attr') === preselect.attr
+                        && opt.getAttribute('data-value') === preselect.value
+                        && !opt.classList.contains('unavailable');
+                }
+            );
+            if (match) {
+                selectedAttrs[preselect.attr] = preselect.value;
+                match.classList.add('selected');
+                match.setAttribute('aria-pressed', 'true');
+                updateAvailability();
+                updateButton();
+            }
+        }
     }
 
     /* ── Quantity clamping to the matched variation's purchasable max ── */

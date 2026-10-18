@@ -55,7 +55,11 @@ function ghb_quick_view_button()
     if (!$product) {
         return;
     }
-    echo '<button class="rp-quick-view-btn" data-product-id="' . esc_attr($product->get_id()) . '" aria-label="' . esc_attr__('Anteprima rapida', 'golden-hive-blocks') . '">
+    // data-size-*: the size the shop filter asked for (includes/size-match.php).
+    $size_attrs = ($product instanceof WC_Product && function_exists('ghb_size_match_button_attrs'))
+        ? ghb_size_match_button_attrs($product)
+        : '';
+    echo '<button class="rp-quick-view-btn" data-product-id="' . esc_attr($product->get_id()) . '"' . $size_attrs . ' aria-label="' . esc_attr__('Anteprima rapida', 'golden-hive-blocks') . '">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -111,6 +115,8 @@ function ghb_quick_view_assets()
             'action'       => 'ghb_quick_view',
             'cartEndpoint' => class_exists('WC_AJAX') ? WC_AJAX::get_endpoint('add_to_cart') : '',
             'cartUrl'      => function_exists('wc_get_cart_url') ? wc_get_cart_url() : '',
+            // "Chiedi su WhatsApp" in the modal ('' hides it): includes/product-page.php.
+            'whatsapp'     => function_exists('ghb_whatsapp_number') ? ghb_whatsapp_number() : '',
         )
     );
 }

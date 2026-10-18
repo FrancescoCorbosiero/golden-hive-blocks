@@ -38,6 +38,16 @@
     pointer-events: none;
 }
 
+/* The filtered size on the card (includes/size-match.php): "Taglia 42 · 180 €" */
+.ghb-size-match {
+    margin: 4px 0 2px;
+    color: var(--gh-accent, #721124);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: .01em;
+}
+
 /* Keyboard focus visibility */
 .ghb-atc-trigger:focus-visible {
     outline: 2px solid var(--gh-accent, #721124);

@@ -251,6 +251,37 @@ li.product:focus-within .rp-quick-view-btn {
 .rp-qv-view-full__arrow { transition: transform .15s ease; }
 .rp-qv-view-full:hover .rp-qv-view-full__arrow { transform: translateX(3px); }
 
+/* "Chiedi su WhatsApp" + "Condividi" (js/quick-view.js) */
+.rp-qv-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+.rp-qv-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 1px solid var(--gh-gray-200, #e5e5e5);
+    border-radius: calc(999px * var(--gh-round, 1));
+    background: #fff;
+    color: var(--gh-gray-700, #404040);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+}
+.rp-qv-action:hover {
+    border-color: currentColor;
+    color: var(--gh-accent, #721124);
+}
+.rp-qv-action--whatsapp:hover { color: #128c4b; }
+
 /* Add-to-cart control inside the modal */
 .rp-qv-atc {
     margin-top: auto;
@@ -368,6 +399,7 @@ li.product:focus-within .rp-quick-view-btn {
 .rp-qv-size:focus-visible,
 .rp-qv-add:focus-visible,
 .rp-qv-view-full:focus-visible,
+.rp-qv-action:focus-visible,
 .rp-qv-cart-link:focus-visible {
     outline: 2px solid var(--gh-accent, #721124);
     outline-offset: 2px;

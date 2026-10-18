@@ -173,11 +173,13 @@ function ghb_atc_render_button()
         return;
     }
 
-    // Variable products → open the quick-add modal to choose a size.
+    // Variable products → open the quick-add modal to choose a size (already
+    // picked when the shop's size filter names one: includes/size-match.php).
     if ($product->is_type('variable')) {
         printf(
-            '<div class="ghb-atc"><button type="button" class="ghb-atc-trigger ghb-quick-add-btn" data-product-id="%d">%s</button></div>',
+            '<div class="ghb-atc"><button type="button" class="ghb-atc-trigger ghb-quick-add-btn" data-product-id="%d"%s>%s</button></div>',
             (int) $product->get_id(),
+            function_exists('ghb_size_match_button_attrs') ? ghb_size_match_button_attrs($product) : '',
             esc_html__('Aggiungi al carrello', 'golden-hive-blocks')
         );
         return;
@@ -192,28 +194,14 @@ function ghb_atc_render_button()
 }
 
 /**
- * Normalize a size label into a key that ignores separator style.
- *
- * This store carries the same physical size under two term spellings — a
- * space/slash form ("36 2/3", "37 1/3") and a dash form ("36-2-3", "37-1-3") —
- * plus exact duplicates for whole sizes ("36" twice). Stripping every
- * non-alphanumeric character and lowercasing collapses all of these to one key
- * ("36 2/3", "36-2-3" → "3623"; "36", "36" → "36"), so equal sizes group
- * together regardless of how they were typed.
- */
-function ghb_normalize_size_key($label)
-{
-    return strtolower(preg_replace('/[^a-z0-9]/i', '', (string) $label));
-}
-
-/**
  * Deduplicated size options for a variable product.
  *
  * Collapses the duplicate size spellings described in ghb_normalize_size_key()
- * to a single option per physical size. When more than one variation maps to
- * the same size ("real conflict") we keep the one with the HIGHEST price (an
- * in-stock, purchasable variation breaks a price tie), which drops the stray
- * low-priced/low-stock import duplicates in favour of the real listing.
+ * (includes/size-match-core.php) to a single option per physical size. When
+ * more than one variation maps to the same size ("real conflict") we keep the
+ * one with the HIGHEST price (an in-stock, purchasable variation breaks a
+ * price tie), which drops the stray low-priced/low-stock import duplicates in
+ * favour of the real listing.
  *
  * @param WC_Product $product   Variable product.
  * @param string     $attribute Size attribute (defaults to the filtered pa_taglia).
@@ -276,7 +264,7 @@ function ghb_atc_unique_size_options($product, $attribute = null, $only_ids = nu
 
 /**
  * Build the size rows for a variable product:
- * [ variation_id, label, in_stock, price_html, price_text ].
+ * [ variation_id, label, value, in_stock, price_html, price_text ].
  *
  * Sizes are deduplicated (see ghb_atc_unique_size_options) so each physical
  * size appears once, keeping the highest-priced variation on a conflict. The
@@ -293,6 +281,8 @@ function ghb_atc_size_rows($product)
         $rows[] = array(
             'variation_id' => $opt['variation_id'],
             'label'        => $opt['label'],
+            // Attribute slug: what Quick Add's picker matches on.
+            'value'        => $opt['value'],
             'in_stock'     => $opt['in_stock'],
             'price_html'   => $priced ? $variation->get_price_html() : '',
             'price_text'   => $priced

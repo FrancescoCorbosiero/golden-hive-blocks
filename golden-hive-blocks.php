@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.12.1
+ * Version: 5.13.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.12.1');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.13.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -219,6 +219,13 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/variation-swatch-prices.php';
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/swatch-sale-badges.php';
 
 /**
+ * Include size matching: the size-key helper the size pickers share, and the
+ * product cards that follow the shop's size filter.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/size-match-core.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/size-match.php';
+
+/**
  * Include the WooCommerce Quick View modal.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/quick-view.php';
@@ -256,6 +263,13 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';
  * Include the lightweight product rail (CSS scroll-snap carousel).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-rail.php';
+
+/**
+ * Include the product page additions: WhatsApp + share, delivery estimate,
+ * "Altre colorway" and "Visti di recente" rails (Customizer → Golden Hive —
+ * Pagina prodotto).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-page.php';
 
 /**
  * Include the Store Hub bridge ("Vetrina"): rails honour pin / exclude /

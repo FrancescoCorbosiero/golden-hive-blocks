@@ -4,8 +4,9 @@ WordPress plugin behind the ResellPiacenza WooCommerce store (sneakers and
 streetwear). It has 27 Gutenberg blocks under `blocks/`, with shared editor
 code in `blocks/shared/`. It also draws the store's WooCommerce UI from
 `includes/`: Quick View and Quick Add, the loop add-to-cart button, filters,
-live search, product rails, the archive hero, the Store Hub bridge and the
-design switches.
+live search, product rails, the archive hero, the product page additions
+(WhatsApp, share, delivery estimate, colorway and recently viewed rails), the
+Store Hub bridge and the design switches.
 
 - **Theme coupling.** The store runs Shoptimizer + CommerceKit.
   `THEME-COUPLING.md` maps what depends on them and what doesn't; read it
@@ -18,7 +19,9 @@ design switches.
   `GOLDEN_HIVE_BLOCKS_VERSION` in `golden-hive-blocks.php` together. The
   version is the asset cache-buster.
 - **Tests.** `php tests/hub-rails-test.php` covers the Store Hub decisions in
-  pure PHP, without WordPress.
+  pure PHP, without WordPress. `php tests/size-match-test.php` covers the
+  cards' size matching, `node tests/delivery-estimate-test.js` the delivery
+  estimate's calendar.
 - **Store Hub contract.** The Hub app mirrors the rules in
   `includes/hub-rails-core.php` (for example `ghb_hub_order_ids()`), so
   changing them changes the app's previews.
