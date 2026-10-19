@@ -7,6 +7,11 @@ $eyebrow = $attributes['eyebrow'] ?? '';
 $title = $attributes['title'] ?? '';
 $description = $attributes['description'] ?? '';
 $badge_text = $attributes['badgeText'] ?? 'Certified Authentic';
+// Under the badge: the store's name unless the block says otherwise.
+$badge_sub = trim((string) ($attributes['badgeSub'] ?? ''));
+if ('' === $badge_sub) {
+    $badge_sub = (string) get_bloginfo('name');
+}
 $steps = $attributes['steps'] ?? [];
 $button_text = $attributes['buttonText'] ?? '';
 $button_url = $attributes['buttonUrl'] ?? '';
@@ -26,7 +31,9 @@ if (empty($title)) {
                     </svg>
                 </div>
                 <span class="gh-authenticity__badge-text"><?php echo esc_html($badge_text); ?></span>
-                <span class="gh-authenticity__badge-sub">Golden Hive</span>
+                <?php if ('' !== $badge_sub) : ?>
+                    <span class="gh-authenticity__badge-sub"><?php echo esc_html($badge_sub); ?></span>
+                <?php endif; ?>
             </div>
         </div>
 

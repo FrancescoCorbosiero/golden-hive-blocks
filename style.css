@@ -284,9 +284,11 @@ html.gh-scroll-lock {
     transform: translateY(0);
 }
 
+/* One fluid size instead of 7xl/5xl/4xl steps: small enough that long
+   names fit on phones, large enough to lead on desktop. */
 .gh-hero-slide__title {
-    font-size: var(--gh-text-7xl);
-    line-height: 0.9;
+    font-size: clamp(2.8rem, 8vw, 6rem);
+    line-height: 1.05;
     letter-spacing: -0.02em;
     color: var(--gh-white);
     margin-bottom: var(--gh-space-xl);
@@ -530,6 +532,15 @@ html.gh-scroll-lock {
     color: var(--gh-white);
     line-height: 1;
     margin-bottom: var(--gh-space-xl);
+}
+
+/* titleAccent: part of the title in the brand colour, outlined in white so
+   the dark red stays readable over the video. */
+.gh-hero-video__accent {
+    color: var(--gh-accent);
+    text-shadow:
+        2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff,
+        1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff;
 }
 
 .gh-hero-video__subtitle {
@@ -1867,6 +1878,8 @@ html.gh-scroll-lock {
 .gh-authenticity {
     padding: var(--gh-space-4xl) var(--gh-space-xl);
     background: var(--gh-gray-50);
+    /* The side reveals start 40px off: no sideways scroll on phones. */
+    overflow: hidden;
 }
 
 .gh-authenticity__container {
@@ -2930,10 +2943,6 @@ a.gh-btn:visited {
     .gh-hero-slide__content {
         padding: var(--gh-space-2xl);
     }
-
-    .gh-hero-slide__title {
-        font-size: var(--gh-text-5xl);
-    }
 }
 
 @media (max-width: 768px) {
@@ -2947,10 +2956,6 @@ a.gh-btn:visited {
 
     .gh-hero-slide__content {
         padding: var(--gh-space-xl) var(--gh-space-lg);
-    }
-
-    .gh-hero-slide__title {
-        font-size: var(--gh-text-4xl);
     }
 
     .gh-hero-slide__subtitle {
@@ -4445,6 +4450,12 @@ html.gh-anim-failsafe .gh-whatsapp-btn {
    pattern e timing di .gh-hero-slide__title .gh-char.
    ========================================================================== */
 
+/* SplitText groups each word's letters: the title wraps between words. */
+.gh-char-word {
+    display: inline-block;
+    white-space: nowrap;
+}
+
 .gh-js .gh-hero-video__title .gh-char {
     display: inline-block;
     opacity: 0;
@@ -5111,6 +5122,18 @@ html.gh-anim-failsafe .gh-whatsapp-btn {
     height: 20px;
     margin-top: 2px;
     color: var(--gh-accent);
+}
+
+.gh-store-visit__vat {
+    display: block;
+    margin: 4px 0 0;
+    color: var(--gh-gray-500);
+    font-size: var(--gh-text-sm);
+    font-weight: 400;
+}
+
+p.gh-store-visit__vat {
+    margin: 0;
 }
 
 .gh-store-visit__actions {

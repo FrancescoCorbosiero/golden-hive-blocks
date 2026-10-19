@@ -60,6 +60,12 @@
                             value: title,
                             onChange: function(val) { setAttributes({ title: val }); }
                         }),
+                        el(TextControl, {
+                            label: 'Parte del titolo in evidenza',
+                            help: 'Facoltativa: una parola o frase del titolo da mostrare nel colore del brand, es. PIACENZA.',
+                            value: attributes.titleAccent || '',
+                            onChange: function(val) { setAttributes({ titleAccent: val }); }
+                        }),
                         el(SelectControl, {
                             label: 'Livello heading del titolo',
                             help: 'Usa H1 se questo hero è il titolo principale della pagina (default), H2 se la pagina ha già un H1.',

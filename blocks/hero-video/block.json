@@ -42,6 +42,10 @@
             "type": "string",
             "default": "Sneakers Premium"
         },
+        "titleAccent": {
+            "type": "string",
+            "default": ""
+        },
         "headingLevel": {
             "type": "string",
             "default": "h1"

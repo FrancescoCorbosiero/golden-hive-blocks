@@ -9,6 +9,7 @@ $image_url = $attributes['imageUrl'] ?? '';
 $poster_url = $attributes['posterUrl'] ?? '';
 $badge = $attributes['badge'] ?? '';
 $title = $attributes['title'] ?? '';
+$title_accent = trim((string) ($attributes['titleAccent'] ?? ''));
 $subtitle = $attributes['subtitle'] ?? '';
 $primary_btn_text = $attributes['primaryButtonText'] ?? '';
 $primary_btn_url = $attributes['primaryButtonUrl'] ?? '';
@@ -33,6 +34,7 @@ $block_id = 'gh-hero-video-' . wp_unique_id();
                 muted
                 loop
                 playsinline
+                preload="metadata"
                 aria-hidden="true"
                 data-gh-video-bg
                 <?php if (!empty($poster_url)) : ?>poster="<?php echo esc_url($poster_url); ?>"<?php endif; ?>
@@ -53,7 +55,7 @@ $block_id = 'gh-hero-video-' . wp_unique_id();
     <div class="gh-hero-video__content">
         <?php if (!empty($badge)) : ?>
             <span class="gh-hero-video__badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
                 <?php echo esc_html($badge); ?>
@@ -66,8 +68,21 @@ $block_id = 'gh-hero-video-' . wp_unique_id();
         // pagina — retrocompatibile col comportamento storico). Passa a h2
         // dall'editor se la pagina ha già un H1 visibile.
         $heading = ($attributes['headingLevel'] ?? 'h1') === 'h2' ? 'h2' : 'h1';
+
+        // titleAccent: the part of the title shown in the brand colour
+        // ("BORN in PIACENZA"). Matched ignoring ASCII case, rendered with the
+        // title's own spelling; data-gh-split-inline lets the split-text
+        // entrance run through the accent span.
+        $accent_at  = '' !== $title_accent ? stripos($title, $title_accent) : false;
+        $title_html = esc_html($title);
+        if (false !== $accent_at) {
+            $accent_len = strlen($title_accent);
+            $title_html = esc_html(substr($title, 0, $accent_at))
+                . '<span class="gh-hero-video__accent">' . esc_html(substr($title, $accent_at, $accent_len)) . '</span>'
+                . esc_html(substr($title, $accent_at + $accent_len));
+        }
         ?>
-        <<?php echo $heading; ?> class="gh-section-title gh-hero-video__title" data-gh-split="chars"><?php echo esc_html($title); ?></<?php echo $heading; ?>>
+        <<?php echo $heading; ?> class="gh-section-title gh-hero-video__title" data-gh-split="chars"<?php echo false !== $accent_at ? ' data-gh-split-inline' : ''; ?>><?php echo $title_html; // Escaped above. ?></<?php echo $heading; ?>>
 
         <?php if (!empty($subtitle)) : ?>
             <p class="gh-hero-video__subtitle"><?php echo esc_html($subtitle); ?></p>
@@ -98,7 +113,7 @@ $block_id = 'gh-hero-video-' . wp_unique_id();
     <?php if ($show_scroll) : ?>
         <div class="gh-hero-video__scroll">
             <span>Scorri</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false">
                 <path d="M12 5v14M19 12l-7 7-7-7"/>
             </svg>
         </div>
