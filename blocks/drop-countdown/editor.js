@@ -7,15 +7,29 @@
     const Fragment = utils.Fragment;
     const MediaField = utils.MediaField;
     const Placeholder = utils.Placeholder;
+    const ProductPicker = utils.ProductPicker;
 
     registerBlockType('golden-hive/drop-countdown', {
         edit: function({ attributes, setAttributes }) {
-            const { productName, productImage, releaseDate, buttonText, buttonUrl, eyebrow, backgroundColor } = attributes;
+            const { productId, productName, productImage, releaseDate, buttonText, buttonUrl, eyebrow, backgroundColor } = attributes;
             const blockProps = useBlockProps();
 
             return el(Fragment, {},
                 el(InspectorControls, {},
-                    el(PanelBody, { title: 'Contenuto', initialOpen: true },
+                    el(PanelBody, { title: 'Prodotto del drop', initialOpen: true },
+                        el(ProductPicker, {
+                            label: 'Prodotto',
+                            help: 'Il blocco prende dal prodotto la data di uscita (Dati prodotto → Generale → Drop), l\'immagine, il prezzo e il link. All\'uscita il bottone diventa "Acquista ora".',
+                            value: productId,
+                            onChange: function(id, product) {
+                                setAttributes({
+                                    productId: id,
+                                    productName: product ? product.name : productName
+                                });
+                            }
+                        })
+                    ),
+                    el(PanelBody, { title: 'Contenuto', initialOpen: !productId },
                         el(TextControl, {
                             label: 'Eyebrow',
                             value: eyebrow,
@@ -27,8 +41,8 @@
                             onChange: function(val) { setAttributes({ productName: val }); }
                         }),
                         el(TextControl, {
-                            label: 'Data Release (ISO 8601)',
-                            help: 'Formato: 2025-12-31T10:00:00',
+                            label: productId ? 'Data (se il prodotto non ha una data di drop)' : 'Data Release (ISO 8601)',
+                            help: 'Formato: 2025-12-31T10:00:00, ora italiana',
                             value: releaseDate,
                             onChange: function(val) { setAttributes({ releaseDate: val }); }
                         })
@@ -67,7 +81,7 @@
                         ),
                         title: 'Drop Countdown',
                         text: productName
-                            ? productName + (releaseDate ? ' — ' + releaseDate : '')
+                            ? productName + (productId ? ' — collegato al prodotto' : (releaseDate ? ' — ' + releaseDate : ''))
                             : 'Configura questo blocco nel pannello laterale.',
                         thumbs: [productImage]
                     })

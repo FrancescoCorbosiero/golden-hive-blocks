@@ -1,7 +1,7 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
     const { InspectorControls, useBlockProps } = wp.blockEditor;
-    const { PanelBody, TextControl, Button } = wp.components;
+    const { PanelBody, TextControl, TextareaControl, ToggleControl, Button } = wp.components;
     const { el, Fragment, listOps, ItemControls, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/store-hours', {
@@ -53,6 +53,22 @@
                             })
                         );
                     }),
+                    el(PanelBody, { title: 'Chiusure', initialOpen: false },
+                        el('p', { style: { marginTop: 0 } },
+                            'Sul sito il blocco dice se il negozio è aperto adesso ("Aperto ora · chiude alle 19:30"). Orari nel formato 10.30 - 13.00 | 15.30 - 19.30, oppure Chiuso.'
+                        ),
+                        el(ToggleControl, {
+                            label: 'Chiuso nelle festività nazionali',
+                            checked: attributes.closedOnHolidays !== false,
+                            onChange: function(value) { setAttributes({ closedOnHolidays: value }); }
+                        }),
+                        el(TextareaControl, {
+                            label: 'Altre date di chiusura',
+                            help: 'Una per riga, es. 24/12/2026 oppure 2026-12-24.',
+                            value: attributes.closedDates || '',
+                            onChange: function(value) { setAttributes({ closedDates: value }); }
+                        })
+                    ),
                     el(PanelBody, { title: 'Aggiungi Giorno', initialOpen: false },
                         el(Button, {
                             variant: 'secondary',

@@ -7,7 +7,13 @@
     "category": "golden-hive",
     "icon": "location-alt",
     "description": "Informazioni di contatto aziendali con indirizzo, P.IVA, telefono, email e mappa.",
-    "keywords": ["contatti", "indirizzo", "info", "telefono", "email"],
+    "keywords": [
+        "contatti",
+        "indirizzo",
+        "info",
+        "telefono",
+        "email"
+    ],
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "title": {
@@ -41,10 +47,17 @@
         "mapEmbed": {
             "type": "string",
             "default": ""
+        },
+        "clickToLoad": {
+            "type": "boolean",
+            "default": true
         }
     },
     "supports": {
-        "align": ["wide", "full"],
+        "align": [
+            "wide",
+            "full"
+        ],
         "html": false,
         "spacing": {
             "margin": true,

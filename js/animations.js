@@ -351,22 +351,34 @@
             el.textContent = '';
             el.appendChild(expired);
             el.classList.add('gh-countdown--expired');
+            // The drop blocks switch to "Acquista ora" (js/live-blocks.js).
+            el.dispatchEvent(new CustomEvent('gh:countdown-end', { bubbles: true }));
         }
     };
 
     /**
-     * Social Proof Notification - Shopify style
-     * Gentle timing, non-aggressive popups.
+     * Social Proof Notification - Shopify style, from real orders.
+     * Il contenitore porta data-gh-social-proof-src: l'endpoint
+     * ghb_social_proof (includes/social-proof.php) restituisce gli ultimi
+     * ordini pagati {product, image, url, city, ts}. "2 ore fa" si calcola qui
+     * dal timestamp del pagamento, così resta vero anche su una pagina in
+     * cache. Ogni acquisto si vede una volta per sessione (sessionStorage) e
+     * al massimo data-gh-social-proof-max per pagina: dati reali ripetuti in
+     * loop sembrerebbero finti. Il markup legacy con le notifiche scritte a
+     * mano (data-gh-social-proof-items) non mostra più nulla.
      * Il nome prodotto va via textContent nel nodo dedicato
      * <strong data-gh-social-proof-product> — mai innerHTML interpolato.
      */
     var SocialProof = {
-        notifications: [],
-        currentIndex: 0,
+        SEEN_KEY: 'ghb_sp_seen',
+        queue: [],
+        shown: 0,
+        maxPerVisit: 3,
         container: null,
         isHidden: false,
         displayDuration: 6000,
         hideTimer: null,
+        cycleTimer: null,
 
         init: function (root) {
             var self = this;
@@ -379,20 +391,16 @@
         },
 
         setup: function (container) {
+            var src = container.dataset.ghSocialProofSrc;
+            if (!src || !window.fetch) return;
+
             this.container = container;
+            this.displayDuration = parseInt(container.dataset.ghSocialProofDuration, 10) || 6000;
+            this.maxPerVisit = parseInt(container.dataset.ghSocialProofMax, 10) || 3;
 
-            try {
-                this.notifications = JSON.parse(container.dataset.ghSocialProofItems || '[]');
-            } catch (e) { return; }
-
-            if (!this.notifications.length) return;
-
-            // Gentle timing: show every 25-35 seconds, start after 15 seconds
-            var interval = parseInt(container.dataset.ghSocialProofInterval) || 30000;
-            var delay = parseInt(container.dataset.ghSocialProofDelay) || 15000;
-            var duration = parseInt(container.dataset.ghSocialProofDuration) || 6000;
-
-            this.displayDuration = duration;
+            var interval = parseInt(container.dataset.ghSocialProofInterval, 10) || 25000;
+            var delay = parseInt(container.dataset.ghSocialProofDelay, 10) || 8000;
+            var days = parseInt(container.dataset.ghSocialProofDays, 10) || 14;
 
             // Reduced motion: il toast appare/scompare comunque ma senza
             // l'animazione di slide (transition disattivata inline).
@@ -402,52 +410,93 @@
 
             var self = this;
 
-            // Close button
             var closeBtn = container.querySelector('[data-gh-social-proof-close]');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     self.hide();
                     self.isHidden = true; // User dismissed, stop showing
+                    if (self.cycleTimer) clearInterval(self.cycleTimer);
                 });
             }
 
-            // Start showing notifications after delay
             setTimeout(function () {
-                self.show();
-                setInterval(function () {
-                    if (!self.isHidden) self.show();
-                }, interval);
+                fetch(src, { credentials: 'same-origin' })
+                    .then(function (r) { return r.json(); })
+                    .then(function (json) {
+                        var items = json && json.success && json.data && Array.isArray(json.data.items) ? json.data.items : [];
+                        self.queue = self.fresh(items, days);
+                        if (!self.queue.length || self.isHidden) return;
+                        self.show();
+                        self.cycleTimer = setInterval(function () {
+                            if (self.isHidden || !self.show()) clearInterval(self.cycleTimer);
+                        }, interval);
+                    })
+                    .catch(function () {});
             }, delay);
         },
 
-        show: function () {
-            if (this.isHidden || !this.container) return;
+        // Purchases inside the window, not yet seen in this session.
+        fresh: function (items, days) {
+            var seen = this.seen();
+            var since = Date.now() / 1000 - days * 86400;
+            return items.filter(function (n) {
+                return n && n.product && n.ts >= since && seen.indexOf(SocialProof.keyOf(n)) === -1;
+            });
+        },
 
-            var n = this.notifications[this.currentIndex];
-            this.currentIndex = (this.currentIndex + 1) % this.notifications.length;
+        keyOf: function (n) {
+            return String(n.ts) + '|' + n.product;
+        },
+
+        seen: function () {
+            try {
+                var list = JSON.parse(sessionStorage.getItem(this.SEEN_KEY) || '[]');
+                return Array.isArray(list) ? list : [];
+            } catch (e) {
+                return [];
+            }
+        },
+
+        markSeen: function (n) {
+            try {
+                var list = this.seen();
+                list.push(this.keyOf(n));
+                sessionStorage.setItem(this.SEEN_KEY, JSON.stringify(list.slice(-50)));
+            } catch (e) { /* storage off: worst case a purchase shows again */ }
+        },
+
+        // "adesso", "12 minuti fa", "3 ore fa", "ieri", "5 giorni fa".
+        ago: function (ts) {
+            var s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
+            if (s < 60) return 'adesso';
+            var m = Math.floor(s / 60);
+            if (m < 60) return m === 1 ? '1 minuto fa' : m + ' minuti fa';
+            var h = Math.floor(m / 60);
+            if (h < 24) return h === 1 ? '1 ora fa' : h + ' ore fa';
+            var d = Math.floor(h / 24);
+            return d === 1 ? 'ieri' : d + ' giorni fa';
+        },
+
+        // Shows the next purchase; false once nothing is left to show.
+        show: function () {
+            if (this.isHidden || !this.container) return false;
+            if (this.shown >= this.maxPerVisit || !this.queue.length) return false;
+
+            var n = this.queue.shift();
+            this.shown++;
+            this.markSeen(n);
 
             // Update content — solo textContent, mai HTML interpolato.
-            var textEl = this.container.querySelector('[data-gh-social-proof-text]');
             var productEl = this.container.querySelector('[data-gh-social-proof-product]');
             var metaEl = this.container.querySelector('[data-gh-social-proof-meta]');
             var imageEl = this.container.querySelector('[data-gh-social-proof-image]');
+            var linkEl = this.container.querySelector('[data-gh-social-proof-link]');
 
-            if (productEl) {
-                productEl.textContent = n.product || '';
-            } else if (textEl) {
-                // Fallback per markup legacy senza il nodo dedicato:
-                // ricostruito via DOM, comunque senza innerHTML.
-                textEl.textContent = 'Qualcuno ha acquistato ';
-                var strong = document.createElement('strong');
-                strong.setAttribute('data-gh-social-proof-product', '');
-                strong.textContent = n.product || '';
-                textEl.appendChild(strong);
-            }
+            if (productEl) productEl.textContent = n.product || '';
 
             if (metaEl) {
-                var location = n.location ? ' da ' + n.location : '';
-                metaEl.textContent = (n.time || '') + location;
+                metaEl.textContent = [n.city || '', this.ago(n.ts)].filter(Boolean).join(' · ');
             }
 
             if (imageEl) {
@@ -457,8 +506,18 @@
                     imageEl.alt = n.product || '';
                     if (imageWrapper) imageWrapper.style.display = '';
                 } else {
-                    imageEl.src = '';
+                    imageEl.removeAttribute('src');
                     if (imageWrapper) imageWrapper.style.display = 'none';
+                }
+            }
+
+            if (linkEl) {
+                if (n.url) {
+                    linkEl.href = n.url;
+                    linkEl.setAttribute('aria-label', 'Vedi ' + (n.product || 'il prodotto'));
+                    linkEl.hidden = false;
+                } else {
+                    linkEl.hidden = true;
                 }
             }
 
@@ -466,6 +525,7 @@
             var self = this;
             if (this.hideTimer) clearTimeout(this.hideTimer);
             this.hideTimer = setTimeout(function () { self.hide(); }, this.displayDuration);
+            return true;
         },
 
         hide: function () {
@@ -1057,6 +1117,16 @@
                     feedback.className = 'gh-newsletter__feedback gh-newsletter__feedback--' + (ok ? 'success' : 'error');
                 };
 
+                // Size alerts: at most three sizes per signup.
+                form.addEventListener('change', function (e) {
+                    var box = e.target;
+                    if (!box.matches || !box.matches('[data-gh-newsletter-size]') || !box.checked) return;
+                    if (form.querySelectorAll('[data-gh-newsletter-size]:checked').length > 3) {
+                        box.checked = false;
+                        setFeedback('Puoi scegliere fino a 3 taglie.', false);
+                    }
+                });
+
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
 
@@ -1105,6 +1175,18 @@
                     body.append('nonce', nonce);
                     body.append('email', email);
 
+                    // Size alerts (includes/size-alerts.php): checked chips, or
+                    // the hidden size of the "Nella tua taglia" empty state.
+                    var sizeLabel = '';
+                    form.querySelectorAll('[data-gh-newsletter-size]').forEach(function (inp) {
+                        if (inp.type !== 'hidden' && !inp.checked) return;
+                        body.append('sizes[]', inp.value);
+                        sizeLabel = sizeLabel || inp.getAttribute('data-label') || inp.value;
+                    });
+                    form.querySelectorAll('[data-gh-newsletter-brand]:checked').forEach(function (inp) {
+                        body.append('brands[]', inp.value);
+                    });
+
                     fetch(url, {
                         method: 'POST',
                         credentials: 'same-origin',
@@ -1116,7 +1198,10 @@
                         var message = (json && json.data && json.data.message) ||
                             (ok ? 'Iscrizione completata!' : 'Si è verificato un errore — riprova.');
                         setFeedback(message, ok);
-                        if (ok) input.value = '';
+                        if (ok) {
+                            input.value = '';
+                            if (sizeLabel) SizeMemory.save(sizeLabel);
+                        }
                         done();
                     }).catch(function () {
                         setFeedback('Errore di rete — riprova.', false);
@@ -1229,6 +1314,69 @@
     };
 
     /**
+     * Size memory — la taglia di questo browser, per "Nella tua taglia"
+     * (includes/size-rail.php, js/live-blocks.js). Si aggiorna ovunque il
+     * cliente sceglie una taglia: filtro taglia del negozio (un solo valore
+     * nell'URL), Quick View, Quick Add, pagina prodotto, newsletter. Salvata
+     * come chiave normalizzata, la stessa di ghb_normalize_size_key() in PHP
+     * ("36 2/3" e "36-2-3" → "3623"), più l'etichetta da mostrare.
+     */
+    var SizeMemory = {
+        STORE_KEY: 'ghb_my_size',
+        FIELD: 'attribute_pa_taglia', // ghb_atc_size_attribute
+        started: false,
+
+        key: function (label) {
+            return String(label || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        },
+
+        save: function (label) {
+            var key = this.key(label);
+            if (!key) return;
+            try {
+                localStorage.setItem(this.STORE_KEY, JSON.stringify({ key: key, label: String(label).trim(), t: Date.now() }));
+            } catch (e) { /* storage off: the rail just asks again */ }
+        },
+
+        get: function () {
+            try {
+                var v = JSON.parse(localStorage.getItem(this.STORE_KEY) || 'null');
+                return v && typeof v.key === 'string' && v.key ? v : null;
+            } catch (e) {
+                return null;
+            }
+        },
+
+        init: function () {
+            if (this.started) return;
+            this.started = true;
+            var self = this;
+            var attr = this.FIELD.replace(/^attribute_/, '');
+
+            document.addEventListener('click', function (e) {
+                var pick = e.target.closest && e.target.closest(
+                    '.rp-qv-size[data-variation-id], .ghb-qa-attr-option[data-attr="' + attr + '"]'
+                );
+                if (pick && !pick.disabled) self.save(pick.textContent.trim());
+            });
+
+            document.addEventListener('change', function (e) {
+                var select = e.target;
+                if (!select.matches || !select.matches('form.variations_form select[name="' + self.FIELD + '"]')) return;
+                if (select.value && select.selectedIndex >= 0) {
+                    self.save(select.options[select.selectedIndex].text.trim());
+                }
+            });
+
+            // One size in the shop's size filter (filter_taglia=42).
+            try {
+                var filtered = new URLSearchParams(location.search).get('filter_' + attr.replace(/^pa_/, ''));
+                if (filtered && filtered.indexOf(',') === -1) self.save(filtered.replace(/-/g, ' '));
+            } catch (e) { /* old browser: nothing to remember */ }
+        }
+    };
+
+    /**
      * Selettori "dinamici": un nodo aggiunto al DOM che matcha (o contiene)
      * uno di questi viene instradato in refresh() dal MutationObserver.
      */
@@ -1306,6 +1454,7 @@
 
         refresh(document);
         startMutationObserver();
+        SizeMemory.init();
     };
 
     if (document.readyState === 'loading') {
@@ -1320,6 +1469,7 @@
         lockScroll: lockScroll,
         unlockScroll: unlockScroll,
         Modal: Modal,
-        SocialProof: SocialProof
+        SocialProof: SocialProof,
+        sizeMemory: SizeMemory
     };
 })();

@@ -12,7 +12,8 @@
  * js/animations.js):
  *   data-gh-newsletter-url   = admin-ajax.php URL
  *   data-gh-newsletter-nonce = wp_create_nonce('ghb_newsletter')
- *   POST { action: 'ghb_newsletter_subscribe', nonce, email }
+ *   POST { action: 'ghb_newsletter_subscribe', nonce, email,
+ *          sizes[]?, brands[]? }  — size alerts, includes/size-alerts.php
  */
 
 if (!defined('ABSPATH')) {
@@ -74,6 +75,16 @@ function ghb_newsletter_subscribe_handler()
         );
     }
 
+    // Size alerts (includes/size-alerts.php): sizes / brands chosen in the
+    // form, confirmed by email before any alert is sent.
+    $sizes  = isset($_POST['sizes']) && is_array($_POST['sizes']) ? array_slice(array_map('strval', wp_unslash($_POST['sizes'])), 0, 10) : array();
+    $brands = isset($_POST['brands']) && is_array($_POST['brands']) ? array_slice(array_map('strval', wp_unslash($_POST['brands'])), 0, 20) : array();
+    $alerts = static function (int $post_id) use ($email, $sizes, $brands): string {
+        return ($sizes && function_exists('ghb_size_alerts_signup'))
+            ? ghb_size_alerts_signup($post_id, $email, $sizes, $brands)
+            : '';
+    };
+
     $existing = get_posts(array(
         'post_type'      => 'ghb_subscriber',
         'post_status'    => 'any',
@@ -85,8 +96,9 @@ function ghb_newsletter_subscribe_handler()
     ));
 
     if (!empty($existing)) {
+        $message = $alerts((int) $existing[0]);
         wp_send_json_success(
-            array('message' => __('Sei già iscritto alla newsletter!', 'golden-hive-blocks'))
+            array('message' => '' !== $message ? $message : __('Sei già iscritto alla newsletter!', 'golden-hive-blocks'))
         );
     }
 
@@ -112,8 +124,9 @@ function ghb_newsletter_subscribe_handler()
      */
     do_action('ghb_newsletter_subscribed', $email, $post_id);
 
+    $message = $alerts((int) $post_id);
     wp_send_json_success(
-        array('message' => __('Iscrizione completata! Grazie, a presto.', 'golden-hive-blocks'))
+        array('message' => '' !== $message ? $message : __('Iscrizione completata! Grazie, a presto.', 'golden-hive-blocks'))
     );
 }
 add_action('wp_ajax_ghb_newsletter_subscribe', 'ghb_newsletter_subscribe_handler');

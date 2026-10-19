@@ -1751,6 +1751,108 @@ html.gh-scroll-lock {
     color: var(--gh-gray-500);
 }
 
+/* Size alerts (includes/size-alerts.php): a disclosure under the field. */
+.gh-newsletter__form {
+    flex-wrap: wrap;
+}
+
+.gh-newsletter__alerts {
+    flex-basis: 100%;
+    margin-top: var(--gh-space-sm);
+    text-align: left;
+}
+
+.gh-newsletter__alerts-summary {
+    display: block;
+    color: var(--gh-white);
+    font-size: var(--gh-text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.gh-newsletter__alerts-summary::-webkit-details-marker {
+    display: none;
+}
+
+.gh-newsletter__alerts-summary::before {
+    content: "+";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    vertical-align: -4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.gh-newsletter__alerts[open] .gh-newsletter__alerts-summary::before {
+    content: "−";
+}
+
+.gh-newsletter__alerts-optional {
+    color: var(--gh-gray-500);
+    font-weight: 400;
+}
+
+.gh-newsletter__alerts-hint {
+    margin: var(--gh-space-sm) 0;
+    color: var(--gh-gray-400);
+    font-size: var(--gh-text-xs);
+    line-height: 1.5;
+}
+
+.gh-newsletter__sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.gh-newsletter__chip {
+    position: relative;
+    cursor: pointer;
+}
+
+.gh-newsletter__chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.gh-newsletter__chip span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    min-height: 38px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: calc(6px * var(--gh-round, 1));
+    color: var(--gh-white);
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.gh-newsletter__chip:hover span {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.gh-newsletter__chip input:checked + span {
+    background: var(--gh-white);
+    border-color: var(--gh-white);
+    color: var(--gh-black);
+}
+
+.gh-newsletter__chip input:focus-visible + span {
+    outline: 2px solid var(--gh-accent);
+    outline-offset: 2px;
+}
+
 @media (max-width: 600px) {
     .gh-newsletter__form {
         flex-direction: column;
@@ -2772,6 +2874,27 @@ a.gh-btn:visited {
 .gh-social-proof__close svg {
     width: 12px;
     height: 12px;
+}
+
+/* The whole toast opens the product it names (js/animations.js sets href). */
+.gh-social-proof__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+}
+
+.gh-social-proof__link[hidden] {
+    display: none;
+}
+
+.gh-social-proof__link:focus-visible {
+    outline: 2px solid var(--gh-accent);
+    outline-offset: 2px;
+}
+
+.gh-social-proof .gh-social-proof__close {
+    z-index: 2;
 }
 
 /* Verified badge */
@@ -4390,5 +4513,945 @@ html.gh-anim-failsafe .gh-whatsapp-btn {
         .gh-promo-modal--open .gh-promo-modal__container {
             transform: translateY(20px) scale(0.95);
         }
+    }
+}
+
+/* ==========================================================================
+   DROPS — "Ricordamelo", Drop Countdown linked to a product, Drop Calendar
+   (includes/drops.php, js/live-blocks.js)
+   ========================================================================== */
+
+/* "Ricordamelo": a <details> menu (Google Calendar / .ics), no JS needed.
+   It also appears outside a .gh-block (product page), so it sizes itself. */
+.ghb-remind,
+.ghb-remind * {
+    box-sizing: border-box;
+}
+
+.ghb-remind {
+    position: relative;
+    display: inline-block;
+}
+
+.ghb-remind__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 22px;
+    border-radius: var(--gh-radius-sm);
+    background: var(--gh-gray-900);
+    color: var(--gh-white);
+    font-size: var(--gh-text-sm);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s var(--gh-ease-out), background 0.2s;
+}
+
+.ghb-remind__btn::-webkit-details-marker {
+    display: none;
+}
+
+.ghb-remind__btn:hover {
+    transform: translateY(-1px);
+}
+
+.ghb-remind__btn:focus-visible {
+    outline: 2px solid var(--gh-accent);
+    outline-offset: 3px;
+}
+
+/* On dark sections the button is white. */
+.ghb-remind--dark .ghb-remind__btn {
+    background: var(--gh-white);
+    color: var(--gh-black);
+}
+
+.ghb-remind__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+    padding: 6px;
+    border-radius: var(--gh-radius-md);
+    background: var(--gh-white);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+.ghb-remind__menu a {
+    padding: 10px 12px;
+    border-radius: var(--gh-radius-sm);
+    color: var(--gh-gray-900);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.ghb-remind__menu a:hover,
+.ghb-remind__menu a:focus-visible {
+    background: var(--gh-gray-100);
+}
+
+/* Inside a revealed row or a clipped panel the menu opens in place. */
+.gh-drop-cal .ghb-remind__menu {
+    position: static;
+    margin-top: 8px;
+}
+
+/* Drop Countdown: date and price under the name, the two action states. */
+.gh-drop-countdown__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--gh-space-xs) var(--gh-space-lg);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: var(--gh-text-base);
+}
+
+.gh-drop-countdown__date {
+    color: var(--gh-white);
+    font-weight: 600;
+}
+
+.gh-drop-countdown__price {
+    color: var(--gh-white);
+    font-weight: 700;
+}
+
+.gh-drop-countdown__price del {
+    opacity: 0.55;
+    font-weight: 400;
+}
+
+.gh-drop-countdown__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gh-space-md);
+}
+
+.gh-drop-countdown__actions[hidden],
+.gh-drop-cal__actions [hidden] {
+    display: none;
+}
+
+/* Drop Calendar */
+.gh-drop-calendar {
+    padding: var(--gh-space-4xl) var(--gh-space-lg);
+    background: var(--gh-black);
+    color: var(--gh-white);
+}
+
+.gh-drop-calendar__inner {
+    max-width: var(--gh-max-width);
+    margin: 0 auto;
+}
+
+.gh-drop-calendar__header {
+    margin-bottom: var(--gh-space-2xl);
+    text-align: center;
+}
+
+.gh-drop-calendar__eyebrow {
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 0.3em;
+}
+
+.gh-drop-calendar__title {
+    margin: var(--gh-space-sm) 0;
+    color: var(--gh-white);
+    font-size: var(--gh-text-3xl);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+}
+
+.gh-drop-calendar__subtitle,
+.gh-drop-calendar__empty {
+    margin: 0;
+    color: var(--gh-gray-400);
+    font-size: var(--gh-text-base);
+}
+
+.gh-drop-calendar__empty {
+    text-align: center;
+}
+
+.gh-drop-calendar__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gh-space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.gh-drop-cal {
+    position: relative;
+    display: grid;
+    grid-template-columns: 92px 112px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--gh-space-lg);
+    padding: var(--gh-space-md) var(--gh-space-lg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--gh-radius-lg);
+    background: rgba(255, 255, 255, 0.03);
+    transition: border-color 0.3s, background 0.3s;
+}
+
+.gh-drop-cal:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.gh-drop-cal.is-live {
+    border-color: rgba(var(--gh-accent-rgb), 0.7);
+    background: linear-gradient(90deg, rgba(var(--gh-accent-rgb), 0.22), rgba(255, 255, 255, 0.02) 70%);
+}
+
+.gh-drop-cal__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-right: var(--gh-space-md);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.gh-drop-cal__day {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.gh-drop-cal__month {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: var(--gh-text-sm);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.gh-drop-cal__time {
+    margin-top: 4px;
+    color: var(--gh-gray-400);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.gh-drop-cal__media {
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--gh-radius-md);
+    background: var(--gh-white);
+}
+
+.gh-drop-cal__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.gh-drop-cal__name {
+    margin: 0 0 4px;
+    font-size: var(--gh-text-lg);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.gh-drop-cal__name a {
+    color: var(--gh-white);
+    text-decoration: none;
+}
+
+.gh-drop-cal__name a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.gh-drop-cal__when {
+    margin: 0;
+    color: var(--gh-gray-400);
+    font-size: var(--gh-text-sm);
+}
+
+.gh-drop-cal__price {
+    margin: 4px 0 0;
+    font-weight: 700;
+}
+
+.gh-drop-cal__price del {
+    opacity: 0.55;
+    font-weight: 400;
+}
+
+.gh-drop-cal__status {
+    display: inline-flex;
+    margin: 10px 0 0;
+    padding: 4px 10px;
+    border-radius: var(--gh-radius-pill);
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.gh-drop-cal.is-live .gh-drop-cal__status {
+    background: var(--gh-accent);
+}
+
+.gh-drop-cal__buy {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 12px 22px;
+    border-radius: var(--gh-radius-sm);
+    background: var(--gh-accent);
+    color: var(--gh-white);
+    font-weight: 700;
+    text-decoration: none;
+    transition: filter 0.2s;
+}
+
+.gh-drop-cal__buy:hover {
+    color: var(--gh-white);
+    filter: brightness(1.12);
+}
+
+@media (max-width: 768px) {
+    .gh-drop-cal {
+        grid-template-columns: 64px 84px minmax(0, 1fr);
+        gap: var(--gh-space-md);
+        padding: var(--gh-space-md);
+    }
+
+    .gh-drop-cal__actions {
+        grid-column: 1 / -1;
+    }
+
+    .gh-drop-cal__day {
+        font-size: 2rem;
+    }
+
+    .gh-drop-cal__name {
+        font-size: var(--gh-text-base);
+    }
+
+    .gh-drop-cal__date {
+        padding-right: var(--gh-space-sm);
+    }
+}
+
+/* ==========================================================================
+   OPENING HOURS STATUS — "Aperto ora · chiude alle 19:30"
+   (Orari, Vieni in negozio; js/live-blocks.js StoreHours)
+   ========================================================================== */
+
+.gh-hours-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 12px;
+    border-radius: var(--gh-radius-pill);
+    background: var(--gh-gray-100);
+    color: var(--gh-gray-800);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.gh-hours-status[hidden],
+.gh-store-hours__badge[hidden],
+.gh-store-visit__today[hidden] {
+    display: none;
+}
+
+.gh-hours-status__dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gh-gray-400);
+}
+
+.gh-hours-status.is-open {
+    background: rgba(22, 163, 74, 0.1);
+    color: #166534;
+}
+
+.gh-hours-status.is-open .gh-hours-status__dot {
+    background: var(--gh-success);
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+    animation: gh-hours-pulse 2s infinite;
+}
+
+.gh-hours-status.is-soon {
+    background: rgba(234, 179, 8, 0.15);
+    color: #854d0e;
+}
+
+.gh-hours-status.is-soon .gh-hours-status__dot {
+    background: #eab308;
+    animation: none;
+}
+
+@keyframes gh-hours-pulse {
+    70% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+.gh-store-hours__status {
+    display: flex;
+    width: fit-content;
+    margin: calc(-1 * var(--gh-space-md)) auto var(--gh-space-lg);
+}
+
+/* ==========================================================================
+   MAP FACADE — the Google map loads on request (gh_map_facade)
+   ========================================================================== */
+
+.gh-map-facade {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    overflow: hidden;
+    border-radius: inherit;
+    /* A street grid, so the cover reads as a map before it loads. */
+    background-color: #e9edf1;
+    background-image:
+        linear-gradient(32deg, transparent 49%, rgba(255, 255, 255, 0.95) 49%, rgba(255, 255, 255, 0.95) 51%, transparent 51%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.75) 2px, transparent 2px),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.75) 2px, transparent 2px);
+    background-size: 100% 100%, 56px 56px, 56px 56px;
+}
+
+.gh-map-facade.is-loaded {
+    background: none;
+}
+
+.gh-map-facade iframe {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0;
+}
+
+.gh-map-facade__image {
+    position: absolute;
+    inset: 0;
+}
+
+.gh-map-facade__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gh-map-facade__cover {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    min-height: inherit;
+    padding: var(--gh-space-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.8));
+    text-align: center;
+}
+
+.gh-map-facade__pin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--gh-accent);
+    color: var(--gh-white);
+    box-shadow: 0 0 0 10px rgba(var(--gh-accent-rgb), 0.15), 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.gh-map-facade__pin svg {
+    width: 24px;
+    height: 24px;
+}
+
+.gh-map-facade__address {
+    max-width: 320px;
+    margin: 4px 0 0;
+    color: var(--gh-gray-900);
+    font-size: var(--gh-text-sm);
+    font-weight: 700;
+}
+
+.gh-map-facade__load {
+    min-height: 44px;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: var(--gh-radius-pill);
+    background: var(--gh-gray-900);
+    color: var(--gh-white);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s var(--gh-ease-out);
+}
+
+.gh-map-facade__load:hover {
+    transform: translateY(-1px);
+}
+
+.gh-map-facade__load:focus-visible,
+.gh-map-facade__open:focus-visible {
+    outline: 2px solid var(--gh-accent);
+    outline-offset: 3px;
+}
+
+.gh-map-facade__open {
+    color: var(--gh-gray-800);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.gh-map-facade__note {
+    max-width: 300px;
+    margin: 0;
+    color: var(--gh-gray-600);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.gh-contact-info__map-wrapper .gh-map-facade {
+    min-height: 400px;
+}
+
+/* ==========================================================================
+   VIENI IN NEGOZIO — blocks/store-visit
+   ========================================================================== */
+
+.gh-store-visit {
+    padding: var(--gh-space-4xl) var(--gh-space-lg);
+    background: var(--gh-white);
+}
+
+.gh-store-visit__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: var(--gh-space-3xl);
+    align-items: stretch;
+    max-width: var(--gh-max-width);
+    margin: 0 auto;
+}
+
+.gh-store-visit--no-map .gh-store-visit__inner {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 640px;
+}
+
+.gh-store-visit__info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gh-space-md);
+}
+
+.gh-store-visit__eyebrow {
+    color: var(--gh-accent);
+    letter-spacing: 0.2em;
+}
+
+.gh-store-visit__title {
+    margin: 0;
+    color: var(--gh-gray-900);
+    font-size: var(--gh-text-3xl);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+}
+
+.gh-store-visit__subtitle {
+    margin: 0;
+    color: var(--gh-gray-600);
+    font-size: var(--gh-text-base);
+    line-height: 1.6;
+}
+
+.gh-store-visit__address {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    color: var(--gh-gray-900);
+    font-weight: 600;
+}
+
+.gh-store-visit__address svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    color: var(--gh-accent);
+}
+
+.gh-store-visit__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.gh-store-visit__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 10px 18px;
+    border: 1px solid var(--gh-gray-200);
+    border-radius: var(--gh-radius-sm);
+    color: var(--gh-gray-900);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s var(--gh-ease-out);
+}
+
+.gh-store-visit__action:hover {
+    border-color: var(--gh-gray-900);
+    color: var(--gh-gray-900);
+    transform: translateY(-1px);
+}
+
+.gh-store-visit__action svg {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
+
+.gh-store-visit__action--primary {
+    border-color: var(--gh-accent);
+    background: var(--gh-accent);
+    color: var(--gh-white);
+}
+
+.gh-store-visit__action--primary:hover {
+    border-color: var(--gh-accent);
+    color: var(--gh-white);
+}
+
+.gh-store-visit__action--whatsapp svg {
+    color: #25d366;
+}
+
+.gh-store-visit__action:focus-visible {
+    outline: 2px solid var(--gh-accent);
+    outline-offset: 3px;
+}
+
+.gh-store-visit__hours {
+    width: 100%;
+    margin: var(--gh-space-sm) 0 0;
+    padding: 0;
+    border-top: 1px solid var(--gh-gray-200);
+}
+
+.gh-store-visit__hours-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--gh-space-md);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gh-gray-100);
+    border-left: 3px solid transparent;
+}
+
+.gh-store-visit__hours-row dt {
+    margin: 0;
+    color: var(--gh-gray-900);
+    font-weight: 600;
+}
+
+.gh-store-visit__hours-row dd {
+    margin: 0;
+    color: var(--gh-gray-600);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.gh-store-visit__hours-row dd.is-closed {
+    color: var(--gh-accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.gh-store-visit__hours-row.is-today {
+    border-left-color: var(--gh-accent);
+    background: rgba(var(--gh-accent-rgb), 0.05);
+}
+
+.gh-store-visit__hours-row.is-today dt,
+.gh-store-visit__hours-row.is-today dd {
+    font-weight: 700;
+}
+
+.gh-store-visit__today {
+    display: inline-block;
+    margin-left: var(--gh-space-sm);
+    padding: 2px 8px;
+    border-radius: var(--gh-radius-pill);
+    background: var(--gh-accent);
+    color: var(--gh-white);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.gh-store-visit__note {
+    margin: 0;
+    color: var(--gh-gray-500);
+    font-size: var(--gh-text-xs);
+}
+
+.gh-store-visit__map {
+    min-height: 420px;
+    overflow: hidden;
+    border-radius: var(--gh-radius-xl);
+    box-shadow: var(--gh-shadow-md);
+}
+
+.gh-store-visit__map .gh-map-facade {
+    min-height: 420px;
+}
+
+@media (max-width: 900px) {
+    .gh-store-visit__inner {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--gh-space-2xl);
+    }
+
+    .gh-store-visit__hours-row {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+
+    .gh-store-visit__hours-row dd {
+        font-size: 13px;
+    }
+
+    .gh-store-visit__map,
+    .gh-store-visit__map .gh-map-facade {
+        min-height: 320px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gh-hours-status.is-open .gh-hours-status__dot,
+    .ghb-remind__btn,
+    .gh-map-facade__load,
+    .gh-store-visit__action {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* ==========================================================================
+   INSTAGRAM FEED — "Shop the look" (blocks/instagram-feed): product tags on
+   a photo; each opens Quick View (js/quick-view.js, data-ghb-quick-view).
+   ========================================================================== */
+
+.gh-instagram-feed__cell--shop {
+    cursor: default;
+}
+
+/* The tags sit on the picture: no zoom under them. */
+.gh-instagram-feed__cell--shop:hover .gh-instagram-feed__image {
+    transform: none;
+}
+
+.gh-ig-shop-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: var(--gh-radius-pill);
+    background: rgba(0, 0, 0, 0.62);
+    color: var(--gh-white);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+}
+
+.gh-ig-shop-badge svg {
+    width: 13px;
+    height: 13px;
+}
+
+.gh-ig-hotspot {
+    position: absolute;
+    top: var(--y, 50%);
+    left: var(--x, 50%);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: -16px 0 0 -16px;
+    text-decoration: none;
+}
+
+.gh-ig-hotspot__dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--gh-white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    animation: gh-ig-pulse 2.2s var(--gh-ease-out) infinite;
+}
+
+.gh-ig-hotspot:hover .gh-ig-hotspot__dot,
+.gh-ig-hotspot:focus-visible .gh-ig-hotspot__dot {
+    background: var(--gh-accent);
+    animation: none;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.9);
+}
+
+.gh-ig-hotspot:focus-visible {
+    outline: none;
+}
+
+@keyframes gh-ig-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.75), 0 2px 8px rgba(0, 0, 0, 0.35); }
+    70% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0), 0 2px 8px rgba(0, 0, 0, 0.35); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 2px 8px rgba(0, 0, 0, 0.35); }
+}
+
+.gh-ig-hotspot__card {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: max-content;
+    max-width: 200px;
+    padding: 8px 10px;
+    border-radius: var(--gh-radius-sm);
+    background: var(--gh-white);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+    color: var(--gh-gray-900);
+    text-align: left;
+    opacity: 0;
+    transform: translate(-50%, 4px);
+    transition: opacity 0.2s ease, transform 0.2s var(--gh-ease-out);
+    pointer-events: none;
+}
+
+.gh-ig-hotspot__card strong {
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.gh-ig-hotspot__card span {
+    color: var(--gh-accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.gh-ig-hotspot:hover .gh-ig-hotspot__card,
+.gh-ig-hotspot:focus-visible .gh-ig-hotspot__card {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+/* Near an edge the card opens inward, so the cell never cuts it. */
+.gh-ig-hotspot--below .gh-ig-hotspot__card {
+    top: calc(100% + 6px);
+    bottom: auto;
+}
+
+.gh-ig-hotspot--left .gh-ig-hotspot__card {
+    left: auto;
+    right: -4px;
+    transform: translate(0, 4px);
+}
+
+.gh-ig-hotspot--right .gh-ig-hotspot__card {
+    left: -4px;
+    transform: translate(0, 4px);
+}
+
+.gh-ig-hotspot--left:hover .gh-ig-hotspot__card,
+.gh-ig-hotspot--left:focus-visible .gh-ig-hotspot__card,
+.gh-ig-hotspot--right:hover .gh-ig-hotspot__card,
+.gh-ig-hotspot--right:focus-visible .gh-ig-hotspot__card {
+    transform: translate(0, 0);
+}
+
+.gh-ig-post-link {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: var(--gh-white);
+    transition: background 0.2s;
+}
+
+.gh-ig-post-link:hover {
+    background: rgba(0, 0, 0, 0.8);
+    color: var(--gh-white);
+}
+
+.gh-ig-post-link svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* Touch screens: a tap opens Quick View straight away. */
+@media (hover: none) {
+    .gh-ig-hotspot__card {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gh-ig-hotspot__dot {
+        animation: none;
     }
 }

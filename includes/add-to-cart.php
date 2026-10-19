@@ -72,6 +72,7 @@ function ghb_product_ui_should_load()
             $tags = array(
                 // Shortcode del plugin…
                 'gh_product_rail',
+                'gh_size_rail',
                 'product_carousel',
                 'carousel_section',
                 'bestsellers',
@@ -98,6 +99,12 @@ function ghb_product_ui_should_load()
             // Blocchi prodotto Gutenberg (woocommerce/product-collection,
             // product-on-sale, handpicked-products, …): match sul prefisso.
             if (!$load && strpos($post->post_content, '<!-- wp:woocommerce/') !== false) {
+                $load = true;
+            }
+
+            // Instagram Feed con "Shop the look": i punti aprono l'anteprima rapida.
+            if (!$load && strpos($post->post_content, '<!-- wp:golden-hive/instagram-feed') !== false
+                && strpos($post->post_content, '"productId"') !== false) {
                 $load = true;
             }
         }
@@ -149,6 +156,13 @@ function ghb_atc_render_button()
 
     global $product;
     if (!$product instanceof WC_Product) {
+        return;
+    }
+
+    // A drop that isn't out yet (includes/drops.php): not "Esaurito".
+    if (function_exists('ghb_drop_is_locked') && ghb_drop_is_locked($product->get_id())) {
+        echo '<div class="ghb-atc ghb-atc--disabled ghb-atc--drop"><span class="ghb-atc-trigger" aria-disabled="true">'
+            . esc_html(ghb_drop_card_label(ghb_drop_ts($product->get_id()))) . '</span></div>';
         return;
     }
 

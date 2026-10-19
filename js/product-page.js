@@ -14,56 +14,17 @@
  *     the store's closed dates.
  *
  * Vanilla JS. The date logic is pure (no DOM) and exported under Node for
- * tests/delivery-estimate-test.js.
+ * tests/delivery-estimate-test.js; days and holidays come from js/calendar.js.
  */
 (function () {
     'use strict';
 
-    /* ── Calendar (pure) ──
-     * A day is a plain {y, m, d} (m 1–12) worked on as a UTC date, so
-     * daylight-saving changes never shift it. */
-
-    function utc(day) {
-        return new Date(Date.UTC(day.y, day.m - 1, day.d));
-    }
-
-    function fromUtc(date) {
-        return { y: date.getUTCFullYear(), m: date.getUTCMonth() + 1, d: date.getUTCDate() };
-    }
-
-    function addDays(day, n) {
-        var date = utc(day);
-        date.setUTCDate(date.getUTCDate() + n);
-        return fromUtc(date);
-    }
-
-    function iso(day) {
-        return day.y + '-' + (day.m < 10 ? '0' : '') + day.m + '-' + (day.d < 10 ? '0' : '') + day.d;
-    }
-
-    // Easter Sunday (anonymous Gregorian algorithm).
-    function easter(y) {
-        var a = y % 19, b = Math.floor(y / 100), c = y % 100;
-        var d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
-        var g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
-        var i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
-        var m = Math.floor((a + 11 * h + 22 * l) / 451);
-        var month = Math.floor((h + l - 7 * m + 114) / 31);
-        return { y: y, m: month, d: ((h + l - 7 * m + 114) % 31) + 1 };
-    }
-
-    // Italian national holidays: no shipping, no deliveries.
-    var FIXED_HOLIDAYS = ['01-01', '01-06', '04-25', '05-01', '06-02', '08-15', '11-01', '12-08', '12-25', '12-26'];
-
-    function isHoliday(day) {
-        if (FIXED_HOLIDAYS.indexOf(iso(day).slice(5)) !== -1) return true;
-        return iso(day) === iso(addDays(easter(day.y), 1)); // Pasquetta
-    }
-
-    function isWorkday(day) {
-        var dow = utc(day).getUTCDay();
-        return dow !== 0 && dow !== 6 && !isHoliday(day);
-    }
+    // Days, holidays and the store's "now": js/calendar.js (window.ghbCalendar).
+    var isNode = typeof module !== 'undefined' && module.exports;
+    var cal = isNode ? require('./calendar.js') : window.ghbCalendar;
+    var addDays = cal ? cal.addDays : null;
+    var iso = cal ? cal.iso : null;
+    var isWorkday = cal ? cal.isWorkday : null;
 
     function nextWorkday(day, closed) {
         var next = addDays(day, 1);
@@ -105,8 +66,8 @@
         };
     }
 
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { easter: easter, isWorkday: isWorkday, estimate: estimate };
+    if (isNode) {
+        module.exports = { easter: cal.easter, isWorkday: isWorkday, estimate: estimate };
         return;
     }
 
@@ -116,23 +77,8 @@
 
     /* Delivery estimate */
 
-    function storeNow(tz) {
-        var out = {};
-        try {
-            new Intl.DateTimeFormat('en-GB', {
-                timeZone: tz, hourCycle: 'h23',
-                year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'
-            }).formatToParts(new Date()).forEach(function (p) { out[p.type] = parseInt(p.value, 10); });
-        } catch (e) {
-            var d = new Date();
-            out = { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate(), hour: d.getHours(), minute: d.getMinutes() };
-        }
-        return { y: out.year, m: out.month, d: out.day, h: out.hour % 24, mi: out.minute };
-    }
-
     function fmt(day, opts) {
-        opts.timeZone = 'UTC';
-        return new Intl.DateTimeFormat('it-IT', opts).format(utc(day));
+        return cal.format(day, opts);
     }
 
     function duration(minutes) {
@@ -152,7 +98,7 @@
     }
 
     function renderDelivery(box, conf) {
-        var now = storeNow(conf.tz);
+        var now = cal.nowIn(conf.tz);
         var est = estimate(now, conf);
         var short = { weekday: 'short', day: 'numeric', month: 'short' };
 
@@ -173,7 +119,7 @@
 
     function initDelivery() {
         var box = document.querySelector('[data-ghb-delivery]');
-        if (!box) return;
+        if (!box || !cal) return;
         var conf;
         try { conf = JSON.parse(box.getAttribute('data-ghb-delivery')); } catch (e) { return; }
 

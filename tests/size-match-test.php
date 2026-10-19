@@ -61,6 +61,26 @@ same(ghb_size_match_line(array($rows[1])), 'Taglia 42 · 180 €', 'one size nam
 same(ghb_size_match_line(array(array('label' => '42', 'price_text' => ''))), 'Taglia 42', 'an unpriced size names just the size');
 same(ghb_size_match_line(array($rows[0], $rows[1])), 'Taglie 40, 42 disponibili', 'several sizes are listed');
 
+// Size order and grouping (pickers, newsletter alerts).
+check(ghb_size_sort_value('36 2/3') > ghb_size_sort_value('36'), '36 2/3 after 36');
+check(ghb_size_sort_value('36-2-3') === ghb_size_sort_value('36 2/3'), 'both spellings sort together');
+same(ghb_size_sort_value('42,5'), 42.5, 'a comma decimal');
+same(ghb_size_sort_value('EU 44'), 44.0, 'an EU prefix is ignored');
+check(ghb_size_sort_value('XL') > ghb_size_sort_value('48'), 'letter sizes after shoe sizes');
+check(ghb_size_sort_value('M') < ghb_size_sort_value('XL'), 'letter sizes in their own order');
+
+$options = ghb_size_group_options(array(
+    array('slug' => '42', 'name' => '42', 'count' => 5),
+    array('slug' => '36-2-3', 'name' => '36-2-3', 'count' => 1),
+    array('slug' => '36-2-3-2', 'name' => '36 2/3', 'count' => 2),
+    array('slug' => 'xl', 'name' => 'XL', 'count' => 3),
+    array('slug' => '40-5', 'name' => '40.5', 'count' => 4),
+    array('slug' => 'junk', 'name' => '', 'count' => 9),
+));
+same(array_column($options, 'label'), array('36 2/3', '40.5', '42', 'XL'), 'grouped, in size order, readable spelling');
+same($options[0]['slugs'], array('36-2-3', '36-2-3-2'), 'a group keeps every spelling');
+same($options[0]['count'], 3, 'and adds their products up');
+
 /* ---------------------------------------------------------------- */
 
 echo sprintf("%d passed, %d failed\n", $GLOBALS['ghb_passes'], $GLOBALS['ghb_failures']);

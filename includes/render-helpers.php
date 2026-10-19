@@ -290,3 +290,103 @@ function gh_kses_map_iframe($html)
         ),
     ));
 }
+
+/**
+ * A Google map that loads only when asked. The sanitised iframe waits in a
+ * <template>; a cover offers "Mostra la mappa" and, without JavaScript too,
+ * "Apri in Google Maps" (js/live-blocks.js MapFacade swaps the iframe in).
+ * Pages get lighter — the embed weighs more than the rest of most pages —
+ * and Google sets no cookie before the visitor chooses to load it.
+ *
+ * @param string $iframe_html A pasted map embed (sanitised here).
+ * @param array  $args {
+ *     @type string $address   Shown on the cover; also the "open" link's query.
+ *     @type string $open_url  Overrides the "Apri in Google Maps" link.
+ *     @type string $image_url Optional static picture of the map behind the cover.
+ *     @type int    $image_id  Its attachment id.
+ *     @type string $class     Extra class on the box.
+ * }
+ * @return string Markup; '' when the embed holds no usable iframe.
+ */
+function gh_map_facade($iframe_html, $args = array())
+{
+    $iframe = gh_kses_map_iframe((string) $iframe_html);
+    if ('' === trim($iframe) || false === stripos($iframe, '<iframe')) {
+        return '';
+    }
+    // The iframe has no title of its own: screen readers announce this one.
+    if (false === stripos($iframe, ' title=')) {
+        $iframe = preg_replace('/<iframe\b/i', '<iframe title="' . esc_attr__('Mappa', 'golden-hive-blocks') . '"', $iframe, 1);
+    }
+
+    wp_enqueue_script('ghb-live-blocks');
+
+    $address  = (string) ($args['address'] ?? '');
+    $open_url = (string) ($args['open_url'] ?? '');
+    if ('' === $open_url && '' !== $address) {
+        $open_url = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($address);
+    }
+    $image_url = (string) ($args['image_url'] ?? '');
+
+    $html  = '<div class="gh-map-facade ' . esc_attr((string) ($args['class'] ?? '')) . '" data-gh-map>';
+    $html .= '<template data-gh-map-frame>' . $iframe . '</template>';
+    if ('' !== $image_url) {
+        $html .= '<div class="gh-map-facade__image" data-gh-map-cover>'
+            . gh_img((int) ($args['image_id'] ?? 0), $image_url, array('alt' => '', 'loading' => 'lazy'))
+            . '</div>';
+    }
+    $html .= '<div class="gh-map-facade__cover" data-gh-map-cover>';
+    $html .= '<span class="gh-map-facade__pin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>';
+    if ('' !== $address) {
+        $html .= '<p class="gh-map-facade__address">' . esc_html($address) . '</p>';
+    }
+    $html .= '<button type="button" class="gh-map-facade__load" data-gh-map-load>' . esc_html__('Mostra la mappa', 'golden-hive-blocks') . '</button>';
+    if ('' !== $open_url) {
+        $html .= '<a class="gh-map-facade__open" href="' . esc_url($open_url) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('Apri in Google Maps', 'golden-hive-blocks') . '</a>';
+    }
+    $html .= '<p class="gh-map-facade__note">' . esc_html__('La mappa è di Google: caricandola accetti i suoi cookie.', 'golden-hive-blocks') . '</p>';
+    $html .= '</div></div>';
+
+    return $html;
+}
+
+/**
+ * Opening hours for js/live-blocks.js (StoreHours): the rows as typed in the
+ * block ("Lunedì" / "10.30 - 13.00 | 15.30 - 19.30" / "Chiuso"), the store's
+ * time zone, whether Italian public holidays are closed, and extra closed
+ * dates. The browser works out "Aperto ora · chiude alle 19:30" and today's
+ * row, so a cached page never shows yesterday's.
+ *
+ * @param array  $hours        Rows: day, time.
+ * @param bool   $holidays     Closed on Italian public holidays.
+ * @param string $closed_dates Extra closed days: "2026-12-24, 31/12/2026", one per line or comma-separated.
+ * @return string JSON for a data-ghb-hours attribute.
+ */
+function gh_hours_data($hours, $holidays, $closed_dates)
+{
+    wp_enqueue_script('ghb-live-blocks');
+
+    $rows = array();
+    foreach ((array) $hours as $row) {
+        $rows[] = array(
+            'day'  => (string) ($row['day'] ?? ''),
+            'time' => (string) ($row['time'] ?? ''),
+        );
+    }
+
+    $closed = array();
+    foreach (preg_split('/[\s,;]+/', (string) $closed_dates, -1, PREG_SPLIT_NO_EMPTY) as $raw) {
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $raw, $m) && checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+            $closed[] = $raw;
+        } elseif (preg_match('#^(\d{1,2})/(\d{1,2})/(\d{4})$#', $raw, $m) && checkdate((int) $m[2], (int) $m[1], (int) $m[3])) {
+            $closed[] = sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
+        }
+    }
+
+    return (string) wp_json_encode(array(
+        'rows'     => $rows,
+        'tz'       => function_exists('wp_timezone_string') ? wp_timezone_string() : 'Europe/Rome',
+        'holidays' => (bool) $holidays,
+        'closed'   => array_values(array_unique($closed)),
+    ));
+}

@@ -81,10 +81,16 @@ $has_map = !empty($map_embed) || !empty($map_url);
 
             </div>
 
-            <?php if (!empty($map_embed)) : ?>
+            <?php if (!empty($map_embed)) :
+                // Click to load (default): lighter page, no Google cookies
+                // before the visitor opens the map (gh_map_facade).
+                $map_html = ($attributes['clickToLoad'] ?? true)
+                    ? gh_map_facade($map_embed, array('address' => $address, 'open_url' => $map_url))
+                    : '';
+                ?>
                 <div class="gh-contact-info__map" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms">
                     <div class="gh-contact-info__map-wrapper">
-                        <?php echo gh_kses_map_iframe($map_embed); ?>
+                        <?php echo '' !== $map_html ? $map_html : gh_kses_map_iframe($map_embed); // Sanitised iframe. ?>
                     </div>
                 </div>
             <?php elseif (!empty($map_url)) : ?>

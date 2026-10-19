@@ -5,6 +5,8 @@
     var PanelBody = wp.components.PanelBody;
     var TextareaControl = wp.components.TextareaControl;
     var RangeControl = wp.components.RangeControl;
+    var ToggleControl = wp.components.ToggleControl;
+    var TextControl = wp.components.TextControl;
     var el = window.ghEditorUtils.el;
     var Fragment = window.ghEditorUtils.Fragment;
     var Placeholder = window.ghEditorUtils.Placeholder;
@@ -53,7 +55,23 @@
                             },
                             min: 0,
                             max: 24,
-                        })
+                        }),
+                        el(ToggleControl, {
+                            label: 'Carica la mappa al clic',
+                            help: 'Consigliato: la pagina è più leggera e Google non imposta cookie finché il visitatore non apre la mappa.',
+                            checked: attributes.clickToLoad !== false,
+                            onChange: function (value) {
+                                setAttributes({ clickToLoad: value });
+                            },
+                        }),
+                        attributes.clickToLoad !== false ? el(TextControl, {
+                            label: 'Indirizzo (facoltativo)',
+                            help: 'Mostrato sulla copertina della mappa; "Apri in Google Maps" lo cerca.',
+                            value: attributes.address || '',
+                            onChange: function (value) {
+                                setAttributes({ address: value });
+                            },
+                        }) : null
                     )
                 ),
                 el(

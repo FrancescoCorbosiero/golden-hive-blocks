@@ -9,6 +9,71 @@
     const ItemControls = utils.ItemControls;
     const MediaField = utils.MediaField;
     const Placeholder = utils.Placeholder;
+    const ProductPicker = utils.ProductPicker;
+
+    // "Shop the look": click on the picture to tag a product at that spot.
+    function HotspotEditor(props) {
+        var image = props.image;
+        var spots = Array.isArray(image.hotspots) ? image.hotspots : [];
+
+        function save(next) {
+            props.onChange(next);
+        }
+        function update(index, patch) {
+            save(spots.map(function(spot, i) { return i === index ? Object.assign({}, spot, patch) : spot; }));
+        }
+
+        return el('div', { style: { marginTop: '8px' } },
+            el('p', { style: { margin: '0 0 6px', fontWeight: '600' } }, 'Acquista il look'),
+            el('div', {
+                style: { position: 'relative', cursor: 'crosshair', lineHeight: 0 },
+                onClick: function(e) {
+                    var box = e.currentTarget.getBoundingClientRect();
+                    var x = Math.round((e.clientX - box.left) / box.width * 100);
+                    var y = Math.round((e.clientY - box.top) / box.height * 100);
+                    save(spots.concat([{ productId: 0, x: x, y: y }]));
+                }
+            },
+                el('img', { src: image.url, alt: '', style: { width: '100%', display: 'block' } }),
+                spots.map(function(spot, i) {
+                    return el('span', {
+                        key: i,
+                        style: {
+                            position: 'absolute', left: spot.x + '%', top: spot.y + '%',
+                            transform: 'translate(-50%, -50%)', width: '22px', height: '22px',
+                            borderRadius: '50%', background: spot.productId ? '#721124' : '#757575',
+                            color: '#fff', border: '2px solid #fff', fontSize: '11px', lineHeight: '18px',
+                            textAlign: 'center', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(0,0,0,.4)'
+                        }
+                    }, String(i + 1));
+                })
+            ),
+            el('p', { style: { margin: '6px 0 10px', fontSize: '12px', color: '#757575' } },
+                spots.length ? 'Clicca di nuovo sulla foto per aggiungere un altro prodotto.' : 'Clicca sulla foto nel punto in cui si vede un prodotto.'),
+            spots.map(function(spot, i) {
+                return el('div', { key: i, style: { padding: '8px', marginBottom: '8px', background: '#f6f7f7', borderRadius: '4px' } },
+                    el('strong', {}, 'Punto ' + (i + 1)),
+                    el(ProductPicker, {
+                        label: 'Prodotto',
+                        value: spot.productId,
+                        onChange: function(id) { update(i, { productId: id }); }
+                    }),
+                    el(RangeControl, {
+                        label: 'Orizzontale (%)', value: spot.x, min: 0, max: 100,
+                        onChange: function(v) { update(i, { x: v }); }
+                    }),
+                    el(RangeControl, {
+                        label: 'Verticale (%)', value: spot.y, min: 0, max: 100,
+                        onChange: function(v) { update(i, { y: v }); }
+                    }),
+                    el(Button, {
+                        variant: 'secondary', size: 'small', isDestructive: true,
+                        onClick: function() { save(spots.filter(function(_, j) { return j !== i; })); }
+                    }, 'Rimuovi punto')
+                );
+            })
+        );
+    }
 
     registerBlockType('golden-hive/instagram-feed', {
         edit: function({ attributes, setAttributes }) {
@@ -61,7 +126,17 @@
                                     label: 'Testo alternativo',
                                     value: image.alt || '',
                                     onChange: function(val) { ops.update(index, 'alt', val); }
-                                })
+                                }),
+                                el(TextControl, {
+                                    label: 'Link al post (facoltativo)',
+                                    help: 'Vuoto: il profilo Instagram.',
+                                    value: image.link || '',
+                                    onChange: function(val) { ops.update(index, 'link', val); }
+                                }),
+                                image.url ? el(HotspotEditor, {
+                                    image: image,
+                                    onChange: function(next) { ops.updateMany(index, { hotspots: next }); }
+                                }) : null
                             );
                         }),
                         el(Button, {
@@ -78,7 +153,12 @@
                         ),
                         title: 'Instagram Feed',
                         text: images.length > 0
-                            ? images.length + ' immagini configurate | ' + columns + ' colonne'
+                            ? images.length + ' immagini configurate | ' + columns + ' colonne' + (function() {
+                                var tagged = images.reduce(function(n, image) {
+                                    return n + (Array.isArray(image.hotspots) ? image.hotspots.filter(function(s) { return s.productId; }).length : 0);
+                                }, 0);
+                                return tagged ? ' | ' + tagged + ' prodotti taggati' : '';
+                            })()
                             : 'Configura questo blocco nel pannello laterale.',
                         thumbs: images.map(function(image) { return image.url; })
                     })

@@ -7,7 +7,13 @@
     "category": "golden-hive",
     "icon": "location",
     "description": "Mappa Google Maps integrata per mostrare la posizione del negozio.",
-    "keywords": ["mappa", "google", "maps", "posizione", "negozio"],
+    "keywords": [
+        "mappa",
+        "google",
+        "maps",
+        "posizione",
+        "negozio"
+    ],
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "embedCode": {
@@ -21,10 +27,21 @@
         "borderRadius": {
             "type": "number",
             "default": 12
+        },
+        "clickToLoad": {
+            "type": "boolean",
+            "default": true
+        },
+        "address": {
+            "type": "string",
+            "default": ""
         }
     },
     "supports": {
-        "align": ["wide", "full"],
+        "align": [
+            "wide",
+            "full"
+        ],
         "html": false,
         "spacing": {
             "margin": true,

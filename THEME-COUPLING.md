@@ -7,7 +7,8 @@ against them, and each one switches on through a single function,
 `ghb_theme_module()` in `includes/theme-compat.php`. On any other theme they
 stay off.
 
-Last checked: plugin 5.12.0, WooCommerce 9.9.5, WordPress 6.8.
+Last checked: plugin 5.12.0, WooCommerce 9.9.5, WordPress 6.8. Hooks added since
+then (5.13, 5.14) are standard WooCommerce hooks listed below.
 
 ## 1. Shoptimizer / CommerceKit only
 
@@ -47,6 +48,8 @@ Astra, Blocksy…):
 | Filtered size on the card ("Taglia 42 · 180 €"), size pre-picked in Quick View / Quick Add | `woocommerce_after_shop_loop_item_title`, the `filter_taglia` URL param |
 | "Chiedi su WhatsApp", "Condividi", delivery estimate | `woocommerce_single_product_summary` (35, 31); the WhatsApp message reads the variations form's `<select>` |
 | "Non trovi la tua taglia?" + "Acquista con fiducia" band, "Altre colorway" and "Visti di recente" rails | `woocommerce_after_single_product_summary` (15, 19, 25) |
+| "Venduto 3 volte negli ultimi 30 giorni", drop countdown + "Ricordamelo" | `woocommerce_single_product_summary` (11, 25) |
+| Drops: not for sale before the release date | `woocommerce_is_purchasable`, `woocommerce_variation_is_purchasable`; the date field in Product data → General (`woocommerce_product_options_general_product_data`, `woocommerce_admin_process_product_object`) |
 | Archive hero | `woocommerce_before_main_content`, `woocommerce_show_page_title` |
 | "Filtri" button (desktop drawer) | `woocommerce_before_shop_loop`, plus `theme-bridge` (section 1) |
 | Shop grid alignment | `ul.products li.product` (`shop-grid.css`, `js/shop-grid.js`) |
@@ -79,12 +82,26 @@ These survive a theme change.
   (`ghb_filters_config`). "Altre colorway" groups products by `pa_modello`
   (filter `ghb_colorways_taxonomy`).
 - **Brand taxonomies.** `product_brand`, `pwb-brand` and `pa_brand`, whichever
-  are registered (rails, Store Hub).
+  are registered (rails, Store Hub); the size alerts' brand choice also reads
+  `pa_marca` (filter `ghb_size_alerts_brand_taxonomies`).
+- **Orders.** Social proof reads the latest Processing / Completed orders
+  (`wc_get_orders`, HPOS-safe); "Venduto N volte" counts them in WooCommerce's
+  analytics lookup tables (`wc_order_product_lookup`, `wc_order_stats`) and
+  shows nothing where they are missing.
+- **Action Scheduler.** Bundled with WooCommerce: the drops' release (cache
+  purge, size alerts) and the size alerts' batched sends run there, on
+  WP-Cron where it is missing.
+- **Email.** Size alerts and their confirmation go through WooCommerce's
+  mailer and email template (Settings → Email), plain `wp_mail` without it.
+- **Google Maps.** Map Embed, Contact Info and "Vieni in negozio" load the
+  embed only when the visitor asks (`gh_map_facade`), so no Google request
+  before then.
 - **Relevanssi Live Ajax Search.** Powers the live-search modal, which stands
   down without it.
-- **Cache plugins.** After a Store Hub write, the plugin purges SiteGround
-  Optimizer, WP Rocket, LiteSpeed, W3 Total Cache or WP Super Cache,
-  whichever is present.
+- **Cache plugins.** After a Store Hub write and when a drop is released,
+  the plugin purges SiteGround Optimizer, WP Rocket, LiteSpeed, W3 Total
+  Cache or WP Super Cache, whichever is present (`ghb_purge_page_caches`,
+  `includes/cache.php`).
 - **"Advanced Filters" Code Snippet.** While it is active, the plugin's
   filters stand down and show an admin notice.
 

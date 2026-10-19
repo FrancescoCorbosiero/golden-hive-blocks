@@ -38,6 +38,12 @@
     pointer-events: none;
 }
 
+/* A drop not out yet (includes/drops.php): "In arrivo · 24 ott". */
+.ghb-atc--drop .ghb-atc-trigger[aria-disabled="true"] {
+    background: var(--gh-gray-900, #171717);
+    color: #fff;
+}
+
 /* The filtered size on the card (includes/size-match.php): "Taglia 42 · 180 €" */
 .ghb-size-match {
     margin: 4px 0 2px;
