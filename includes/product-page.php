@@ -26,8 +26,9 @@
  *     browser (localStorage) and rendered over AJAX into a product rail
  *     (after_single_product_summary 25, after related products).
  *
- * The band and the rails sit inside ghb_pp_container_class(): on Shoptimizer
- * the theme's content container, so they line up with "Prodotti correlati".
+ * The band and the rails sit inside ghb_pp_container_class(), a box as wide
+ * as the theme's content container, so they line up with the rest of the
+ * page instead of running from edge to edge (see ghb_pp_theme_container()).
  *
  * Settings: Customizer → "Golden Hive — Pagina prodotto".
  *
@@ -70,19 +71,33 @@ function ghb_pp_band_enabled(): bool
 }
 
 /**
- * Classes of the box that holds the product page's sections (band, rails).
+ * The theme's content container class, whose width the product page's
+ * sections copy; '' when there is none to copy.
  *
- * THEME-SPECIFIC (theme module 'theme-bridge'): WooCommerce runs
- * after_single_product_summary inside a full-width area on Shoptimizer, and
- * the theme gives each of its own sections its .col-full container. Ours take
- * the same class, so they keep the width the theme's Customizer sets. On
- * other themes the plugin's own max-width applies (product-page.css).
+ * THEME-SPECIFIC (theme module 'theme-bridge'): Shoptimizer's .col-full.
+ * WooCommerce runs after_single_product_summary in a full-width area on
+ * Shoptimizer, and the theme resets every .col-full inside it to the full
+ * width, so the sections can't simply take the class (5.13.1 did, and ran
+ * from edge to edge). js/product-page.js reads the container from a .col-full
+ * probe outside that area instead, and copies its width and gutters.
+ */
+function ghb_pp_theme_container(): string
+{
+    $class = (function_exists('ghb_theme_module') && ghb_theme_module('theme-bridge')) ? 'col-full' : '';
+    return (string) apply_filters('ghb_pp_theme_container', $class);
+}
+
+/**
+ * Classes of the box that holds the product page's sections (band, rails).
+ * With a theme container to copy, --theme starts it at this store's width
+ * (product-page.css) until the script has read the theme's own; otherwise
+ * the plugin's max-width applies.
  */
 function ghb_pp_container_class(): string
 {
     $class = 'ghb-pp-inner';
-    if (function_exists('ghb_theme_module') && ghb_theme_module('theme-bridge')) {
-        $class .= ' col-full';
+    if ('' !== ghb_pp_theme_container()) {
+        $class .= ' ghb-pp-inner--theme';
     }
     return (string) apply_filters('ghb_pp_container_class', $class);
 }
@@ -161,7 +176,10 @@ function ghb_product_page_assets()
     wp_localize_script(
         'golden-hive-product-page',
         'ghbProductPage',
-        array('ajaxUrl' => admin_url('admin-ajax.php'))
+        array(
+            'ajaxUrl'   => admin_url('admin-ajax.php'),
+            'container' => ghb_pp_theme_container(),
+        )
     );
 }
 

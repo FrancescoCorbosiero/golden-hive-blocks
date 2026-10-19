@@ -12,6 +12,8 @@
  *     out here, not in PHP, because the page is cached and "now" is the
  *     visitor's. Business days skip weekends, Italian national holidays and
  *     the store's closed dates.
+ *   • The band and the rails under the product take the width of the
+ *     theme's content container (ghbProductPage.container).
  *
  * Vanilla JS. The date logic is pure (no DOM) and exported under Node for
  * tests/delivery-estimate-test.js; days and holidays come from js/calendar.js.
@@ -246,7 +248,53 @@
         io.observe(slot);
     }
 
+    /* Width of the sections under the product */
+
+    // The band and the rails copy the theme's content container. On
+    // Shoptimizer the product page's area is full width and the theme resets
+    // every .col-full inside it, so the container is read from a probe
+    // outside that area. product-page.css starts them at the store's width;
+    // nothing changes where the class has no width of its own.
+    function alignSections() {
+        var boxes = document.querySelectorAll('.ghb-pp-inner--theme');
+        if (!cfg.container || !boxes.length || !document.body) return;
+
+        var probe = document.createElement('div');
+        probe.className = cfg.container;
+        probe.setAttribute('aria-hidden', 'true');
+        probe.style.cssText = 'height:0;margin-top:0;margin-bottom:0;overflow:hidden;visibility:hidden';
+        document.body.appendChild(probe);
+        var cs = window.getComputedStyle(probe);
+        var box = {
+            boxSizing: cs.boxSizing,
+            maxWidth: cs.maxWidth,
+            paddingLeft: cs.paddingLeft,
+            paddingRight: cs.paddingRight
+        };
+        document.body.removeChild(probe);
+
+        if (!box.maxWidth || box.maxWidth === 'none' || box.maxWidth.slice(-1) === '%') return;
+        for (var i = 0; i < boxes.length; i++) {
+            for (var key in box) boxes[i].style[key] = box[key];
+        }
+    }
+
+    function initAlign() {
+        alignSections();
+        // The theme's width and gutters change at its breakpoints.
+        var queued = false;
+        window.addEventListener('resize', function () {
+            if (queued) return;
+            queued = true;
+            window.requestAnimationFrame(function () {
+                queued = false;
+                alignSections();
+            });
+        });
+    }
+
     function boot() {
+        initAlign();
         initDelivery();
         initActions();
         initRecent();
