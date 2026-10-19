@@ -64,8 +64,10 @@
 
     /**
      * Split Text Animation - Animazione carattere per carattere
-     * Skips elements that already contain inline markup (e.g. a hero title
-     * with a highlighted <span>) so author-provided HTML isn't destroyed.
+     * Skips elements that already contain inline markup (links, <br>, …) so
+     * author-provided HTML isn't destroyed. With data-gh-split-inline, plain
+     * spans that only colour a few words (the hero-video titleAccent) are
+     * split through instead, each piece staying inside its span.
      *
      * La segmentazione usa Intl.Segmenter('it', grapheme) quando disponibile
      * (emoji, accenti combinati e legature restano interi); il fallback
@@ -90,21 +92,48 @@
             return Array.from(text);
         },
 
+        /**
+         * The element's text as runs, { text, wrap }: wrap is a bare copy of
+         * the inline span the text sits in, null for plain text. Null when
+         * the element holds markup that must stay as it is.
+         */
+        runs: function (el) {
+            if (el.children.length === 0) {
+                return [{ text: el.textContent.trim(), wrap: null }];
+            }
+            if (!el.hasAttribute('data-gh-split-inline')) return null;
+
+            var runs = [];
+            for (var i = 0; i < el.childNodes.length; i++) {
+                var node = el.childNodes[i];
+                if (node.nodeType === 3) {
+                    runs.push({ text: node.nodeValue, wrap: null });
+                } else if (node.nodeType === 1) {
+                    // Only text-only spans: anything richer stays untouched.
+                    if (node.tagName !== 'SPAN' || node.children.length > 0) return null;
+                    runs.push({ text: node.textContent, wrap: node.cloneNode(false) });
+                }
+            }
+            if (!runs.length) return null;
+            runs[0].text = runs[0].text.replace(/^\s+/, '');
+            runs[runs.length - 1].text = runs[runs.length - 1].text.replace(/\s+$/, '');
+            return runs;
+        },
+
         init: function (root) {
             var self = this;
             scan(root, '[data-gh-split]').forEach(function (el) {
                 if (el.dataset.ghSplitProcessed) return;
 
-                // If the element contains any child elements, don't rewrite it —
-                // preserve author markup (inline spans, links, <br>, etc.).
-                if (el.children.length > 0) {
+                var runs = self.runs(el);
+                if (!runs) {
                     el.dataset.ghSplitProcessed = 'true';
                     return;
                 }
 
                 var type = el.dataset.ghSplit || 'chars';
                 var text = el.textContent.trim();
-                if (!text) return;
+                if (!text || (type !== 'chars' && type !== 'words')) return;
 
                 // Accessibilità: il testo integro vive nell'aria-label del
                 // contenitore, gli span frammentati sono nascosti agli screen
@@ -113,40 +142,56 @@
                 var wrapper = document.createElement('span');
                 wrapper.setAttribute('aria-hidden', 'true');
 
-                if (type === 'chars') {
-                    var chars = self.segment(text);
-                    var totalChars = 0;
-                    chars.forEach(function (c) {
-                        if (!/^\s+$/.test(c)) totalChars++;
+                // Pieces of every run: graphemes ("chars") or words and the
+                // spaces between them ("words"). Indexes run across the whole
+                // text, so the entrance flows on through an accent span.
+                var total = 0;
+                runs.forEach(function (run) {
+                    run.parts = type === 'chars'
+                        ? self.segment(run.text)
+                        : run.text.split(/(\s+)/).filter(function (part) { return part !== ''; });
+                    run.parts.forEach(function (part) {
+                        if (!/^\s+$/.test(part)) total++;
                     });
+                });
 
-                    chars.forEach(function (char, i) {
-                        var span = document.createElement('span');
-                        if (/^\s+$/.test(char)) {
-                            span.className = 'gh-char gh-char--space';
-                            span.textContent = '\u00A0';
-                        } else {
-                            span.className = 'gh-char';
-                            span.style.setProperty('--char-index', String(i));
-                            span.style.setProperty('--char-total', String(totalChars));
-                            span.textContent = char;
+                // Spaces stay plain text, so lines break between words only:
+                // each word's .gh-char boxes sit in a .gh-char-word that
+                // never breaks ("PIAC / ENZA" otherwise).
+                var index = 0;
+                runs.forEach(function (run) {
+                    var target = run.wrap || wrapper;
+                    var word = null;
+                    run.parts.forEach(function (part) {
+                        if (/^\s+$/.test(part)) {
+                            target.appendChild(document.createTextNode(' '));
+                            word = null;
+                            if (type === 'chars') index++;
+                            return;
                         }
-                        wrapper.appendChild(span);
-                    });
-                } else if (type === 'words') {
-                    var words = text.split(/\s+/);
-                    words.forEach(function (word, i) {
-                        if (i > 0) wrapper.appendChild(document.createTextNode(' '));
                         var span = document.createElement('span');
-                        span.className = 'gh-word';
-                        span.style.setProperty('--word-index', String(i));
-                        span.style.setProperty('--word-total', String(words.length));
-                        span.textContent = word;
-                        wrapper.appendChild(span);
+                        if (type === 'chars') {
+                            if (!word) {
+                                word = document.createElement('span');
+                                word.className = 'gh-char-word';
+                                target.appendChild(word);
+                            }
+                            span.className = 'gh-char';
+                            span.style.setProperty('--char-index', String(index));
+                            span.style.setProperty('--char-total', String(total));
+                            span.textContent = part;
+                            word.appendChild(span);
+                        } else {
+                            span.className = 'gh-word';
+                            span.style.setProperty('--word-index', String(index));
+                            span.style.setProperty('--word-total', String(total));
+                            span.textContent = part;
+                            target.appendChild(span);
+                        }
+                        index++;
                     });
-                } else {
-                    return;
-                }
+                    if (run.wrap) wrapper.appendChild(run.wrap);
+                });
 
                 el.textContent = '';
                 el.appendChild(wrapper);

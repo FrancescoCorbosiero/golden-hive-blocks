@@ -33,6 +33,10 @@
             "type": "string",
             "default": "Stradone Farnese 3 - 29121 - Piacenza (PC)"
         },
+        "vat": {
+            "type": "string",
+            "default": ""
+        },
         "phone": {
             "type": "string",
             "default": ""

@@ -266,6 +266,22 @@ html.gh-anim-failsafe .gh-rail .gh-rail__track > li.product {
     line-height: 1.2;
 }
 
+/* In a shortcode wrapper the rail sits among rails titled by the wrapper
+   (eyebrow + section title): its title takes the same size, and the size
+   badge flows after the last word when the title wraps. */
+.gh-shortcode-wrapper .ghb-size-rail .ghb-size-rail__title {
+    display: block;
+    color: var(--gh-black, #0a0a0a);
+    font-size: var(--gh-text-4xl, 2.5rem);
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+.gh-shortcode-wrapper .ghb-size-rail__current {
+    margin-left: .25em;
+    font-size: .45em;
+    vertical-align: middle;
+}
+
 .ghb-size-rail__current[hidden],
 .ghb-size-rail__change[hidden],
 .ghb-size-rail__picker[hidden] {

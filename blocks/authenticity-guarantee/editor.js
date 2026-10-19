@@ -38,6 +38,12 @@
                             label: 'Testo badge',
                             value: badgeText,
                             onChange: function(val) { setAttributes({ badgeText: val }); }
+                        }),
+                        el(TextControl, {
+                            label: 'Firma sotto il badge',
+                            help: 'Vuota = il nome del sito.',
+                            value: attributes.badgeSub || '',
+                            onChange: function(val) { setAttributes({ badgeSub: val }); }
                         })
                     ),
                     el(PanelBody, { title: 'Passaggi (' + steps.length + ')', initialOpen: false },

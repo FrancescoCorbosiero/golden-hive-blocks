@@ -26,6 +26,10 @@
             "type": "string",
             "default": "Certified Authentic"
         },
+        "badgeSub": {
+            "type": "string",
+            "default": ""
+        },
         "steps": {
             "type": "array",
             "default": [

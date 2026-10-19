@@ -4,7 +4,7 @@
  *
  * Il negozio fisico in un blocco: stato "Aperto ora · chiude alle 19:30" e
  * riga di oggi calcolati nel browser (js/live-blocks.js StoreHours, fuso del
- * sito, festività e chiusure incluse), indirizzo con "Indicazioni", WhatsApp
+ * sito, festività e chiusure incluse), indirizzo (e P.IVA) con "Indicazioni", WhatsApp
  * (numero del Customizer, Golden Hive — Pagina prodotto) e telefono, e una
  * mappa Google che si carica solo al clic (gh_map_facade).
  */
@@ -13,6 +13,7 @@ $eyebrow       = $attributes['eyebrow'] ?? '';
 $title         = $attributes['title'] ?? '';
 $subtitle      = $attributes['subtitle'] ?? '';
 $address       = trim((string) ($attributes['address'] ?? ''));
+$vat           = trim((string) ($attributes['vat'] ?? ''));
 $phone         = trim((string) ($attributes['phone'] ?? ''));
 $hours         = $attributes['hours'] ?? array();
 $note          = $attributes['note'] ?? '';
@@ -54,8 +55,15 @@ $directions = '' !== $address ? 'https://www.google.com/maps/dir/?api=1&destinat
             <?php if ('' !== $address) : ?>
                 <p class="gh-store-visit__address">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    <span><?php echo esc_html($address); ?></span>
+                    <span>
+                        <?php echo esc_html($address); ?>
+                        <?php if ('' !== $vat) : ?>
+                            <span class="gh-store-visit__vat"><?php echo esc_html($vat); ?></span>
+                        <?php endif; ?>
+                    </span>
                 </p>
+            <?php elseif ('' !== $vat) : ?>
+                <p class="gh-store-visit__vat"><?php echo esc_html($vat); ?></p>
             <?php endif; ?>
 
             <div class="gh-store-visit__actions">

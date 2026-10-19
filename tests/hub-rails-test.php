@@ -308,6 +308,24 @@ foreach (ghb_hub_leaf_blocks(parse_blocks($retitled['content'])) as $i => $leaf)
     }
 }
 
+/* ---------------------------------------------------------------- *
+ * The page template, pages/homepage.html.
+ * ---------------------------------------------------------------- */
+
+// The template adds blocks around the rails ("Nella tua taglia", the drop
+// calendar, the newsletter): the Hub still finds the same nine rails, and a
+// shortcode wrapper holding [gh_size_rail] is not one of them.
+$template = parse_blocks(file_get_contents(dirname(__DIR__) . '/pages/homepage.html'));
+same(array_keys(ghb_hub_page_rails($template)), array_keys(ghb_hub_page_rails($blocks)), 'the page template has the same nine rails');
+$size_wrapper = null;
+foreach (ghb_hub_leaf_blocks($template) as $leaf) {
+    if (false !== strpos((string) ($leaf[1]['attrs']['shortcode'] ?? ''), '[gh_size_rail')) {
+        $size_wrapper = $leaf[1];
+    }
+}
+check(null !== $size_wrapper, 'the template has a "Nella tua taglia" wrapper');
+same(ghb_hub_rail_from_block($size_wrapper ?? array()), null, 'a wrapper holding [gh_size_rail] is not a Hub rail');
+
 /* ---------------------------------------------------------------- */
 
 echo sprintf("%d passed, %d failed\n", $GLOBALS['ghb_passes'], $GLOBALS['ghb_failures']);

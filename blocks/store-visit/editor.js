@@ -30,6 +30,7 @@
                             onChange: function(value) { setAttributes({ subtitle: value }); }
                         }),
                         text('Indirizzo', 'address', '"Indicazioni" apre Google Maps verso questo indirizzo.'),
+                        text('Partita IVA (facoltativa)', 'vat', 'Es. P.IVA: 01875650333, sotto l\'indirizzo.'),
                         text('Telefono (facoltativo)', 'phone'),
                         text('Nota (facoltativa)', 'note')
                     ),
