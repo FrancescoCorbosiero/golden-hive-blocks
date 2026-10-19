@@ -175,12 +175,28 @@
 }
 
 /* ── Sections under the product (band + rails) ──
-   On Shoptimizer the inner box also carries the theme's .col-full, whose
-   width and padding win over this zero-specificity fallback. */
-:where(.ghb-pp-inner) {
+   The box inside each one: the plugin's own width on any theme… */
+.ghb-pp-inner {
     max-width: 1400px;
-    margin-inline: auto;
-    padding-inline: 16px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+/* …and with a theme container to copy (Shoptimizer's .col-full), that
+   container as this store sets it — 1400px of content, 2.617924em gutters,
+   1em on phones — until js/product-page.js copies the theme's own values. */
+.ghb-pp-inner--theme {
+    max-width: calc(1400px + 5.2325em);
+    padding-left: 2.617924em;
+    padding-right: 2.617924em;
+}
+@media (max-width: 992px) {
+    .ghb-pp-inner--theme {
+        padding-left: 1em;
+        padding-right: 1em;
+    }
 }
 
 /* ── "Non trovi la tua taglia?" + "Acquista con fiducia" ── */
@@ -394,6 +410,8 @@
 .ghb-pp-rail {
     clear: both;
     width: 100%;
+    /* Never wider than the page, whatever the theme does to the track. */
+    overflow-x: clip;
 }
 .ghb-pp-rail .gh-rail { margin: 40px 0; }
 /* Left-aligned, like the theme's "Prodotti correlati". */
