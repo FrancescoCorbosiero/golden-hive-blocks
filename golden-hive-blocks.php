@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.13.1
+ * Version: 5.14.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.13.1');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.14.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -27,6 +27,12 @@ define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
  * gh_kses_map_iframe) — loaded first, everything below uses them.
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/render-helpers.php';
+
+/**
+ * Full-page cache purge (whichever cache plugin runs), shared by the Store
+ * Hub and the drops.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/cache.php';
 
 /**
  * Theme coupling: the modules written for Shoptimizer / CommerceKit ask
@@ -125,12 +131,37 @@ function golden_hive_blocks_register_editor_utils()
     wp_register_script(
         'gh-editor-utils',
         GOLDEN_HIVE_BLOCKS_URL . 'blocks/shared/editor-utils.js',
-        array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components'),
+        array('wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-api-fetch'),
         GOLDEN_HIVE_BLOCKS_VERSION,
         true
     );
 }
 add_action('init', 'golden_hive_blocks_register_editor_utils', 5);
+
+/**
+ * Front-end scripts loaded only where a block or shortcode asks for them
+ * (wp_enqueue_script from its render): the shared calendar (js/calendar.js)
+ * and the live parts of the blocks (js/live-blocks.js — size rail, opening
+ * hours, map, drops). Registered early so every render can enqueue them.
+ */
+function golden_hive_blocks_register_live_scripts()
+{
+    wp_register_script(
+        'ghb-calendar',
+        gh_asset_url('js/calendar.js'),
+        array(),
+        GOLDEN_HIVE_BLOCKS_VERSION,
+        array('in_footer' => true, 'strategy' => 'defer')
+    );
+    wp_register_script(
+        'ghb-live-blocks',
+        gh_asset_url('js/live-blocks.js'),
+        array('ghb-calendar', 'golden-hive-animations', 'golden-hive-product-rail'),
+        GOLDEN_HIVE_BLOCKS_VERSION,
+        array('in_footer' => true, 'strategy' => 'defer')
+    );
+}
+add_action('init', 'golden_hive_blocks_register_live_scripts', 5);
 
 /**
  * Register all blocks from the blocks/ directory.
@@ -263,6 +294,34 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/mobile-nav.php';
  * Include the lightweight product rail (CSS scroll-snap carousel).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-rail.php';
+
+/**
+ * Include social proof from real orders: the toast's feed and the product
+ * page's "Venduto N volte negli ultimi 30 giorni".
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/social-proof-core.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/social-proof.php';
+
+/**
+ * Include "Nella tua taglia" ([gh_size_rail]): a product rail of the size
+ * this browser remembers, with a size picker.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/size-rail.php';
+
+/**
+ * Include size alerts: the newsletter's "È arrivato un paio nella tua
+ * taglia" (double opt-in, batched digests through WooCommerce's email).
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/size-alerts-core.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/size-alerts.php';
+
+/**
+ * Include drops: a release date on the product (not for sale before it,
+ * countdown, "Ricordamelo", cache purge at release) and the coming drops
+ * for the Drop Calendar block.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/drops-core.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/drops.php';
 
 /**
  * Include the product page additions: WhatsApp + share, delivery estimate,

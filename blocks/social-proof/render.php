@@ -1,27 +1,47 @@
 <?php
 /**
- * Social Proof Block - Notifica acquisto stile Shopify
+ * Social Proof Block - Notifica acquisto stile Shopify, da ordini reali.
+ *
+ * Il blocco stampa solo il contenitore: js/animations.js (SocialProof)
+ * chiede gli ultimi ordini pagati all'endpoint ghb_social_proof
+ * (includes/social-proof.php), così anche una pagina in cache mostra gli
+ * acquisti di oggi, e calcola "2 ore fa" nel browser dall'orario del
+ * pagamento. Le notifiche scritte a mano delle versioni precedenti
+ * (attributo notifications) non vengono più mostrate.
  */
 
-$notifications = $attributes['notifications'] ?? [];
-$interval = $attributes['interval'] ?? 30000;
-$initial_delay = $attributes['initialDelay'] ?? 15000;
-$display_duration = $attributes['displayDuration'] ?? 6000;
-$show_verified = $attributes['showVerified'] ?? true;
-$title = $attributes['title'] ?? 'Qualcuno ha appena acquistato';
+$days              = max(1, min(30, (int) ($attributes['days'] ?? 14)));
+$limit             = max(1, min(20, (int) ($attributes['limit'] ?? 10)));
+$show_city         = !empty($attributes['showCity']);
+$max_per_visit     = max(1, min(10, (int) ($attributes['maxPerVisit'] ?? 3)));
+$interval          = (int) ($attributes['interval'] ?? 25000);
+$initial_delay     = (int) ($attributes['initialDelay'] ?? 8000);
+$display_duration  = (int) ($attributes['displayDuration'] ?? 6000);
+$show_verified     = $attributes['showVerified'] ?? true;
+$title             = $attributes['title'] ?? 'Qualcuno ha appena acquistato';
 
-if (empty($notifications)) {
-    return;
-}
+$src = add_query_arg(
+    array(
+        'action' => 'ghb_social_proof',
+        'days'   => $days,
+        'limit'  => $limit,
+        'city'   => $show_city ? 1 : 0,
+    ),
+    admin_url('admin-ajax.php')
+);
 ?>
 <div <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-social-proof')); ?>
      data-gh-social-proof
-     data-gh-social-proof-items="<?php echo esc_attr(wp_json_encode($notifications)); ?>"
+     data-gh-social-proof-src="<?php echo esc_url($src); ?>"
+     data-gh-social-proof-days="<?php echo esc_attr($days); ?>"
+     data-gh-social-proof-max="<?php echo esc_attr($max_per_visit); ?>"
      data-gh-social-proof-interval="<?php echo esc_attr($interval); ?>"
      data-gh-social-proof-delay="<?php echo esc_attr($initial_delay); ?>"
      data-gh-social-proof-duration="<?php echo esc_attr($display_duration); ?>"
      aria-live="polite"
      aria-atomic="true">
+
+    <a class="gh-social-proof__link" href="#" data-gh-social-proof-link hidden></a>
 
     <div class="gh-social-proof__image">
         <img src="" alt="" data-gh-social-proof-image>

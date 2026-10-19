@@ -161,12 +161,76 @@
         );
     }
 
+    /**
+     * Product search field (WooCommerce Store API, published products).
+     *
+     * props: {
+     *   value:    product id (0 / undefined when none),
+     *   onChange: function (id, product) — product is the Store API object
+     *             ({ id, name, permalink, images, prices }) or null on clear,
+     *   label:    field label, help: optional help text
+     * }
+     */
+    function ProductPicker(props) {
+        var useState = wp.element.useState;
+        var useEffect = wp.element.useEffect;
+        var useRef = wp.element.useRef;
+        var ComboboxControl = wp.components.ComboboxControl;
+        var apiFetch = wp.apiFetch;
+
+        var found = useState([]);
+        var options = found[0];
+        var setOptions = found[1];
+        var timer = useRef(null);
+        var byId = useRef({});
+
+        function toOption(product) {
+            byId.current[String(product.id)] = product;
+            return { value: String(product.id), label: product.name };
+        }
+
+        // Show the saved product's name before any search.
+        useEffect(function () {
+            if (!props.value || byId.current[String(props.value)]) return;
+            apiFetch({ path: '/wc/store/v1/products/' + props.value })
+                .then(function (product) { setOptions([toOption(product)]); })
+                .catch(function () {});
+        }, [props.value]);
+
+        function search(term) {
+            if (timer.current) clearTimeout(timer.current);
+            if (!term || term.length < 2) return;
+            timer.current = setTimeout(function () {
+                apiFetch({ path: '/wc/store/v1/products?per_page=20&search=' + encodeURIComponent(term) })
+                    .then(function (list) { setOptions((list || []).map(toOption)); })
+                    .catch(function () {});
+            }, 250);
+        }
+
+        if (!ComboboxControl || !apiFetch) {
+            return el('p', {}, 'Ricerca prodotti non disponibile in questa versione di WordPress.');
+        }
+
+        return el(ComboboxControl, {
+            label: props.label || 'Prodotto',
+            help: props.help,
+            value: props.value ? String(props.value) : null,
+            options: options,
+            onFilterValueChange: search,
+            onChange: function (value) {
+                var id = value ? parseInt(value, 10) : 0;
+                props.onChange(id, id ? (byId.current[String(id)] || null) : null);
+            }
+        });
+    }
+
     window.ghEditorUtils = {
         el: el,
         Fragment: Fragment,
         listOps: listOps,
         ItemControls: ItemControls,
         MediaField: MediaField,
-        Placeholder: Placeholder
+        Placeholder: Placeholder,
+        ProductPicker: ProductPicker
     };
 })(window.wp);

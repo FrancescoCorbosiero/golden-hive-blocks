@@ -1,6 +1,13 @@
 <?php
 /**
  * Instagram Feed Block - Render lato server
+ *
+ * "Shop the look": un'immagine può avere dei punti (hotspots: productId, x,
+ * y in %) sui prodotti che si vedono nella foto. Ogni punto mostra nome e
+ * prezzo e apre l'anteprima rapida del prodotto (js/quick-view.js,
+ * data-ghb-quick-view); senza anteprima porta alla pagina prodotto.
+ * Un'immagine con punti non è più un link unico: il post Instagram resta
+ * raggiungibile dall'icona nell'angolo.
  */
 
 $title = $attributes['title'] ?? 'Seguici su Instagram';
@@ -25,8 +32,74 @@ $instagram_icon_filled = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="
     </div>
 
     <div class="gh-instagram-feed__grid" style="--gh-ig-columns: <?php echo esc_attr($columns); ?>;">
-        <?php foreach ($images as $index => $image) : ?>
-            <a href="<?php echo esc_url($instagram_url); ?>"
+        <?php foreach ($images as $index => $image) :
+            $post_url = !empty($image['link']) ? $image['link'] : $instagram_url;
+
+            // Shop the look: the products tagged on this picture.
+            $spots = array();
+            foreach ((array) ($image['hotspots'] ?? array()) as $spot) {
+                $spot_product = (!empty($spot['productId']) && function_exists('wc_get_product')) ? wc_get_product((int) $spot['productId']) : null;
+                if (!$spot_product || 'publish' !== $spot_product->get_status()) {
+                    continue;
+                }
+                $spots[] = array(
+                    'product' => $spot_product,
+                    'x'       => max(0, min(100, (float) ($spot['x'] ?? 50))),
+                    'y'       => max(0, min(100, (float) ($spot['y'] ?? 50))),
+                );
+            }
+
+            if ($spots && !empty($image['url'])) : ?>
+                <div class="gh-instagram-feed__cell gh-instagram-feed__cell--shop"
+                     data-gh-reveal="up"
+                     style="--gh-ig-delay: <?php echo esc_attr($index * 0.1); ?>s;">
+                    <?php echo gh_img(
+                        (int) ($image['urlId'] ?? 0),
+                        $image['url'],
+                        array(
+                            'class'   => 'gh-instagram-feed__image',
+                            'alt'     => $image['alt'] ?? '',
+                            'loading' => 'lazy',
+                        )
+                    ); ?>
+
+                    <span class="gh-ig-shop-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        Acquista il look
+                    </span>
+
+                    <?php foreach ($spots as $spot) :
+                        $spot_product = $spot['product'];
+                        $price_text   = html_entity_decode(wp_strip_all_tags($spot_product->get_price_html()));
+                        $spot_classes = 'gh-ig-hotspot'
+                            . ($spot['y'] < 35 ? ' gh-ig-hotspot--below' : '')
+                            . ($spot['x'] > 65 ? ' gh-ig-hotspot--left' : ($spot['x'] < 35 ? ' gh-ig-hotspot--right' : ''));
+                        ?>
+                        <a class="<?php echo esc_attr($spot_classes); ?>"
+                           href="<?php echo esc_url($spot_product->get_permalink()); ?>"
+                           data-ghb-quick-view
+                           data-product-id="<?php echo esc_attr($spot_product->get_id()); ?>"
+                           style="--x: <?php echo esc_attr($spot['x']); ?>%; --y: <?php echo esc_attr($spot['y']); ?>%;"
+                           aria-label="<?php echo esc_attr($spot_product->get_name() . ('' !== $price_text ? ', ' . $price_text : '')); ?>">
+                            <span class="gh-ig-hotspot__dot" aria-hidden="true"></span>
+                            <span class="gh-ig-hotspot__card" aria-hidden="true">
+                                <strong><?php echo esc_html($spot_product->get_name()); ?></strong>
+                                <?php if ('' !== $price_text) : ?>
+                                    <span><?php echo esc_html($price_text); ?></span>
+                                <?php endif; ?>
+                            </span>
+                        </a>
+                    <?php endforeach; ?>
+
+                    <?php if (!empty($post_url)) : ?>
+                        <a class="gh-ig-post-link" href="<?php echo esc_url($post_url); ?>" target="_blank" rel="noopener noreferrer" aria-label="Vedi il post su Instagram">
+                            <?php echo $instagram_icon; ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <?php continue;
+            endif; ?>
+            <a href="<?php echo esc_url($post_url); ?>"
                class="gh-instagram-feed__cell"
                target="_blank"
                rel="noopener noreferrer"

@@ -124,8 +124,10 @@
     });
 
     /* ── Open + fetch on quick-view button click (delegated) ── */
+    // Also any [data-ghb-quick-view][data-product-id] — the Instagram
+    // block's "Shop the look" tags.
     document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.rp-quick-view-btn');
+        var btn = e.target.closest('.rp-quick-view-btn, [data-ghb-quick-view][data-product-id]');
         if (!btn) return;
         e.preventDefault();
         e.stopPropagation();
@@ -309,6 +311,15 @@
     function renderCartControl(productId, p) {
         var slot = content.querySelector('.rp-qv-atc');
         if (!slot) return;
+
+        // A drop not out yet (includes/drops.php): say when, buy nothing.
+        if (p.drop && p.drop.ts * 1000 > Date.now()) {
+            var soon = el('button', 'rp-qv-add', p.drop.label || 'In arrivo');
+            soon.type = 'button';
+            soon.disabled = true;
+            slot.appendChild(soon);
+            return;
+        }
 
         if (p.type === 'variable') {
             if (!Array.isArray(p.sizes) || !p.sizes.length) {

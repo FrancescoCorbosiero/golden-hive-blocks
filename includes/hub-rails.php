@@ -926,19 +926,7 @@ function ghb_hub_rest_history(WP_REST_Request $request)
 function ghb_hub_purge_page_cache(int $page_id): void
 {
     clean_post_cache($page_id);
-    do_action('litespeed_purge_all');
-    if (function_exists('rocket_clean_domain')) {
-        rocket_clean_domain();
-    }
-    if (function_exists('w3tc_flush_all')) {
-        w3tc_flush_all();
-    }
-    if (function_exists('wp_cache_clear_cache')) {
-        wp_cache_clear_cache();
-    }
-    if (function_exists('sg_cachepress_purge_cache')) {
-        sg_cachepress_purge_cache();
-    }
+    ghb_purge_page_caches();
     do_action('ghb_hub_page_published', $page_id);
 }
 

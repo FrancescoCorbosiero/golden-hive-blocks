@@ -406,6 +406,10 @@ function ghb_quick_view_handler() {
         'type'        => $product->get_type(),
         'purchasable' => $product->is_purchasable() && $product->is_in_stock(),
         'sizes'       => $sizes,
+        // A drop not out yet (includes/drops.php): the modal says when.
+        'drop'        => (function_exists('ghb_drop_is_locked') && ghb_drop_is_locked($product_id))
+            ? ['ts' => ghb_drop_ts($product_id), 'label' => ghb_drop_card_label(ghb_drop_ts($product_id))]
+            : null,
     ]);
 }
 

@@ -2,12 +2,18 @@
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 3,
     "name": "golden-hive/newsletter",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "title": "Newsletter",
     "category": "golden-hive",
     "icon": "email",
-    "description": "Sezione iscrizione newsletter elegante per la tua mailing list.",
-    "keywords": ["newsletter", "email", "iscrizione", "mailing", "subscribe"],
+    "description": "Sezione iscrizione newsletter, con gli avvisi \"è arrivata la tua taglia\" (conferma via email).",
+    "keywords": [
+        "newsletter",
+        "email",
+        "iscrizione",
+        "mailing",
+        "subscribe"
+    ],
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "title": {
@@ -29,10 +35,25 @@
         "disclaimer": {
             "type": "string",
             "default": "Rispettiamo la tua privacy. Puoi cancellarti in qualsiasi momento."
+        },
+        "askSize": {
+            "type": "boolean",
+            "default": true
+        },
+        "sizeLabel": {
+            "type": "string",
+            "default": "Avvisami quando arriva la mia taglia"
+        },
+        "askBrands": {
+            "type": "boolean",
+            "default": false
         }
     },
     "supports": {
-        "align": ["wide", "full"],
+        "align": [
+            "wide",
+            "full"
+        ],
         "html": false,
         "spacing": {
             "margin": true,

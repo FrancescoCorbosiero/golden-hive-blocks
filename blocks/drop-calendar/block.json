@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "golden-hive/drop-calendar",
+    "version": "1.0.0",
+    "title": "Drop Calendar",
+    "category": "golden-hive",
+    "icon": "calendar-alt",
+    "description": "Calendario dei prossimi drop: i prodotti con una data di uscita, con conto alla rovescia, \"Ricordamelo\" e \"Acquista ora\" all'uscita.",
+    "keywords": ["drop", "calendario", "release", "uscite", "countdown"],
+    "textdomain": "golden-hive-blocks",
+    "attributes": {
+        "eyebrow": {
+            "type": "string",
+            "default": "Calendario drop"
+        },
+        "title": {
+            "type": "string",
+            "default": "Le prossime uscite"
+        },
+        "subtitle": {
+            "type": "string",
+            "default": "Segna la data: ti ricordiamo noi quando escono."
+        },
+        "limit": {
+            "type": "number",
+            "default": 6
+        },
+        "showReleased": {
+            "type": "boolean",
+            "default": true
+        },
+        "emptyText": {
+            "type": "string",
+            "default": ""
+        }
+    },
+    "supports": {
+        "align": ["wide", "full"],
+        "html": false,
+        "spacing": {
+            "margin": true,
+            "padding": true
+        }
+    },
+    "example": {},
+    "editorScript": "file:./editor.js",
+    "render": "file:./render.php"
+}

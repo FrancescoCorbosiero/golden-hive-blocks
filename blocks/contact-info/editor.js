@@ -1,7 +1,7 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
     const { InspectorControls, useBlockProps } = wp.blockEditor;
-    const { PanelBody, TextControl, TextareaControl } = wp.components;
+    const { PanelBody, TextControl, TextareaControl, ToggleControl } = wp.components;
     const utils = window.ghEditorUtils;
     const el = utils.el;
     const Fragment = utils.Fragment;
@@ -9,7 +9,7 @@
 
     registerBlockType('golden-hive/contact-info', {
         edit: function({ attributes, setAttributes }) {
-            const { title, subtitle, address, vat, phone, email, mapUrl, mapEmbed } = attributes;
+            const { title, subtitle, address, vat, phone, email, mapUrl, mapEmbed, clickToLoad } = attributes;
             const blockProps = useBlockProps();
 
             return el(Fragment, {},
@@ -59,6 +59,12 @@
                             help: 'Incolla il codice iframe di Google Maps.',
                             value: mapEmbed,
                             onChange: function(val) { setAttributes({ mapEmbed: val }); }
+                        }),
+                        el(ToggleControl, {
+                            label: 'Carica la mappa al clic',
+                            help: 'Consigliato: la pagina è più leggera e Google non imposta cookie finché il visitatore non apre la mappa.',
+                            checked: clickToLoad !== false,
+                            onChange: function(val) { setAttributes({ clickToLoad: val }); }
                         })
                     )
                 ),

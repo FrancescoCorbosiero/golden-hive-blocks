@@ -7,7 +7,13 @@
     "category": "golden-hive",
     "icon": "clock",
     "description": "Orari di apertura del negozio con layout elegante.",
-    "keywords": ["orari", "apertura", "negozio", "hours", "opening"],
+    "keywords": [
+        "orari",
+        "apertura",
+        "negozio",
+        "hours",
+        "opening"
+    ],
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "title": {
@@ -17,22 +23,53 @@
         "hours": {
             "type": "array",
             "default": [
-                { "day": "Lunedì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
-                { "day": "Martedì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
-                { "day": "Mercoledì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
-                { "day": "Giovedì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
-                { "day": "Venerdì", "time": "10.30 - 13.00 | 15.30 - 19.30" },
-                { "day": "Sabato", "time": "10.30 - 13.00 | 15.30 - 19.30" },
-                { "day": "Domenica", "time": "Chiuso" }
+                {
+                    "day": "Lunedì",
+                    "time": "10.30 - 13.00 | 15.30 - 19.30"
+                },
+                {
+                    "day": "Martedì",
+                    "time": "10.30 - 13.00 | 15.30 - 19.30"
+                },
+                {
+                    "day": "Mercoledì",
+                    "time": "10.30 - 13.00 | 15.30 - 19.30"
+                },
+                {
+                    "day": "Giovedì",
+                    "time": "10.30 - 13.00 | 15.30 - 19.30"
+                },
+                {
+                    "day": "Venerdì",
+                    "time": "10.30 - 13.00 | 15.30 - 19.30"
+                },
+                {
+                    "day": "Sabato",
+                    "time": "10.30 - 13.00 | 15.30 - 19.30"
+                },
+                {
+                    "day": "Domenica",
+                    "time": "Chiuso"
+                }
             ]
         },
         "note": {
             "type": "string",
             "default": ""
+        },
+        "closedOnHolidays": {
+            "type": "boolean",
+            "default": true
+        },
+        "closedDates": {
+            "type": "string",
+            "default": ""
         }
     },
     "supports": {
-        "align": ["wide"],
+        "align": [
+            "wide"
+        ],
         "html": false,
         "spacing": {
             "margin": true,

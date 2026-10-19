@@ -148,11 +148,12 @@ function ghb_product_page_assets()
         GOLDEN_HIVE_BLOCKS_VERSION
     );
 
-    // After product-rail.js (window.ghbProductRail wires the fetched rail).
+    // After product-rail.js (window.ghbProductRail wires the fetched rail) and
+    // calendar.js (the delivery estimate's days and holidays).
     wp_enqueue_script(
         'golden-hive-product-page',
         gh_asset_url('js/product-page.js'),
-        array('golden-hive-product-rail'),
+        array('golden-hive-product-rail', 'ghb-calendar'),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')
     );
@@ -540,6 +541,7 @@ function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
 
     $checkbox('ghb_pp_colorways', 'yes', 'Mostra "Altre colorway"', 'Sotto il prodotto, gli altri prodotti dello stesso modello (attributo Modello).');
     $checkbox('ghb_pp_band', 'yes', 'Mostra "Non trovi la tua taglia?" e "Acquista con fiducia"', 'Sotto la descrizione del prodotto: le taglie esaurite diventano richieste su WhatsApp, accanto ad autenticità, spedizione, reso e pagamenti. I testi riprendono le FAQ della homepage.');
+    $checkbox('ghb_pp_sold_count', 'yes', 'Mostra "Venduto N volte negli ultimi 30 giorni"', 'Sotto il prezzo, da 2 vendite in su: conta gli ordini pagati di quel prodotto (qualsiasi taglia).');
     $checkbox('ghb_pp_recent', 'yes', 'Mostra "Visti di recente"', 'In fondo alla pagina, i prodotti che il cliente ha guardato. Restano nel suo browser: nessun dato personale sul sito.');
 
     $wp_customize->add_setting('ghb_whatsapp_number', array(

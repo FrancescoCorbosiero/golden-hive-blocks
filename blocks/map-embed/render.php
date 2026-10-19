@@ -36,9 +36,27 @@ $container_style = sprintf(
     absint( $height ),
     absint( $border_radius )
 );
+
+/*
+ * Click to load (default): the map loads when the visitor asks, so the page
+ * is lighter and Google sets no cookie before then (gh_map_facade). "Apri in
+ * Google Maps" opens the address, or the embed itself full-page.
+ */
+$facade = '';
+if ( $attributes['clickToLoad'] ?? true ) {
+    $address  = trim( (string) ( $attributes['address'] ?? '' ) );
+    $open_url = '';
+    if ( '' === $address && preg_match( '/\ssrc="([^"]+)"/i', $safe_embed, $m ) ) {
+        $open_url = html_entity_decode( $m[1] );
+    }
+    $facade = gh_map_facade( $safe_embed, array(
+        'address'  => $address,
+        'open_url' => $open_url,
+    ) );
+}
 ?>
 <section <?php echo get_block_wrapper_attributes( array( 'class' => 'gh-block gh-map-embed' ) ); ?> data-gh-reveal="up">
     <div style="<?php echo esc_attr( $container_style ); ?>">
-        <?php echo $safe_embed; ?>
+        <?php echo '' !== $facade ? $facade : $safe_embed; // Sanitised iframe (wp_kses / gh_map_facade). ?>
     </div>
 </section>
