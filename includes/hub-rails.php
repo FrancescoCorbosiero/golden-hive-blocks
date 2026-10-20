@@ -415,6 +415,8 @@ function ghb_hub_rail_payload(string $key, string $path, array $block, array $ra
         'fallback_default' => $rail['fallback_default'],
         'editable'         => empty($atts['ids']),
         'fields'           => (object) (ghb_hub_fields_of($block) ?? array()),
+        // Switched off from the Vetrina: on the page, rendering nothing.
+        'hidden'           => !empty($attrs['hidden']),
     );
     if ($with_products) {
         $payload['products'] = ghb_hub_product_cards(ghb_hub_rail_ids($atts, true));
@@ -495,6 +497,147 @@ function ghb_hub_field_error(array $applied, array $spec): WP_Error
     return new WP_Error('ghb_bad_field', $message, array('status' => 400, 'field' => $field, 'reason' => $applied['error']));
 }
 
+/**
+ * The term a section's new source names, looked up the way the rail query
+ * reads it: a category in product_cat; a brand in whichever brand taxonomy
+ * holds that slug (product_brand, pwb-brand, pa_brand); a tag in product_tag.
+ *
+ * @return WP_Term|WP_Error
+ */
+function ghb_hub_source_term(array $source)
+{
+    $taxonomies = array(
+        'category' => array('product_cat'),
+        'brand'    => array('product_brand', 'pwb-brand', 'pa_brand'),
+        'tag'      => array('product_tag'),
+    );
+    foreach ($taxonomies[$source['taxonomy']] as $taxonomy) {
+        if (!taxonomy_exists($taxonomy)) {
+            continue;
+        }
+        $term = get_term_by('slug', $source['slug'], $taxonomy);
+        if ($term instanceof WP_Term) {
+            return $term;
+        }
+    }
+    $where = array('category' => 'tra le categorie', 'brand' => 'tra i brand', 'tag' => 'tra i tag');
+    return new WP_Error(
+        'ghb_bad_source',
+        "Non trovo «{$source['slug']}» {$where[$source['taxonomy']]} del negozio.",
+        array('status' => 400)
+    );
+}
+
+/** A source the Hub sent, checked for shape and — a term — for existence. */
+function ghb_hub_checked_source($raw)
+{
+    $source = ghb_hub_parse_source($raw);
+    if (!$source) {
+        return new WP_Error('ghb_bad_source', 'Cosa mostra la sezione non è valido.', array('status' => 400));
+    }
+    if ('term' === $source['kind']) {
+        $term = ghb_hub_source_term($source);
+        if (is_wp_error($term)) {
+            return $term;
+        }
+        $source['term'] = $term;
+    }
+    return $source;
+}
+
+/**
+ * Where a section's button should point once the section shows something
+ * else — only when it pointed at what the section showed before ("Esplora le
+ * tendenze" still opening the old category would send customers to the wrong
+ * page). The new term's page, or the shop's for a shop-wide list; a link that
+ * was site-relative stays site-relative. Null: leave the button alone.
+ */
+function ghb_hub_followed_button(string $url, array $old_terms, array $source): ?string
+{
+    $path = static function ($link): string {
+        return untrailingslashit((string) wp_parse_url((string) $link, PHP_URL_PATH));
+    };
+    $current = $path($url);
+    if ('' === trim($url) || '' === $current) {
+        return null;
+    }
+    $pointed = false;
+    foreach ($old_terms['terms'] ?? array() as $term) {
+        if (!empty($term['link']) && $path($term['link']) === $current) {
+            $pointed = true;
+        }
+    }
+    if (!$pointed) {
+        return null;
+    }
+    if ('term' === $source['kind']) {
+        $link = get_term_link($source['term']);
+    } else {
+        $orderby = array('recent' => 'date', 'best_selling' => 'popularity', 'top_rated' => 'rating');
+        $link    = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/');
+        if (isset($orderby[$source['type']])) {
+            $link = add_query_arg('orderby', $orderby[$source['type']], $link);
+        }
+    }
+    if (is_wp_error($link) || !is_string($link) || '' === $link) {
+        return null;
+    }
+    return 0 === strpos(ltrim($url), '/') ? wp_make_link_relative($link) : $link;
+}
+
+/**
+ * Save the page's content as edited here. It is written back exactly as
+ * given — every change in it was made and checked by this bridge — so kses
+ * must not re-filter the page's own markup (its <style> block included) for a
+ * user without unfiltered_html. A normal wp_update_post, so the page gets a
+ * revision; then the rails' caches and the page caches are purged.
+ *
+ * @return WP_Post|WP_Error The page as saved.
+ */
+function ghb_hub_save_page_content(WP_Post $page, string $content)
+{
+    $kses = false !== has_filter('content_save_pre', 'wp_filter_post_kses');
+    if ($kses) {
+        kses_remove_filters();
+    }
+    // wp_update_post() unslashes its input: slash it, or every \u0022 escape in
+    // the block attributes would lose its backslash and break the page.
+    $result = wp_update_post(array('ID' => $page->ID, 'post_content' => wp_slash($content)), true);
+    if ($kses) {
+        kses_init_filters();
+    }
+    if (is_wp_error($result)) {
+        return new WP_Error('ghb_write_failed', $result->get_error_message(), array('status' => 500));
+    }
+
+    ghb_hub_bump_cache_gen();
+    ghb_hub_purge_page_cache((int) $page->ID);
+    $saved = get_post($page->ID);
+    return $saved instanceof WP_Post ? $saved : new WP_Error('ghb_write_failed', 'Pagina non trovata dopo il salvataggio.', array('status' => 500));
+}
+
+/** A rail's key in the page as saved, by the place it was written at. */
+function ghb_hub_key_at(WP_Post $page, string $path): ?string
+{
+    foreach (ghb_hub_page_rails(parse_blocks($page->post_content)) as $key => $entry) {
+        if ($entry['path'] === $path) {
+            return $key;
+        }
+    }
+    return null;
+}
+
+/** What this bridge can do: the Hub offers only that. */
+function ghb_hub_features(): array
+{
+    return array(
+        'homepage', 'rail', 'rail-visible', 'products', 'block-write', 'history',
+        'rail-pin', 'rail-exclude', 'rail-fallback', 'rail-limit', 'block-fields', 'archive-follow',
+        // 5.15.0: what a section shows, its switch, and the page's sections themselves.
+        'rail-source', 'rail-hidden', 'layout-insert', 'layout-remove', 'layout-arrange',
+    );
+}
+
 /* ==================================================================== *
  * 4. REST routes
  * ==================================================================== */
@@ -557,6 +700,11 @@ function ghb_hub_register_routes()
             'key'     => array('type' => 'string', 'required' => true),
         ),
     ));
+    register_rest_route(GHB_HUB_NS, '/homepage/layout', array(
+        'methods'             => WP_REST_Server::EDITABLE,
+        'permission_callback' => 'ghb_hub_permission',
+        'callback'            => 'ghb_hub_rest_layout',
+    ));
 }
 
 function ghb_hub_rest_capabilities()
@@ -565,7 +713,8 @@ function ghb_hub_rest_capabilities()
         'plugin'            => 'golden-hive-blocks',
         'version'           => GOLDEN_HIVE_BLOCKS_VERSION,
         'api'               => GHB_HUB_API,
-        'features'          => array('homepage', 'rail', 'rail-visible', 'products', 'block-write', 'history', 'rail-pin', 'rail-exclude', 'rail-fallback', 'rail-limit', 'block-fields', 'archive-follow'),
+        'features'          => ghb_hub_features(),
+        'rail_types'        => ghb_hub_rail_types(),
         'fields'            => (object) ghb_hub_editable_fields(),
         'fallbacks'         => ghb_hub_fallbacks(),
         'max_ids'           => GHB_HUB_MAX_IDS,
@@ -623,6 +772,8 @@ function ghb_hub_rest_homepage(WP_REST_Request $request)
         'link'         => get_permalink($page),
         'edit_link'    => admin_url('post.php?post=' . $page->ID . '&action=edit'),
         'modified_gmt' => $page->post_modified_gmt,
+        // With the page, so the Hub knows what it may offer without asking twice.
+        'features'     => ghb_hub_features(),
         'blocks'       => $items,
     ));
 }
@@ -750,8 +901,10 @@ function ghb_hub_validate_rail_input($input)
 
 /**
  * Write one block of the page: a rail's pin / exclude / fallback / limit
- * ("rail"), and/or the block's editable fields ("attrs", checked against
- * ghb_hub_editable_fields and sanitized by type).
+ * ("rail") — and, since 5.15.0, what it shows ("rail.source": another
+ * category, brand or tag, or a shop-wide list) — and/or the block's editable
+ * fields ("attrs", checked against ghb_hub_editable_fields and sanitized by
+ * type).
  *
  * Refuses rather than guesses at every step: the page must be the one the Hub
  * read (modified time), the block must be the one it read (path, name and an
@@ -786,19 +939,28 @@ function ghb_hub_rest_write_block(WP_REST_Request $request)
 
     $rail      = ghb_hub_rail_from_block($block);
     $new_attrs = $block['attrs'];
+    $source    = null;
 
     if (null !== $rail_input) {
         if (!$rail) {
             return new WP_Error('ghb_not_a_rail', 'Questo blocco non è una sezione prodotti.', array('status' => 422));
         }
-        if (!empty($rail['atts']['ids'])) {
-            return new WP_Error('ghb_fixed_list', 'Questa sezione mostra una lista fissa di prodotti.', array('status' => 422));
-        }
         $values = ghb_hub_validate_rail_input($rail_input);
         if (is_wp_error($values)) {
             return $values;
         }
-        $new_shortcode = ghb_hub_set_rail_atts($rail['shortcode'], $values);
+        // A new source replaces what the rail showed — a fixed list too, which
+        // otherwise only WordPress's editor changes.
+        if (is_array($rail_input) && array_key_exists('source', $rail_input)) {
+            $source = ghb_hub_checked_source($rail_input['source']);
+            if (is_wp_error($source)) {
+                return $source;
+            }
+        } elseif (!empty($rail['atts']['ids'])) {
+            return new WP_Error('ghb_fixed_list', 'Questa sezione mostra una lista fissa di prodotti.', array('status' => 422));
+        }
+        $base          = $source ? ghb_hub_set_rail_source($rail['shortcode'], $source) : $rail['shortcode'];
+        $new_shortcode = null === $base ? null : ghb_hub_set_rail_atts($base, $values);
         if (null === $new_shortcode) {
             return new WP_Error('ghb_unwritable', 'Lo shortcode della sezione non si può riscrivere in sicurezza.', array('status' => 422));
         }
@@ -821,6 +983,15 @@ function ghb_hub_rest_write_block(WP_REST_Request $request)
         $new_attrs = $applied['attrs'];
     }
 
+    // Pointed elsewhere, the section's button follows — unless this write sets it.
+    $followed = null;
+    if ($source && !(is_array($field_input) && array_key_exists('buttonUrl', $field_input))) {
+        $followed = ghb_hub_followed_button((string) ($new_attrs['buttonUrl'] ?? ''), ghb_hub_rail_terms(ghb_hub_rail_atts($rail['atts'])), $source);
+        if (null !== $followed) {
+            $new_attrs['buttonUrl'] = $followed;
+        }
+    }
+
     $dry_run  = (bool) $request->get_param('dry_run');
     $response = array(
         'dry_run' => $dry_run,
@@ -830,6 +1001,9 @@ function ghb_hub_rest_write_block(WP_REST_Request $request)
         'after'   => $rail ? (string) ($new_attrs['shortcode'] ?? '') : '',
         'fields'  => (object) (ghb_hub_fields_of(array('blockName' => $block['blockName'], 'attrs' => $new_attrs)) ?? array()),
     );
+    if (null !== $followed) {
+        $response['button_url'] = $followed;
+    }
 
     $replaced = ghb_hub_replace_block_attrs($page->post_content, $block['blockName'], $block['attrs'], $new_attrs, 'serialize_block_attributes');
     if (!$replaced['ok']) {
@@ -848,32 +1022,201 @@ function ghb_hub_rest_write_block(WP_REST_Request $request)
         return rest_ensure_response($response);
     }
 
-    // The content is written back exactly as read except for one attribute we
-    // validated, so the page's own markup (the <style> block included) must
-    // not be re-filtered by kses for a user without unfiltered_html.
-    $kses = false !== has_filter('content_save_pre', 'wp_filter_post_kses');
-    if ($kses) {
-        kses_remove_filters();
+    $page = ghb_hub_save_page_content($page, $replaced['content']);
+    if (is_wp_error($page)) {
+        return $page;
     }
-    // wp_update_post() unslashes its input: slash it, or every \u0022 escape in
-    // the block attributes would lose its backslash and break the page.
-    $result = wp_update_post(array('ID' => $page->ID, 'post_content' => wp_slash($replaced['content'])), true);
-    if ($kses) {
-        kses_init_filters();
-    }
-    if (is_wp_error($result)) {
-        return new WP_Error('ghb_write_failed', $result->get_error_message(), array('status' => 500));
-    }
-
-    ghb_hub_bump_cache_gen();
-    ghb_hub_purge_page_cache((int) $page->ID);
-
-    $page = get_post($page->ID);
     $response['modified_gmt'] = $page->post_modified_gmt;
     $response['attrs_hash']   = ghb_hub_attrs_hash($new_attrs);
     $response['rendered']     = $rail
         ? ghb_hub_rail_ids(ghb_hub_rail_atts(ghb_hub_parse_shortcode((string) $new_attrs['shortcode'])['atts']), true)
         : array();
+    if ($rail) {
+        // What the rail is called now: a new source is a new key.
+        $response['key'] = ghb_hub_key_at($page, $path);
+    }
+    return rest_ensure_response($response);
+}
+
+/** A rail of the page as the Hub read it ({ path, attrs_hash }), or why it is not that any more. */
+function ghb_hub_rail_ref(array $rails, $ref)
+{
+    if (!is_array($ref)) {
+        return new WP_Error('ghb_bad_input', 'Sezione mancante.', array('status' => 400));
+    }
+    $path = (string) ($ref['path'] ?? '');
+    foreach ($rails as $key => $entry) {
+        if ($entry['path'] !== $path) {
+            continue;
+        }
+        if ((string) ($ref['attrs_hash'] ?? '') !== ghb_hub_attrs_hash($entry['block']['attrs'])) {
+            return new WP_Error('ghb_block_changed', 'La sezione è stata modificata nel frattempo: ricarica.', array('status' => 409));
+        }
+        return $entry + array('key' => $key);
+    }
+    return new WP_Error('ghb_block_moved', 'La sezione non è più in quella posizione: ricarica.', array('status' => 409));
+}
+
+/**
+ * A new rail block from what the Hub sends, every value checked: what it
+ * shows (a term must exist in the shop), how many products, its layout (the
+ * rail it is placed next to, unless given), its pins, exclusions and
+ * fallback, and its texts — the same fields, cleaned the same way, as an edit.
+ *
+ * @return array|WP_Error ['blockName' => …, 'attrs' => …]
+ */
+function ghb_hub_build_new_rail($rail_input, $field_input, array $neighbour_atts)
+{
+    if (!is_array($rail_input)) {
+        return new WP_Error('ghb_bad_input', 'Dati della sezione mancanti.', array('status' => 400));
+    }
+    $source = ghb_hub_checked_source($rail_input['source'] ?? null);
+    if (is_wp_error($source)) {
+        return $source;
+    }
+    $values = ghb_hub_validate_rail_input($rail_input);
+    if (is_wp_error($values)) {
+        return $values;
+    }
+    $limit     = $values['limit'] ?? max(1, (int) ($neighbour_atts['limit'] ?? 12));
+    $layout    = isset($rail_input['layout']) && is_array($rail_input['layout']) ? $rail_input['layout'] : array();
+    $shortcode = ghb_hub_new_rail_shortcode($source, $limit, $neighbour_atts, $layout, $values);
+    if (null === $shortcode) {
+        return new WP_Error('ghb_unwritable', 'Lo shortcode della sezione non si può scrivere in sicurezza.', array('status' => 422));
+    }
+    $spec    = ghb_hub_editable_fields()[GHB_HUB_RAIL_BLOCK] ?? array();
+    $applied = ghb_hub_apply_fields(
+        array(),
+        is_array($field_input) ? $field_input : array(),
+        $spec,
+        ghb_hub_field_defaults(GHB_HUB_RAIL_BLOCK, $spec),
+        'ghb_hub_clean_field'
+    );
+    if (!$applied['ok']) {
+        return ghb_hub_field_error($applied, $spec);
+    }
+    return array('blockName' => GHB_HUB_RAIL_BLOCK, 'attrs' => ghb_hub_new_rail_attrs($shortcode, $applied['attrs']));
+}
+
+/** Why a layout edit was refused, in the words the Hub shows. */
+function ghb_hub_layout_error(array $edit): WP_Error
+{
+    switch ($edit['error'] ?? '') {
+        case 'duplicate':
+            return new WP_Error('ghb_duplicate_section', 'Nella homepage c\'è già una sezione identica: cambia il titolo o cosa mostra.', array('status' => 422));
+        case 'ambiguous':
+            return new WP_Error('ghb_block_not_unique', 'La stessa sezione compare più volte nella pagina: modificala dall\'editor di WordPress.', array('status' => 422));
+        case 'not_a_permutation':
+            return new WP_Error('ghb_bad_input', 'Ogni sezione va messa una volta sola.', array('status' => 400));
+        default:
+            return new WP_Error('ghb_block_not_unique', 'La sezione non si trova nel contenuto salvato: ricarica.', array('status' => 422));
+    }
+}
+
+/**
+ * The page's sections themselves: add one ("insert", next to a section the
+ * Hub read), take one away ("remove"), or put them in another order
+ * ("arrange": every section of the page, each once, in its new order — the
+ * page keeps a place for each where it is, and each place takes the section
+ * that goes there now).
+ *
+ * The same refusals as a block write: the page must be the one the Hub read,
+ * every section named must be as the Hub read it, every delimiter is found
+ * exactly once. Only those delimiters change, through wp_update_post: the
+ * page gets a revision.
+ */
+function ghb_hub_rest_layout(WP_REST_Request $request)
+{
+    $page = ghb_hub_get_page($request->get_param('page_id'));
+    if (is_wp_error($page)) {
+        return $page;
+    }
+    if ((string) $request->get_param('expected_modified_gmt') !== $page->post_modified_gmt) {
+        return new WP_Error('ghb_stale_page', 'La homepage è stata modificata nel frattempo: ricarica.', array('status' => 409, 'modified_gmt' => $page->post_modified_gmt));
+    }
+
+    $rails     = ghb_hub_page_rails(parse_blocks($page->post_content));
+    $action    = (string) $request->get_param('action');
+    $serialize = 'serialize_block_attributes';
+    $added     = null;
+
+    switch ($action) {
+        case 'insert':
+            $anchor = ghb_hub_rail_ref($rails, $request->get_param('anchor'));
+            if (is_wp_error($anchor)) {
+                return $anchor;
+            }
+            $added = ghb_hub_build_new_rail($request->get_param('rail'), $request->get_param('attrs'), $anchor['rail']['atts']);
+            if (is_wp_error($added)) {
+                return $added;
+            }
+            $place = 'before' === $request->get_param('place') ? 'before' : 'after';
+            $edit  = ghb_hub_insert_block($page->post_content, $anchor['block'], $place, $added, $serialize);
+            break;
+
+        case 'remove':
+            $target = ghb_hub_rail_ref($rails, $request->get_param('target'));
+            if (is_wp_error($target)) {
+                return $target;
+            }
+            // The last one stays: a new section is always placed next to another.
+            if (count($rails) <= 1) {
+                return new WP_Error('ghb_last_rail', 'È l\'ultima sezione di prodotti della homepage: si toglie dall\'editor di WordPress.', array('status' => 422));
+            }
+            $edit = ghb_hub_remove_block($page->post_content, $target['block'], $serialize);
+            break;
+
+        case 'arrange':
+            $wanted = $request->get_param('order');
+            if (!is_array($wanted) || count($wanted) !== count($rails)) {
+                return new WP_Error('ghb_stale_page', 'Le sezioni della homepage sono cambiate nel frattempo: ricarica.', array('status' => 409));
+            }
+            $slots = array_values($rails);
+            $paths = array_column($slots, 'path');
+            $order = array();
+            foreach ($wanted as $ref) {
+                $entry = ghb_hub_rail_ref($rails, $ref);
+                if (is_wp_error($entry)) {
+                    return $entry;
+                }
+                $order[] = (int) array_search($entry['path'], $paths, true);
+            }
+            $edit = ghb_hub_arrange_blocks($page->post_content, array_column($slots, 'block'), $order, $serialize);
+            break;
+
+        default:
+            return new WP_Error('ghb_bad_input', 'Azione non riconosciuta.', array('status' => 400));
+    }
+    if (!$edit['ok']) {
+        return ghb_hub_layout_error($edit);
+    }
+
+    $dry_run  = (bool) $request->get_param('dry_run');
+    $response = array(
+        'dry_run' => $dry_run,
+        'changed' => $edit['content'] !== $page->post_content,
+        'action'  => $action,
+    );
+    if ($dry_run || !$response['changed']) {
+        $response['modified_gmt'] = $page->post_modified_gmt;
+        return rest_ensure_response($response);
+    }
+
+    $page = ghb_hub_save_page_content($page, $edit['content']);
+    if (is_wp_error($page)) {
+        return $page;
+    }
+    $response['modified_gmt'] = $page->post_modified_gmt;
+    if ($added) {
+        // The new section as the page now reads it: its key and its place.
+        foreach (ghb_hub_page_rails(parse_blocks($page->post_content)) as $key => $entry) {
+            if ($entry['block']['attrs'] === $added['attrs']) {
+                $response['key']  = $key;
+                $response['path'] = $entry['path'];
+                break;
+            }
+        }
+    }
     return rest_ensure_response($response);
 }
 

@@ -10,7 +10,9 @@ $bg_color = $attributes['backgroundColor'] ?? 'white';
 $button_text = $attributes['buttonText'] ?? '';
 $button_url = $attributes['buttonUrl'] ?? '';
 
-if (empty($shortcode)) {
+// Spenta dalla Vetrina dello Store Hub: la sezione resta nella pagina, con i
+// suoi prodotti e il loro ordine, ma sul sito non mostra nulla.
+if (empty($shortcode) || !empty($attributes['hidden'])) {
     return;
 }
 

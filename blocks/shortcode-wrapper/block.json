@@ -33,6 +33,10 @@
         "buttonUrl": {
             "type": "string",
             "default": ""
+        },
+        "hidden": {
+            "type": "string",
+            "default": ""
         }
     },
     "supports": {

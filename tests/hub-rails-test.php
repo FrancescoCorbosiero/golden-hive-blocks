@@ -309,6 +309,188 @@ foreach (ghb_hub_leaf_blocks(parse_blocks($retitled['content'])) as $i => $leaf)
 }
 
 /* ---------------------------------------------------------------- *
+ * The section's switch.
+ * ---------------------------------------------------------------- */
+
+$defs_hidden = $defs + array('hidden' => '');
+$off = ghb_hub_apply_fields($saldi_block['attrs'], array('hidden' => 'yes'), $wrap, $defs_hidden, $clean);
+same($off['attrs']['hidden'] ?? null, 'yes', 'a section can be switched off');
+same($off['attrs']['shortcode'], $saldi_shortcode, 'switching off keeps the rail as it is');
+$on = ghb_hub_apply_fields($off['attrs'], array('hidden' => ''), $wrap, $defs_hidden, $clean);
+check(!array_key_exists('hidden', $on['attrs']), 'switched on again, the attribute goes (it is the default)');
+same($on['attrs'], $saldi_block['attrs'], 'and the block is as it was');
+same(ghb_hub_apply_fields($saldi_block['attrs'], array('hidden' => 'no'), $wrap, $defs_hidden, $clean)['error'] ?? null, 'not_an_option', 'the switch takes "yes" or nothing');
+
+/* ---------------------------------------------------------------- *
+ * What a section shows.
+ * ---------------------------------------------------------------- */
+
+same(ghb_hub_parse_source(array('taxonomy' => 'category', 'slug' => 'saldi')), array('kind' => 'term', 'taxonomy' => 'category', 'slug' => 'saldi'), 'a category source is read');
+same(ghb_hub_parse_source(array('taxonomy' => 'brand', 'slug' => 'nike-dunk')), array('kind' => 'term', 'taxonomy' => 'brand', 'slug' => 'nike-dunk'), 'a brand source is read');
+same(ghb_hub_parse_source(array('type' => 'Best_Selling ')), array('kind' => 'type', 'type' => 'best_selling'), 'a shop-wide list is read, any case');
+same(ghb_hub_parse_source(array('taxonomy' => 'category', 'slug' => 'caff%c3%a8')), array('kind' => 'term', 'taxonomy' => 'category', 'slug' => 'caff%c3%a8'), 'a slug with an accented letter, as WordPress escapes it, is read');
+foreach (
+    array(
+        'no source'          => null,
+        'unknown taxonomy'   => array('taxonomy' => 'product_cat', 'slug' => 'saldi'),
+        'empty slug'         => array('taxonomy' => 'category', 'slug' => ''),
+        'a quote'            => array('taxonomy' => 'category', 'slug' => 'a"b'),
+        'a bracket'          => array('taxonomy' => 'brand', 'slug' => 'nike]'),
+        'a space'            => array('taxonomy' => 'tag', 'slug' => 'two words'),
+        'unknown list'       => array('type' => 'random'),
+        'a list that is not' => array('type' => array('recent')),
+    ) as $what => $raw
+) {
+    same(ghb_hub_parse_source($raw), null, "a source is refused: {$what}");
+}
+
+$offerta = $rails['category:saldi-sneakers-in-offerta#0']['rail'];
+$as_dunk = ghb_hub_set_rail_source($with_pins, array('kind' => 'term', 'taxonomy' => 'brand', 'slug' => 'nike-dunk'));
+same(
+    $as_dunk,
+    '[gh_product_rail brand="nike-dunk" limit="18" columns="4" columns_tablet="3"]',
+    'a new source takes the old one\'s place; pins, exclusions and fallback go with the old products'
+);
+same(
+    ghb_hub_set_rail_source($offerta['shortcode'], array('kind' => 'type', 'type' => 'best_selling')),
+    '[gh_product_rail type="best_selling" limit="18" columns="4" columns_tablet="3"]',
+    'a section can show a shop-wide list'
+);
+same(
+    ghb_hub_set_rail_source('[gh_product_rail type="sale" category="saldi" limit="9"]', array('kind' => 'term', 'taxonomy' => 'tag', 'slug' => 'estate')),
+    '[gh_product_rail tag="estate" limit="9"]',
+    'every attribute that said what the rail showed goes, a type alongside a category too'
+);
+same(
+    ghb_hub_set_rail_source('[gh_product_rail limit="9"]', array('kind' => 'term', 'taxonomy' => 'category', 'slug' => 'saldi')),
+    '[gh_product_rail category="saldi" limit="9"]',
+    'a rail that named no source gets one, first'
+);
+same(ghb_hub_set_rail_source('[gh_size_rail limit="9"]', array('kind' => 'type', 'type' => 'recent')), null, 'only gh_product_rail is pointed elsewhere');
+same(
+    ghb_hub_set_rail_atts($as_dunk, array('pin' => array(5, 6), 'exclude' => array(), 'fallback' => 'date')),
+    '[gh_product_rail brand="nike-dunk" limit="18" columns="4" columns_tablet="3" pin="5,6" fallback="date"]',
+    'the new products\' pins and fallback are written over the new source'
+);
+same(ghb_hub_default_fallback(ghb_hub_parse_shortcode(
+    (string) ghb_hub_set_rail_source($saldi['shortcode'], array('kind' => 'type', 'type' => 'recent'))
+)['atts']), 'date', 'a shop-wide list of the newest falls back to the newest');
+
+/* ---------------------------------------------------------------- *
+ * A new section.
+ * ---------------------------------------------------------------- */
+
+same(ghb_hub_clean_layout_value('columns', '5'), '5', 'columns 1-8 are kept');
+same(ghb_hub_clean_layout_value('columns', '9'), null, 'columns past 8 are refused');
+same(ghb_hub_clean_layout_value('ratio', '3/4'), '3/4', 'a ratio is kept');
+same(ghb_hub_clean_layout_value('ratio', '3/4"]'), null, 'a ratio that breaks out is refused');
+same(ghb_hub_clean_layout_value('fit', 'Cover'), 'cover', 'a fit is kept');
+
+$new_shortcode = ghb_hub_new_rail_shortcode(
+    array('kind' => 'term', 'taxonomy' => 'brand', 'slug' => 'jordan'),
+    12,
+    $saldi['atts'],
+    array(),
+    array()
+);
+same($new_shortcode, '[gh_product_rail brand="jordan" limit="12" columns="4" columns_tablet="3"]', 'a new rail takes its neighbour\'s layout');
+same(
+    ghb_hub_new_rail_shortcode(array('kind' => 'type', 'type' => 'sale'), 500, $saldi['atts'], array('columns' => '5', 'fit' => 'cover', 'ratio' => 'x'), array('pin' => array(3, 1), 'fallback' => 'popularity')),
+    '[gh_product_rail type="sale" limit="100" columns="5" columns_tablet="3" fit="cover" pin="3,1" fallback="popularity"]',
+    'its own layout wins over its neighbour\'s, a bad value is left out, the size is capped, its order is written'
+);
+
+$texts_new = ghb_hub_apply_fields(array(), array('title' => 'JORDAN', 'eyebrow' => 'Air Jordan 1, 4, 11', 'backgroundColor' => 'gray'), $wrap, $defs_hidden, $clean);
+$jordan    = array('blockName' => GHB_HUB_RAIL_BLOCK, 'attrs' => ghb_hub_new_rail_attrs((string) $new_shortcode, $texts_new['attrs']));
+same(array_keys($jordan['attrs']), array('eyebrow', 'title', 'shortcode', 'backgroundColor'), 'a new rail block lists its attributes as the editor does');
+
+$inserted = ghb_hub_insert_block($html, $saldi_block, 'after', $jordan, 'serialize_block_attributes');
+check($inserted['ok'], 'a section is added after SALDI', $inserted);
+$inserted_blocks = parse_blocks($inserted['content']);
+$inserted_rails  = ghb_hub_page_rails($inserted_blocks);
+same(count($inserted_rails), 10, 'the page has one more rail');
+same($inserted_rails['brand:jordan#0']['path'], '8.2', 'right after SALDI, inside the same group');
+same($inserted_rails['brand:jordan#0']['block']['attrs'], $jordan['attrs'], 'with exactly the attributes written');
+same($inserted_rails['category:saldi-sneakers-in-offerta#0']['path'], '8.3', 'the next section moved one place down');
+same(count(ghb_hub_leaf_blocks($inserted_blocks)), count($before_leaves) + 1, 'every other block is still there');
+same(
+    $inserted['content'],
+    str_replace(
+        ghb_hub_block_delimiter($saldi_block['blockName'], $saldi_block['attrs'], 'serialize_block_attributes'),
+        ghb_hub_block_delimiter($saldi_block['blockName'], $saldi_block['attrs'], 'serialize_block_attributes') . "\n\n" . ghb_hub_block_delimiter($jordan['blockName'], $jordan['attrs'], 'serialize_block_attributes'),
+        $html
+    ),
+    'and nothing but the new block and its blank line was added'
+);
+
+$tendenza_block = $rails['category:featured-sneakers-originali-streetwear#0']['block'];
+$first          = ghb_hub_insert_block($html, $tendenza_block, 'before', $jordan, 'serialize_block_attributes');
+same(ghb_hub_page_rails(parse_blocks($first['content']))['brand:jordan#0']['path'], '8.0', 'a section can go first');
+same(array_keys(ghb_hub_page_rails(parse_blocks($first['content'])))[0], 'brand:jordan#0', 'and is the first rail of the page');
+
+$asics_block = $rails['brand:asics#0']['block'];
+$last        = ghb_hub_insert_block($html, $asics_block, 'after', $jordan, 'serialize_block_attributes');
+same(ghb_hub_page_rails(parse_blocks($last['content']))['brand:jordan#0']['path'], '12.3', 'or last, still inside the group');
+check(false !== strpos($last['content'], ghb_hub_block_delimiter($jordan['blockName'], $jordan['attrs'], 'serialize_block_attributes') . '</div>'), 'closing the group right after it');
+
+same(ghb_hub_insert_block($html, $tendenza_block, 'after', $saldi_block, 'serialize_block_attributes')['error'] ?? null, 'duplicate', 'a section identical to one on the page is refused');
+same(ghb_hub_insert_block($html, array('blockName' => GHB_HUB_RAIL_BLOCK, 'attrs' => array('shortcode' => 'gone')), 'after', $jordan, 'serialize_block_attributes')['error'] ?? null, 'not_found', 'next to a block that is not there: refused');
+same(ghb_hub_insert_block($doubled, $saldi_block, 'after', $jordan, 'serialize_block_attributes')['error'] ?? null, 'ambiguous', 'next to a block present twice: refused');
+
+/* ---------------------------------------------------------------- *
+ * Taking a section away.
+ * ---------------------------------------------------------------- */
+
+$removed = ghb_hub_remove_block($html, $saldi_block, 'serialize_block_attributes');
+check($removed['ok'], 'SALDI can be taken off the page', $removed);
+$removed_rails = ghb_hub_page_rails(parse_blocks($removed['content']));
+check(!isset($removed_rails['category:saldi-sneakers-outlet#0']), 'SALDI is gone');
+same(count($removed_rails), 8, 'the other eight rails stay');
+same($removed_rails['category:saldi-sneakers-in-offerta#0']['path'], '8.1', 'the next section moved up into its place');
+same(
+    strlen($html) - strlen($removed['content']),
+    strlen(ghb_hub_block_delimiter($saldi_block['blockName'], $saldi_block['attrs'], 'serialize_block_attributes')) + 2,
+    'exactly the block and one blank line went'
+);
+same(ghb_hub_insert_block($removed['content'], $tendenza_block, 'after', $saldi_block, 'serialize_block_attributes')['content'] ?? null, $html, 'put back after its old neighbour, the page is byte for byte as before');
+
+$af1_block = $rails['brand:nike-air-force-1#0']['block'];
+$no_af1    = ghb_hub_remove_block($html, $af1_block, 'serialize_block_attributes');
+check(false !== strpos($no_af1['content'], ghb_hub_block_delimiter($rails['brand:nike-off-white#0']['block']['blockName'], $rails['brand:nike-off-white#0']['block']['attrs'], 'serialize_block_attributes') . '</div>'), 'the last section of a group goes with the blank line before it');
+same(count(ghb_hub_page_rails(parse_blocks($no_af1['content']))), 8, 'and the page parses with eight rails');
+same(ghb_hub_remove_block($doubled, $saldi_block, 'serialize_block_attributes')['error'] ?? null, 'ambiguous', 'a block present twice is not taken away');
+
+/* ---------------------------------------------------------------- *
+ * The sections in another order.
+ * ---------------------------------------------------------------- */
+
+$slots  = array_values(array_map(static fn($entry) => $entry['block'], $rails));
+$keys   = array_keys($rails);
+$paths  = array_values(array_map(static fn($entry) => $entry['path'], $rails));
+// NUOVI ARRIVI first, the rest as they were.
+$order    = array(3, 0, 1, 2, 4, 5, 6, 7, 8);
+$arranged = ghb_hub_arrange_blocks($html, $slots, $order, 'serialize_block_attributes');
+check($arranged['ok'], 'the sections can be put in another order', $arranged);
+$arranged_blocks = parse_blocks($arranged['content']);
+$arranged_rails  = ghb_hub_page_rails($arranged_blocks);
+same(array_keys($arranged_rails), array_map(static fn($i) => $keys[$i], $order), 'they read back in the new order');
+same(array_values(array_map(static fn($entry) => $entry['path'], $arranged_rails)), $paths, 'in the same places of the page: no section left its group');
+same(ghb_hub_block_at_path($arranged_blocks, '8.3')['blockName'], 'golden-hive/category-slider', 'the category slider did not move');
+foreach (ghb_hub_leaf_blocks($arranged_blocks) as $i => $leaf) {
+    if (!ghb_hub_rail_from_block($leaf[1])) {
+        same($leaf, $before_leaves[$i], 'not a section, not moved: ' . $leaf[0]);
+    }
+}
+same(strlen($arranged['content']), strlen($html), 'the page is as long as before');
+$back = ghb_hub_arrange_blocks($arranged['content'], array_map(static fn($i) => $slots[$i], $order), array(1, 2, 3, 0, 4, 5, 6, 7, 8), 'serialize_block_attributes');
+same($back['content'] ?? null, $html, 'arranged back, the page is byte for byte as before');
+$reversed = ghb_hub_arrange_blocks($html, $slots, array_reverse(range(0, 8)), 'serialize_block_attributes');
+same(array_keys(ghb_hub_page_rails(parse_blocks($reversed['content']))), array_reverse($keys), 'any order works, across groups too');
+same(ghb_hub_arrange_blocks($html, $slots, array(0, 0, 1, 2, 3, 4, 5, 6, 7), 'serialize_block_attributes')['error'], 'not_a_permutation', 'a rail twice is refused');
+same(ghb_hub_arrange_blocks($html, $slots, array(0, 1), 'serialize_block_attributes')['error'], 'not_a_permutation', 'every rail must be placed');
+same(ghb_hub_arrange_blocks($doubled, $slots, range(0, 8), 'serialize_block_attributes')['error'], 'ambiguous', 'a rail present twice is not moved');
+
+/* ---------------------------------------------------------------- *
  * The page template, pages/homepage.html.
  * ---------------------------------------------------------------- */
 
