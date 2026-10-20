@@ -415,8 +415,9 @@ function ghb_hub_rail_payload(string $key, string $path, array $block, array $ra
         'fallback_default' => $rail['fallback_default'],
         'editable'         => empty($atts['ids']),
         'fields'           => (object) (ghb_hub_fields_of($block) ?? array()),
-        // Switched off from the Vetrina: on the page, rendering nothing.
-        'hidden'           => !empty($attrs['hidden']),
+        // Switched off from the Vetrina: on the page, rendering nothing. (Not
+        // "hidden": /rail's answer lists the products hidden from it under that.)
+        'switched_off'     => !empty($attrs['hidden']),
     );
     if ($with_products) {
         $payload['products'] = ghb_hub_product_cards(ghb_hub_rail_ids($atts, true));
