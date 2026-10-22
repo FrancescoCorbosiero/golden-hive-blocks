@@ -37,6 +37,25 @@ function ghb_hub_fallbacks(): array
 }
 
 /**
+ * What a rail can show besides a category, a brand or a tag: the shop-wide
+ * lists of [gh_product_rail type="…"] (the newest, the best sellers, what is
+ * on sale, the featured, the best rated).
+ */
+function ghb_hub_rail_types(): array
+{
+    return array('recent', 'best_selling', 'sale', 'featured', 'top_rated');
+}
+
+/** The shortcode attributes that say what a rail shows. */
+const GHB_HUB_SOURCE_ATTS = array('category', 'brand', 'tag', 'ids', 'type');
+
+/** The shortcode attributes the Vetrina writes for the rail's order. */
+const GHB_HUB_ORDER_ATTS = array('pin', 'exclude', 'fallback');
+
+/** The rail layout a new rail copies from the one it is placed next to. */
+const GHB_HUB_LAYOUT_ATTS = array('columns', 'columns_tablet', 'columns_mobile', 'ratio', 'fit');
+
+/**
  * A list of product ids from a shortcode value ("12, 5,9") or an array:
  * positive integers only, first occurrence wins, capped.
  *
@@ -234,6 +253,160 @@ function ghb_hub_set_rail_atts(string $shortcode, array $values): ?string
 }
 
 /**
+ * What a rail should show, as the Hub asks for it — checked for its shape
+ * only: whether the term exists is the WordPress side's question.
+ *
+ *   { "taxonomy": "category" | "brand" | "tag", "slug": "saldi" }
+ *   { "type": "recent" | "best_selling" | "sale" | "featured" | "top_rated" }
+ *
+ * @param mixed $raw
+ * @return array{kind: string, taxonomy?: string, slug?: string, type?: string}|null Null when malformed.
+ */
+function ghb_hub_parse_source($raw): ?array
+{
+    if (!is_array($raw)) {
+        return null;
+    }
+    if (array_key_exists('type', $raw)) {
+        $type = is_string($raw['type']) ? strtolower(trim($raw['type'])) : '';
+        return in_array($type, ghb_hub_rail_types(), true) ? array('kind' => 'type', 'type' => $type) : null;
+    }
+    $taxonomy = isset($raw['taxonomy']) && is_string($raw['taxonomy']) ? $raw['taxonomy'] : '';
+    $slug     = isset($raw['slug']) && is_string($raw['slug']) ? trim($raw['slug']) : '';
+    if (!in_array($taxonomy, array('category', 'brand', 'tag'), true)) {
+        return null;
+    }
+    // A slug as WordPress makes them: lowercase letters, digits, dashes,
+    // underscores — and the percent escapes sanitize_title() leaves for
+    // accented letters. Nothing that could end the attribute early.
+    if ('' === $slug || strlen($slug) > 200 || !preg_match('/^[a-z0-9_%-]+$/', $slug)) {
+        return null;
+    }
+    return array('kind' => 'term', 'taxonomy' => $taxonomy, 'slug' => $slug);
+}
+
+/** A source as shortcode attributes: category="…", brand="…", tag="…" or type="…". */
+function ghb_hub_source_atts(array $source): array
+{
+    return 'type' === $source['kind'] ? array('type' => $source['type']) : array($source['taxonomy'] => $source['slug']);
+}
+
+/**
+ * Point a rail at another source: a category, a brand, a tag, or a shop-wide
+ * list. Whatever said what the rail showed goes, and so do its pins,
+ * exclusions and fallback — they were about the old products; the caller
+ * writes the new ones over the result (ghb_hub_set_rail_atts). Every other
+ * attribute (limit, columns, ratio…) keeps its value and its place, and the
+ * new source takes the old one's.
+ *
+ * @return string|null Null when the text is not a gh_product_rail shortcode.
+ */
+function ghb_hub_set_rail_source(string $shortcode, array $source): ?string
+{
+    $parsed = ghb_hub_parse_shortcode($shortcode);
+    if (!$parsed || GHB_HUB_RAIL_TAG !== $parsed['tag']) {
+        return null;
+    }
+    $atts   = array();
+    $placed = false;
+    foreach ($parsed['atts'] as $key => $value) {
+        if (is_string($key) && in_array($key, GHB_HUB_SOURCE_ATTS, true)) {
+            if (!$placed) {
+                $atts  += ghb_hub_source_atts($source);
+                $placed = true;
+            }
+            continue;
+        }
+        if (is_string($key) && in_array($key, GHB_HUB_ORDER_ATTS, true)) {
+            continue;
+        }
+        $atts[$key] = $value;
+    }
+    if (!$placed) {
+        $atts = ghb_hub_source_atts($source) + $atts;
+    }
+    return ghb_hub_build_shortcode($parsed['tag'], $atts);
+}
+
+/**
+ * A rail layout value, checked: columns 1–8, a ratio alias or "N/N", a fit.
+ * Null when it is not one the rail would read the same way.
+ *
+ * @param mixed $value
+ */
+function ghb_hub_clean_layout_value(string $key, $value): ?string
+{
+    if (!is_scalar($value)) {
+        return null;
+    }
+    $value = strtolower(trim((string) $value));
+    switch ($key) {
+        case 'columns':
+        case 'columns_tablet':
+        case 'columns_mobile':
+            return preg_match('/^[1-8]$/', $value) ? $value : null;
+        case 'ratio':
+            return preg_match('#^(square|portrait|tall|landscape|wide|\d{1,2}/\d{1,2})$#', $value) ? $value : null;
+        case 'fit':
+            return in_array($value, array('cover', 'contain'), true) ? $value : null;
+    }
+    return null;
+}
+
+/**
+ * The shortcode of a new rail, built from checked values only: what it
+ * shows, how many products, the layout of the rail it is placed next to
+ * (so it looks like its neighbours; values given in $layout win), then its
+ * pins, exclusions and fallback.
+ *
+ * @param array $order  { pin?: int[], exclude?: int[], fallback?: string }
+ * @return string|null Null when a value cannot be written safely.
+ */
+function ghb_hub_new_rail_shortcode(array $source, int $limit, array $neighbour_atts, array $layout, array $order): ?string
+{
+    $atts          = ghb_hub_source_atts($source);
+    $atts['limit'] = (string) max(1, min(GHB_HUB_MAX_IDS, $limit));
+    foreach (GHB_HUB_LAYOUT_ATTS as $key) {
+        $value = array_key_exists($key, $layout) ? $layout[$key] : ($neighbour_atts[$key] ?? null);
+        $clean = null === $value ? null : ghb_hub_clean_layout_value($key, $value);
+        if (null !== $clean) {
+            $atts[$key] = $clean;
+        }
+    }
+    $shortcode = ghb_hub_build_shortcode(GHB_HUB_RAIL_TAG, $atts);
+    if (null === $shortcode) {
+        return null;
+    }
+    return ghb_hub_set_rail_atts($shortcode, array(
+        'pin'      => $order['pin'] ?? array(),
+        'exclude'  => $order['exclude'] ?? array(),
+        'fallback' => $order['fallback'] ?? '',
+    ));
+}
+
+/**
+ * A new rail block's attributes in the order the editor writes them — its
+ * texts around the shortcode — with the fields at their defaults left out,
+ * as ghb_hub_apply_fields() leaves them.
+ */
+function ghb_hub_new_rail_attrs(string $shortcode, array $field_attrs): array
+{
+    $attrs = array();
+    foreach (array('eyebrow', 'title') as $field) {
+        if (isset($field_attrs[$field])) {
+            $attrs[$field] = $field_attrs[$field];
+        }
+    }
+    $attrs['shortcode'] = $shortcode;
+    foreach ($field_attrs as $field => $value) {
+        if (!isset($attrs[$field])) {
+            $attrs[$field] = $value;
+        }
+    }
+    return $attrs;
+}
+
+/**
  * The block fields the Hub may write, and how each is checked. Anything not
  * listed here cannot be changed through wc-gh/v1, whatever the Hub sends:
  * the list is the upper bound, the Hub's config picks from it.
@@ -241,6 +414,9 @@ function ghb_hub_set_rail_atts(string $shortcode, array $values): ?string
  * type "text": plain text (tags stripped), at most max characters;
  * type "url":  an http(s) or site-relative link, or empty;
  * type "enum": one of options.
+ *
+ * A rail's "hidden" is its switch: "yes" keeps the section on the page,
+ * with its products and their order, and shows nothing on the site.
  */
 function ghb_hub_field_specs(): array
 {
@@ -251,6 +427,7 @@ function ghb_hub_field_specs(): array
             'backgroundColor' => array('type' => 'enum', 'options' => array('white', 'gray', 'black')),
             'buttonText'      => array('type' => 'text', 'max' => 60),
             'buttonUrl'       => array('type' => 'url', 'max' => 500),
+            'hidden'          => array('type' => 'enum', 'options' => array('', 'yes')),
         ),
         'golden-hive/category-slider' => array(
             'title' => array('type' => 'text', 'max' => 120),
@@ -501,6 +678,132 @@ function ghb_hub_replace_block_attrs(string $content, string $name, array $old_a
 
     $pos = strpos($content, $needle);
     return array('ok' => true, 'content' => substr_replace($content, $replacement, (int) $pos, strlen($needle)));
+}
+
+/* ---------------------------------------------------------------- *
+ * The page's sections: add one, take one away, put them in another order.
+ *
+ * Every rail on the homepage is a self-closing block, and so is every block
+ * a rail is placed next to. These edits work on those delimiters only, each
+ * found exactly once in the content, and touch nothing else: no block is
+ * re-serialized, no group is opened or closed.
+ * ---------------------------------------------------------------- */
+
+/** A block's self-closing delimiter, written the way the editor writes it. */
+function ghb_hub_block_delimiter(string $name, array $attrs, callable $serialize): string
+{
+    $serialized_name = 0 === strpos($name, 'core/') ? substr($name, 5) : $name;
+    if (array() === $attrs) {
+        return "<!-- wp:{$serialized_name} /-->";
+    }
+    return "<!-- wp:{$serialized_name} " . $serialize($attrs) . ' /-->';
+}
+
+/**
+ * Where a self-closing block sits in the content — found exactly once, or
+ * why not: "not_found", "ambiguous" (the same block twice: refusing beats
+ * guessing).
+ *
+ * @return array{ok: bool, offset?: int, length?: int, text?: string, error?: string, count?: int}
+ */
+function ghb_hub_locate_block(string $content, string $name, array $attrs, callable $serialize): array
+{
+    $needle = ghb_hub_block_delimiter($name, $attrs, $serialize);
+    $count  = substr_count($content, $needle);
+    if (1 !== $count) {
+        return array('ok' => false, 'error' => 0 === $count ? 'not_found' : 'ambiguous', 'count' => $count);
+    }
+    return array('ok' => true, 'offset' => (int) strpos($content, $needle), 'length' => strlen($needle), 'text' => $needle);
+}
+
+/**
+ * A new block, right after (or before) another one, inside the same group
+ * when the other is in one — separated the way the editor separates them.
+ * A block identical to one already on the page is refused: two equal
+ * delimiters would make both impossible to edit from here.
+ *
+ * @param array $anchor ['blockName' => …, 'attrs' => …] as parsed
+ * @param array $block  ['blockName' => …, 'attrs' => …] to add
+ * @return array{ok: bool, content?: string, error?: string}
+ */
+function ghb_hub_insert_block(string $content, array $anchor, string $place, array $block, callable $serialize): array
+{
+    $at = ghb_hub_locate_block($content, (string) $anchor['blockName'], (array) $anchor['attrs'], $serialize);
+    if (!$at['ok']) {
+        return $at;
+    }
+    $new = ghb_hub_block_delimiter((string) $block['blockName'], (array) $block['attrs'], $serialize);
+    if (false !== strpos($content, $new)) {
+        return array('ok' => false, 'error' => 'duplicate');
+    }
+    $text = 'before' === $place ? $new . "\n\n" . $at['text'] : $at['text'] . "\n\n" . $new;
+    return array('ok' => true, 'content' => substr_replace($content, $text, $at['offset'], $at['length']));
+}
+
+/**
+ * Take one self-closing block out, with the blank line that separated it
+ * from its neighbour (the one before it, or else the one after), so the
+ * page reads as if it had never been there.
+ *
+ * @return array{ok: bool, content?: string, error?: string}
+ */
+function ghb_hub_remove_block(string $content, array $block, callable $serialize): array
+{
+    $at = ghb_hub_locate_block($content, (string) $block['blockName'], (array) $block['attrs'], $serialize);
+    if (!$at['ok']) {
+        return $at;
+    }
+    $start = $at['offset'];
+    $end   = $start + $at['length'];
+    if ($start >= 2 && "\n\n" === substr($content, $start - 2, 2)) {
+        $start -= 2;
+    } elseif ("\n\n" === substr($content, $end, 2)) {
+        $end += 2;
+    }
+    return array('ok' => true, 'content' => substr($content, 0, $start) . substr($content, $end));
+}
+
+/**
+ * The rails in another order, without moving anything else. The page keeps
+ * a place for each rail ("slot") where it is — in its group, between the
+ * same other blocks — and each slot takes the block of the rail that goes
+ * there now. A section never leaves the part of the page sections live in,
+ * so it never changes width or background around it.
+ *
+ * @param array $slots ['blockName' => …, 'attrs' => …] for each rail, in page order
+ * @param int[] $order for each slot, the index into $slots of the rail it holds now
+ * @return array{ok: bool, content?: string, error?: string, slot?: int}
+ */
+function ghb_hub_arrange_blocks(string $content, array $slots, array $order, callable $serialize): array
+{
+    $count  = count($slots);
+    $sorted = array_map('intval', $order);
+    sort($sorted);
+    if (count($order) !== $count || $sorted !== ($count > 0 ? range(0, $count - 1) : array())) {
+        return array('ok' => false, 'error' => 'not_a_permutation');
+    }
+    $found = array();
+    foreach (array_values($slots) as $i => $slot) {
+        $at = ghb_hub_locate_block($content, (string) $slot['blockName'], (array) $slot['attrs'], $serialize);
+        if (!$at['ok']) {
+            return $at + array('slot' => $i);
+        }
+        $found[$i] = $at;
+    }
+    // From the last slot to the first, so every offset found above still holds.
+    uasort($found, static fn($a, $b) => $b['offset'] <=> $a['offset']);
+    $slots = array_values($slots);
+    $order = array_values(array_map('intval', $order));
+    foreach ($found as $i => $at) {
+        $rail    = $slots[$order[$i]];
+        $content = substr_replace(
+            $content,
+            ghb_hub_block_delimiter((string) $rail['blockName'], (array) $rail['attrs'], $serialize),
+            $at['offset'],
+            $at['length']
+        );
+    }
+    return array('ok' => true, 'content' => $content);
 }
 
 /**

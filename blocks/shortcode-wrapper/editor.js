@@ -1,7 +1,7 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
     const { InspectorControls, useBlockProps } = wp.blockEditor;
-    const { PanelBody, TextControl, TextareaControl, SelectControl } = wp.components;
+    const { PanelBody, TextControl, TextareaControl, SelectControl, ToggleControl, Notice } = wp.components;
     const { el, Fragment, Placeholder } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/shortcode-wrapper', {
@@ -40,6 +40,16 @@
                             onChange: function(value) { setAttributes({ buttonUrl: value }); }
                         })
                     ),
+                    el(PanelBody, { title: 'Visibilità', initialOpen: !!attributes.hidden },
+                        el(ToggleControl, {
+                            label: 'Nascondi sul sito',
+                            help: attributes.hidden
+                                ? 'La sezione resta qui, con i suoi prodotti, ma il sito non la mostra.'
+                                : 'Spenta, la sezione resta qui ma il sito non la mostra. Si accende anche dalla Vetrina.',
+                            checked: !!attributes.hidden,
+                            onChange: function(value) { setAttributes({ hidden: value ? 'yes' : '' }); }
+                        })
+                    ),
                     el(PanelBody, { title: 'Aspetto', initialOpen: false },
                         el(SelectControl, {
                             label: 'Colore di Sfondo',
@@ -54,6 +64,9 @@
                     )
                 ),
                 el('div', blockProps,
+                    attributes.hidden && el(Notice, { status: 'warning', isDismissible: false },
+                        'Sezione nascosta sul sito: si riaccende da "Visibilità" o dalla Vetrina.'
+                    ),
                     el(Placeholder, {
                         icon: el('svg', { viewBox: '0 0 24 24', fill: 'currentColor' },
                             el('path', { d: 'M8 4l-6 6 6 6 1.4-1.4L4.8 10l4.6-4.6zm8 0l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z' })
