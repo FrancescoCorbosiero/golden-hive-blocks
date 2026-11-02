@@ -8,10 +8,12 @@
  *
  * Cards are rendered through WooCommerce's standard product-loop template
  * (wc_get_template_part('content','product')) inside a `.woocommerce` wrapper,
- * so they:
- *   • match the theme's product-card styling exactly, and
- *   • fire the standard loop hooks — which means Quick View and the inline size
- *     picker (registered on those hooks) appear on rail cards automatically.
+ * so they fire the standard loop hooks — Quick View, the add-to-cart button,
+ * "Esaurito", drop dates and the filtered size appear on rail cards
+ * automatically. The markup stays WooCommerce's; product-rail.css gives the
+ * cards the rail's own look (photo on a plate, two-line titles, one price
+ * baseline, an outlined button) and the arrows sit under the row, next to a
+ * progress line. Each arrow still moves a whole row.
  *
  * Reuses the existing carousel query builder (ghb_get_carousel_products) so the
  * type / category / brand / tag / ids attributes behave identically.
@@ -179,19 +181,68 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
             <h2 class="gh-rail__title"><?php echo esc_html($atts['title']); ?></h2>
         <?php endif; ?>
         <div class="gh-rail__viewport">
-            <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedente', 'golden-hive-blocks'); ?>">&lsaquo;</button>
             <ul class="products gh-rail__track" style="<?php echo esc_attr($track_vars); ?>">
                 <?php
+                ghb_rail_in_loop(true);
                 while ($query->have_posts()) {
                     $query->the_post();
                     wc_get_template_part('content', 'product');
                 }
+                ghb_rail_in_loop(false);
                 wp_reset_postdata();
                 ?>
             </ul>
-            <button type="button" class="gh-rail__nav gh-rail__nav--next" data-dir="1" aria-label="<?php esc_attr_e('Successivo', 'golden-hive-blocks'); ?>">&rsaquo;</button>
+        </div>
+        <div class="gh-rail__bar">
+            <div class="gh-rail__progress" aria-hidden="true"><span></span></div>
+            <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedenti', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button type="button" class="gh-rail__nav gh-rail__nav--next" data-dir="1" aria-label="<?php esc_attr_e('Successivi', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         </div>
     </div>
     <?php
     return ob_get_clean();
+}
+
+/**
+ * Whether a rail is printing its cards right now (nested-safe counter), so
+ * the loop hooks below touch rail cards only and leave the shop grid alone.
+ */
+function ghb_rail_in_loop(?bool $enter = null): bool
+{
+    static $depth = 0;
+    if (true === $enter) {
+        $depth++;
+    } elseif (false === $enter) {
+        $depth = max(0, $depth - 1);
+    }
+    return $depth > 0;
+}
+
+/**
+ * The product's second photo (its first gallery image) on rail cards, shown
+ * on hover by product-rail.css. Devices without hover never load it: the
+ * image is lazy and stays display:none there. Off with
+ * add_filter('ghb_rail_hover_image', '__return_false').
+ */
+add_action('woocommerce_before_shop_loop_item_title', 'ghb_rail_hover_image', 12);
+function ghb_rail_hover_image()
+{
+    if (!ghb_rail_in_loop() || !apply_filters('ghb_rail_hover_image', true)) {
+        return;
+    }
+    global $product;
+    if (!$product instanceof WC_Product) {
+        return;
+    }
+    $ids = $product->get_gallery_image_ids();
+    if (!$ids) {
+        return;
+    }
+    echo wp_get_attachment_image((int) $ids[0], 'woocommerce_thumbnail', false, array(
+        'class'       => 'gh-rail__alt',
+        'alt'         => '',
+        'aria-hidden' => 'true',
+        'loading'     => 'lazy',
+        'decoding'    => 'async',
+    ));
 }

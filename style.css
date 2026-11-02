@@ -2116,10 +2116,50 @@ html.gh-scroll-lock {
     padding: var(--gh-space-lg) 0 0;
 }
 
+/* Title on the left, the section's link on the same line: a page of rails
+   gets a rhythm instead of repeating a giant centred title. The bottom
+   button stays only for sections without a title. */
 .gh-shortcode-wrapper__header {
-    text-align: center;
-    margin-bottom: 0;
-    padding: 0 var(--gh-space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gh-space-sm) var(--gh-space-xl);
+    margin-bottom: var(--gh-space-lg);
+    padding: 0;
+    text-align: left;
+}
+
+.gh-shortcode-wrapper__titles {
+    min-width: 0;
+}
+
+.gh-shortcode-wrapper__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    color: inherit;
+    font-size: var(--gh-text-sm);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    white-space: nowrap;
+    transition: color var(--gh-duration-fast) ease;
+}
+
+.gh-shortcode-wrapper__link:hover {
+    color: var(--gh-accent);
+}
+
+.gh-shortcode-wrapper__link svg {
+    flex: none;
+    transition: transform var(--gh-duration-fast) ease;
+}
+
+.gh-shortcode-wrapper__link:hover svg {
+    transform: translateX(3px);
 }
 
 .gh-shortcode-wrapper__content {
@@ -2133,12 +2173,15 @@ html.gh-scroll-lock {
 }
 
 .gh-shortcode-wrapper__eyebrow {
-    margin-bottom: var(--gh-space-md);
+    margin-bottom: var(--gh-space-sm);
     display: block;
 }
 
 .gh-shortcode-wrapper__title {
     color: var(--gh-black);
+    font-size: var(--gh-text-3xl);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
 }
 
 
