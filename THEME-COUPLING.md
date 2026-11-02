@@ -54,7 +54,7 @@ Astra, Blocksy…):
 | "Filtri" button (desktop drawer) | `woocommerce_before_shop_loop`, plus `theme-bridge` (section 1) |
 | Shop grid alignment | `ul.products li.product` (`shop-grid.css`, `js/shop-grid.js`) |
 | Filters, AJAX refresh | `ghb_filters_config`: `grid_selector` `ul.products`, `count_selector` `.woocommerce-result-count`, `pagination_selector` `.woocommerce-pagination` |
-| Product rails | `wc_get_template_part('content', 'product')` inside the rail's own markup |
+| Product rails | `wc_get_template_part('content', 'product')` inside the rail's own markup; the second photo on hover is `woocommerce_before_shop_loop_item_title` (12), rail cards only. The photo plate and the second photo assume the card opens with its photo at full width, as WooCommerce's template does |
 | Sold-out last, rail pins on archives | WooCommerce's main product query (`woocommerce_product_query`, then `posts_clauses`) |
 
 ### On a block (FSE) theme
