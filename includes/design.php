@@ -30,6 +30,20 @@ function ghb_design_shape(): string
     return in_array($shape, array('round', 'sharp'), true) ? $shape : 'round';
 }
 
+/**
+ * The product rails' look, the default for every rail on the site:
+ * 'modern' (the rail's own cards, arrows under the row) or 'classic' (the
+ * theme's own product cards, arrows over the photos). A section can pick
+ * the other one: the Shortcode Wrapper's "Stile slider" or
+ * [gh_product_rail style="classic"]. Code can force the default:
+ * add_filter('ghb_rail_style', fn() => 'classic').
+ */
+function ghb_rail_style_default(): string
+{
+    $style = (string) apply_filters('ghb_rail_style', (string) get_option('ghb_rail_style', 'modern'));
+    return in_array($style, array('modern', 'classic'), true) ? $style : 'modern';
+}
+
 /** 'sidebar' or 'drawer'. */
 function ghb_filters_layout(): string
 {
@@ -87,6 +101,26 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         'choices'     => array(
             'round' => 'Creativo — angoli arrotondati',
             'sharp' => 'Elegante — spigoli vivi',
+        ),
+    ));
+
+    $wp_customize->add_setting('ghb_rail_style', array(
+        'type'              => 'option',
+        'capability'        => 'edit_theme_options',
+        'default'           => 'modern',
+        'transport'         => 'refresh',
+        'sanitize_callback' => function ($value) {
+            return in_array($value, array('modern', 'classic'), true) ? $value : 'modern';
+        },
+    ));
+    $wp_customize->add_control('ghb_rail_style', array(
+        'section'     => 'ghb_design',
+        'type'        => 'radio',
+        'label'       => 'Stile degli slider prodotti',
+        'description' => 'Vale per tutti gli slider. Ogni sezione può scegliere l\'altro stile dal blocco Shortcode Wrapper.',
+        'choices'     => array(
+            'modern'  => 'Moderno — schede del plugin, frecce sotto la riga',
+            'classic' => 'Classico — schede del tema, frecce sulle foto',
         ),
     ));
 

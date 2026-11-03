@@ -37,6 +37,10 @@
         "hidden": {
             "type": "string",
             "default": ""
+        },
+        "railStyle": {
+            "type": "string",
+            "default": ""
         }
     },
     "supports": {

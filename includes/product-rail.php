@@ -10,10 +10,13 @@
  * (wc_get_template_part('content','product')) inside a `.woocommerce` wrapper,
  * so they fire the standard loop hooks — Quick View, the add-to-cart button,
  * "Esaurito", drop dates and the filtered size appear on rail cards
- * automatically. The markup stays WooCommerce's; product-rail.css gives the
- * cards the rail's own look (photo on a plate, two-line titles, one price
- * baseline, an outlined button) and the arrows sit under the row, next to a
- * progress line. Each arrow still moves a whole row.
+ * automatically. The markup stays WooCommerce's, and two looks share it
+ * (ghb_rail_style()):
+ *   • modern: product-rail.css gives the cards the rail's own look (photo on
+ *     a plate, second photo on hover, two-line titles, one price baseline,
+ *     an outlined button), arrows under the row next to a progress line;
+ *   • classic: the theme's own product cards, arrows over the photos.
+ * Either way each arrow moves a whole row.
  *
  * Reuses the existing carousel query builder (ghb_get_carousel_products) so the
  * type / category / brand / tag / ids attributes behave identically.
@@ -28,6 +31,8 @@
  *   ratio          image aspect-ratio — alias (square|portrait|tall|landscape|
  *                  wide) or a raw "N/N" value like 3/4 (default square)
  *   fit            cover (crop to fill, default) | contain (show whole image)
+ *   style          modern | classic (default: the section's choice, then the
+ *                  Customizer's "Stile degli slider prodotti")
  *
  *   e.g. [gh_product_rail brand="nike" columns="5" columns_mobile="2"
  *                         ratio="3/4" fit="contain"]
@@ -94,6 +99,8 @@ function ghb_product_rail_defaults()
         // si ripristina per-rail con fit="cover" o globalmente via
         // add_filter('ghb_rail_default_fit', fn() => 'cover').
         'fit'            => apply_filters('ghb_rail_default_fit', 'contain'),
+        // modern | classic; blank ⇒ the section's choice, then the Customizer.
+        'style'          => '',
     );
 }
 
@@ -156,7 +163,8 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
     // Wrapper classes + the CSS custom properties that drive the layout. Only
     // the breakpoints that were explicitly set emit a variable, so the CSS
     // fallbacks (desktop columns / 44vw peek) stay in charge otherwise.
-    $rail_classes = 'woocommerce gh-rail gh-rail--fit-' . $fit;
+    $style = ghb_rail_style($atts);
+    $rail_classes = 'woocommerce gh-rail gh-rail--' . $style . ' gh-rail--fit-' . $fit;
     if ($cols_mobile) {
         $rail_classes .= ' gh-rail--mcols';
     }
@@ -183,7 +191,7 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
         <div class="gh-rail__viewport">
             <ul class="products gh-rail__track" style="<?php echo esc_attr($track_vars); ?>">
                 <?php
-                ghb_rail_in_loop(true);
+                ghb_rail_in_loop(true, $style);
                 while ($query->have_posts()) {
                     $query->the_post();
                     wc_get_template_part('content', 'product');
@@ -192,11 +200,11 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
                 wp_reset_postdata();
                 ?>
             </ul>
-        </div>
-        <div class="gh-rail__bar">
-            <div class="gh-rail__progress" aria-hidden="true"><span></span></div>
-            <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedenti', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <button type="button" class="gh-rail__nav gh-rail__nav--next" data-dir="1" aria-label="<?php esc_attr_e('Successivi', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div class="gh-rail__bar">
+                <div class="gh-rail__progress" aria-hidden="true"><span></span></div>
+                <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedenti', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+                <button type="button" class="gh-rail__nav gh-rail__nav--next" data-dir="1" aria-label="<?php esc_attr_e('Successivi', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+            </div>
         </div>
     </div>
     <?php
@@ -204,22 +212,56 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
 }
 
 /**
- * Whether a rail is printing its cards right now (nested-safe counter), so
- * the loop hooks below touch rail cards only and leave the shop grid alone.
+ * A rail's look: its own style="" when valid, else the section's (the
+ * Shortcode Wrapper sets it around its shortcode), else the Customizer's.
  */
-function ghb_rail_in_loop(?bool $enter = null): bool
+function ghb_rail_style(array $atts = array()): string
 {
-    static $depth = 0;
-    if (true === $enter) {
-        $depth++;
-    } elseif (false === $enter) {
-        $depth = max(0, $depth - 1);
+    $own = isset($atts['style']) ? strtolower(trim((string) $atts['style'])) : '';
+    if (in_array($own, array('modern', 'classic'), true)) {
+        return $own;
     }
-    return $depth > 0;
+    $section = ghb_rail_style_context();
+    if ('' !== $section) {
+        return $section;
+    }
+    return function_exists('ghb_rail_style_default') ? ghb_rail_style_default() : 'modern';
 }
 
 /**
- * The product's second photo (its first gallery image) on rail cards, shown
+ * The look the enclosing section asked for, '' for none. A section passes
+ * its choice with ghb_rail_style_context('classic') before rendering its
+ * content and ghb_rail_style_context('') after.
+ */
+function ghb_rail_style_context(?string $set = null): string
+{
+    static $style = '';
+    if (null !== $set) {
+        $style = in_array($set, array('modern', 'classic'), true) ? $set : '';
+    }
+    return $style;
+}
+
+/**
+ * Whether a rail is printing its cards right now (nested-safe), and in which
+ * look, so the loop hooks below touch rail cards only and leave the shop grid
+ * alone. Pass true and the look to enter, false to leave; no argument asks.
+ *
+ * @return string '' outside a rail, else 'modern' or 'classic'
+ */
+function ghb_rail_in_loop(?bool $enter = null, string $style = 'modern'): string
+{
+    static $stack = array();
+    if (true === $enter) {
+        $stack[] = $style;
+    } elseif (false === $enter) {
+        array_pop($stack);
+    }
+    return $stack ? (string) end($stack) : '';
+}
+
+/**
+ * The product's second photo (its first gallery image) on modern rail cards, shown
  * on hover by product-rail.css. Devices without hover never load it: the
  * image is lazy and stays display:none there. Off with
  * add_filter('ghb_rail_hover_image', '__return_false').
@@ -227,7 +269,7 @@ function ghb_rail_in_loop(?bool $enter = null): bool
 add_action('woocommerce_before_shop_loop_item_title', 'ghb_rail_hover_image', 12);
 function ghb_rail_hover_image()
 {
-    if (!ghb_rail_in_loop() || !apply_filters('ghb_rail_hover_image', true)) {
+    if ('modern' !== ghb_rail_in_loop() || !apply_filters('ghb_rail_hover_image', true)) {
         return;
     }
     global $product;

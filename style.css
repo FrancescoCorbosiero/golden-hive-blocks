@@ -2184,6 +2184,25 @@ html.gh-scroll-lock {
     letter-spacing: 0.01em;
 }
 
+/* Classic (the section's "Stile slider", or the Customizer's): the header as
+   it was before 5.16.0, centred, with the button under the section. */
+.gh-shortcode-wrapper--classic .gh-shortcode-wrapper__header {
+    display: block;
+    margin-bottom: 0;
+    padding: 0 var(--gh-space-xl);
+    text-align: center;
+}
+
+.gh-shortcode-wrapper--classic .gh-shortcode-wrapper__eyebrow {
+    margin-bottom: var(--gh-space-md);
+}
+
+.gh-shortcode-wrapper--classic .gh-shortcode-wrapper__title {
+    font-size: var(--gh-text-4xl);
+    line-height: inherit;
+    letter-spacing: 0.02em;
+}
+
 
 /* ==========================================================================
    PROMO MODAL

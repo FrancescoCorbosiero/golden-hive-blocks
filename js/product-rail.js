@@ -5,8 +5,8 @@
  * native CSS scroll-snap does the scrolling; this only wires the optional
  * prev/next arrows, disables them at the ends, and advances by a full batch
  * (the number of whole cards visible, so a click moves the whole row). No
- * slider library. On the product rail it also moves the progress line under
- * the row and lets a mouse drag the row; a drag never ends in a click.
+ * slider library. On a modern product rail it also moves the progress line
+ * under the row and lets a mouse drag the row; a drag never ends in a click.
  *
  * Rails added after load (the product page's "Visti di recente", fetched by
  * js/product-page.js) are wired with window.ghbProductRail.init(root).
@@ -98,7 +98,9 @@
         scope.querySelectorAll('.gh-rail').forEach(function (r) {
             if (r.hasAttribute('data-gh-rail-ready')) return;
             r.setAttribute('data-gh-rail-ready', '');
-            initScroller(r, '.gh-rail__track', '.gh-rail__nav', '.gh-rail__progress span');
+            // Classic rails keep their old behaviour: arrows only, no drag.
+            var modern = !r.classList.contains('gh-rail--classic');
+            initScroller(r, '.gh-rail__track', '.gh-rail__nav', modern ? '.gh-rail__progress span' : null);
         });
         scope.querySelectorAll('.gh-cs').forEach(function (r) {
             if (r.hasAttribute('data-gh-rail-ready')) return;

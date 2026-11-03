@@ -150,6 +150,7 @@ function ghb_size_rail_shortcode($atts)
             'text'    => __('Scegli la tua taglia: ti mostriamo solo i paia disponibili nella tua misura.', 'golden-hive-blocks'),
             'limit'   => 12,
             'columns' => 4,
+            'style'   => '',
         ),
         $atts,
         'gh_size_rail'
@@ -167,6 +168,8 @@ function ghb_size_rail_shortcode($atts)
             'action'  => 'ghb_size_rail',
             'limit'   => max(1, min(24, (int) $atts['limit'])),
             'columns' => max(1, min(8, (int) $atts['columns'])),
+            // The rail arrives over AJAX, outside its section: say its look.
+            'style'   => function_exists('ghb_rail_style') ? ghb_rail_style($atts) : 'modern',
         ),
         admin_url('admin-ajax.php')
     );
@@ -221,6 +224,7 @@ function ghb_size_rail_ajax()
 
     $limit   = isset($_GET['limit']) ? max(1, min(24, absint($_GET['limit']))) : 12;
     $columns = isset($_GET['columns']) ? max(1, min(8, absint($_GET['columns']))) : 4;
+    $style   = isset($_GET['style']) && in_array($_GET['style'], array('modern', 'classic'), true) ? $_GET['style'] : '';
 
     $cache_key = 'ghb_size_rail_' . md5($key);
     $ids       = get_transient($cache_key);
@@ -252,6 +256,7 @@ function ghb_size_rail_ajax()
             'title'   => '',
             'limit'   => $limit,
             'columns' => $columns,
+            'style'   => $style,
         ));
         $args = ghb_carousel_query_args($atts);
         $args['post__in']      = $ids;

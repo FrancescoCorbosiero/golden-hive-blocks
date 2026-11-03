@@ -60,6 +60,17 @@
                                 { label: 'Nero', value: 'black' }
                             ],
                             onChange: function(value) { setAttributes({ backgroundColor: value }); }
+                        }),
+                        el(SelectControl, {
+                            label: 'Stile slider',
+                            help: 'Predefinito segue Personalizza → Golden Hive — Stile. Vale per gli slider prodotti della sezione e per la sua intestazione.',
+                            value: attributes.railStyle || '',
+                            options: [
+                                { label: 'Predefinito del sito', value: '' },
+                                { label: 'Moderno — schede del plugin, frecce sotto la riga', value: 'modern' },
+                                { label: 'Classico — schede del tema, frecce sulle foto', value: 'classic' }
+                            ],
+                            onChange: function(value) { setAttributes({ railStyle: value }); }
                         })
                     )
                 ),
