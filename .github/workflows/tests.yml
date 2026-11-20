@@ -1,0 +1,67 @@
+# Every push, on any branch (or by hand from the Actions tab): PHP syntax and
+# tests on the oldest and newest PHP the plugin supports, the .min files in
+# step with their sources, the Node tests, and the scroll motion in a real
+# browser.
+name: Tests
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.0', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Syntax
+        run: |
+          find . -name '*.php' -not -path './node_modules/*' -print0 \
+            | xargs -0 -n1 php -l > /tmp/lint.txt || { grep -v 'No syntax errors' /tmp/lint.txt; exit 1; }
+
+      - name: Tests
+        run: for t in tests/*-test.php; do echo "== $t"; php "$t" || exit 1; done
+
+  js:
+    name: Assets and browser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: The .min files match their sources
+        run: |
+          npm run build
+          git diff --exit-code -- '*.min.css' 'js/*.min.js' \
+            || { echo '::error::Run npm run build and commit the .min files.'; exit 1; }
+
+      # tests/motion-test.js skips itself here: Chromium comes next.
+      - name: Node tests
+        run: for t in tests/*-test.js; do echo "== $t"; node "$t" || exit 1; done
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.63.0
+          npx playwright install --with-deps chromium
+
+      - name: Scroll motion in a browser
+        run: node tests/motion-test.js

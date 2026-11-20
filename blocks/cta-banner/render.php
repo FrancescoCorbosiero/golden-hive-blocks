@@ -36,14 +36,14 @@ if (empty($title)) {
             <span class="gh-eyebrow gh-cta-banner__eyebrow" data-gh-reveal="up"><?php echo esc_html($eyebrow); ?></span>
         <?php endif; ?>
 
-        <h2 class="gh-section-title gh-cta-banner__title" data-gh-reveal="up" data-gh-reveal-delay="100" style="--gh-reveal-delay: 100ms"><?php echo esc_html($title); ?></h2>
+        <h2 class="gh-section-title gh-cta-banner__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
 
         <?php if (!empty($text)) : ?>
-            <p class="gh-cta-banner__text" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms"><?php echo esc_html($text); ?></p>
+            <p class="gh-cta-banner__text" data-gh-reveal="up"><?php echo esc_html($text); ?></p>
         <?php endif; ?>
 
         <?php if (!empty($button_url)) : ?>
-            <div data-gh-reveal="up" data-gh-reveal-delay="300" style="--gh-reveal-delay: 300ms">
+            <div data-gh-reveal="up">
                 <?php echo gh_button(array(
                     'url'      => $button_url,
                     'text'     => $button_text,

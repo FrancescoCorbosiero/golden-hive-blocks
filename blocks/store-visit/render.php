@@ -40,7 +40,7 @@ $directions = '' !== $address ? 'https://www.google.com/maps/dir/?api=1&destinat
                 <span class="gh-eyebrow gh-store-visit__eyebrow"><?php echo esc_html($eyebrow); ?></span>
             <?php endif; ?>
             <?php if ('' !== $title) : ?>
-                <h2 class="gh-store-visit__title"><?php echo esc_html($title); ?></h2>
+                <h2 class="gh-store-visit__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
             <?php endif; ?>
 
             <p class="gh-hours-status gh-store-visit__status" data-ghb-hours-status hidden>
@@ -109,7 +109,7 @@ $directions = '' !== $address ? 'https://www.google.com/maps/dir/?api=1&destinat
         </div>
 
         <?php if ('' !== $map) : ?>
-            <div class="gh-store-visit__map" data-gh-reveal="up" style="--gh-reveal-delay: 150ms">
+            <div class="gh-store-visit__map" data-gh-reveal="up">
                 <?php echo $map; // Built and escaped by gh_map_facade(). ?>
             </div>
         <?php endif; ?>

@@ -45,13 +45,13 @@ ul.products li.product .onsale,
 
 /* ---- 2. Filters drawer on desktop ----------------------------------- */
 
-.ghb-filters-toggle.bfl-trigger,
+.ghb-filters-toggle.ghb-filter-trigger,
 .ghb-filters-close {
     display: none;
 }
 
 @media (min-width: 993px) {
-    body.ghb-filters-drawer .ghb-filters-toggle.bfl-trigger {
+    body.ghb-filters-drawer .ghb-filters-toggle.ghb-filter-trigger {
         display: inline-flex;
         margin: 0 1rem 1rem 0;
     }

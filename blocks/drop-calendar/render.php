@@ -35,7 +35,7 @@ $now = time();
                 <span class="gh-eyebrow gh-drop-calendar__eyebrow"><?php echo esc_html($eyebrow); ?></span>
             <?php endif; ?>
             <?php if ('' !== $title) : ?>
-                <h2 class="gh-drop-calendar__title"><?php echo esc_html($title); ?></h2>
+                <h2 class="gh-drop-calendar__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
             <?php endif; ?>
             <?php if ('' !== $subtitle) : ?>
                 <p class="gh-drop-calendar__subtitle"><?php echo esc_html($subtitle); ?></p>
@@ -46,14 +46,13 @@ $now = time();
             <p class="gh-drop-calendar__empty"><?php echo esc_html($empty_text); ?></p>
         <?php else : ?>
             <ol class="gh-drop-calendar__list">
-                <?php foreach ($drops as $index => $product) :
+                <?php foreach ($drops as $product) :
                     $ts       = ghb_drop_ts($product->get_id());
                     $released = $ts <= $now;
                     $event    = ghb_drop_event_for_product($product);
-                    $delay    = $index * 80;
                     ?>
                     <li class="gh-drop-cal<?php echo $released ? ' is-live' : ''; ?>" data-ghb-drop="<?php echo (int) $ts; ?>"
-                        data-gh-reveal="up" style="--gh-reveal-delay: <?php echo (int) $delay; ?>ms">
+                        data-gh-reveal="up">
                         <div class="gh-drop-cal__date" aria-hidden="true">
                             <span class="gh-drop-cal__day"><?php echo esc_html(wp_date('j', $ts)); ?></span>
                             <span class="gh-drop-cal__month"><?php echo esc_html(wp_date('M', $ts)); ?></span>

@@ -10,7 +10,7 @@ turn themselves off on any other theme. Everything else uses WooCommerce's own
 hooks and markup and works on any classic WooCommerce theme. On a block (FSE)
 theme, two things need porting.
 
-*Checked against the code at 5.16.1. Last checked on a live store at 5.12.0
+*Checked against the code at 5.17.0. Last checked on a live store at 5.12.0
 (WooCommerce 9.9.5, WordPress 6.8). Twenty Twenty-Five was used for the
 block-theme notes.*
 
@@ -146,7 +146,6 @@ These survive a theme change.
 | **Relevanssi Live Ajax Search** | The live-search modal. It stands down if the plugin is missing. |
 | **Google Maps** | Map Embed, Contact Info and "Vieni in negozio" load the embed only when the visitor taps (`gh_map_facade`), so no Google request before then. |
 | **Page-cache plugins** | After a Store Hub write and at a drop's release, the plugin purges SiteGround Optimizer, WP Rocket, LiteSpeed, W3 Total Cache or WP Super Cache (`ghb_purge_page_caches`, `includes/cache.php`). A CDN can hook `ghb_page_caches_purged`. |
-| **"Advanced Filters" Code Snippet** | The old version of the filters. While it's active, the plugin's filters stand down and show an admin notice. |
 
 ## Rules for new code
 
@@ -176,7 +175,7 @@ These survive a theme change.
 - [ ] Mobile menu: use the new theme's, or write a new module.
 - [ ] Swatches: keep CommerceKit and force `swatch-prices` /
       `swatch-sale-badges` on, or move to another swatch plugin (new module).
-- [ ] Put `[bfl_filters]` in the new theme's shop sidebar.
+- [ ] Put `[gh_filters]` in the new theme's shop sidebar.
 - [ ] Check the filter selectors against the theme's shop markup
       (themes usually keep WooCommerce's).
 

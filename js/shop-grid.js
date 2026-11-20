@@ -3,8 +3,7 @@
  *
  * Equalizes product-card heights per row on shop/taxonomy/search loops, re-run
  * on load, resize, WooCommerce grid updates (filters / fragment refreshes) and
- * after images finish loading. Migrated from a Code Snippet. See
- * includes/shop-grid.php.
+ * after images finish loading. See includes/shop-grid.php.
  */
 jQuery(function($) {
     function equalizeCards() {

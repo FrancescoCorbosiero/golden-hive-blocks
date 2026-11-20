@@ -2648,91 +2648,65 @@ a.gh-btn:visited {
 }
 
 /* ==========================================================================
-   SCROLL REVEAL ANIMATIONS
+   SCROLL MOTION (js/motion.js)
    ========================================================================== */
 
-/* Scroll-reveal is a progressive enhancement. The hidden initial state
-   (opacity:0) is scoped to `html.gh-js`, a class set by an inline bootstrap in
-   <head> ONLY when JavaScript runs. Without JS — or if js/animations.js is
-   blocked, deferred, or errors out (a common symptom once a CDN / Cloudflare
-   Rocket Loader sits in front) — the server-rendered content stays fully
-   visible instead of being trapped invisible until full page load.
-   `html.gh-anim-failsafe` is the safety net: the bootstrap adds it shortly
-   after load if the engine never signalled `window.__ghAnimReady`. */
-.gh-js [data-gh-reveal] {
-    opacity: 0;
-    transition: opacity 0.8s var(--gh-ease-out), transform 0.8s var(--gh-ease-out);
-    /* Stagger dichiarativo: render.php emette style="--gh-reveal-delay: 150ms"
-       e il delay vive nel compositor invece che in un setTimeout JS. */
-    transition-delay: var(--gh-reveal-delay, 0s);
-}
+/* Nothing here hides anything: js/motion.js hides what it animates, at init
+   and only below the first screen, so a page whose script fails is complete. */
 
-.gh-js [data-gh-reveal="up"] {
-    transform: translateY(40px);
-}
-
-.gh-js [data-gh-reveal="down"] {
-    transform: translateY(-40px);
-}
-
-.gh-js [data-gh-reveal="left"] {
-    transform: translateX(-40px);
-}
-
-.gh-js [data-gh-reveal="right"] {
-    transform: translateX(40px);
-}
-
-.gh-js [data-gh-reveal="scale"] {
-    transform: scale(0.92);
-}
-
-.gh-js [data-gh-reveal].gh-revealed {
-    opacity: 1;
-    transform: translate(0) scale(1);
-}
-
-/* Failsafe — engine never booted; reveal unconditionally so nothing is lost. */
-.gh-anim-failsafe [data-gh-reveal] {
-    opacity: 1 !important;
-    transform: none !important;
-}
-
+/* A photo opening from its clip: the zoomed image stays inside the frame. */
 [data-gh-image-reveal] {
     position: relative;
     overflow: hidden;
 }
 
-.gh-js [data-gh-image-reveal]::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--gh-black);
-    transform-origin: left;
-    transition: transform 1s var(--gh-ease-in-out);
+/* split-lines: each line rises out of its own mask. The mask is grown a
+   little top and bottom (and taken back with a negative margin) so accents
+   and descenders aren't cut while the line moves. The lines sit in a flex
+   column because flex items' margins don't collapse: the split heading is
+   exactly as tall as the plain one, so nothing below it shifts. */
+.gh-lines {
+    display: flex;
+    flex-direction: column;
 }
 
-.gh-js [data-gh-image-reveal].gh-image-revealed::after {
-    transform: scaleX(0);
-    transform-origin: right;
+.gh-line {
+    display: block;
+    overflow: hidden;
+    padding: 0.1em 0 0.12em;
+    margin: -0.1em 0 -0.12em;
 }
 
-.gh-js [data-gh-image-reveal] img {
-    transform: scale(1.2);
-    transition: transform 1.2s var(--gh-ease-out) 0.3s;
+.gh-line__inner {
+    display: block;
 }
 
-.gh-js [data-gh-image-reveal].gh-image-revealed img {
-    transform: scale(1);
+/* Drift: a cover image moves a few percent in its frame as the frame crosses
+   the screen. A CSS scroll-driven animation, run by the compositor, with no
+   script; where it isn't supported, or motion is reduced, the image is still. */
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        [data-gh-drift] {
+            overflow: hidden;
+        }
+
+        [data-gh-drift] img {
+            scale: 1.14;
+            animation: gh-drift linear both;
+            animation-timeline: view();
+            animation-range: cover;
+        }
+    }
 }
 
-/* Failsafe — clear the cover overlay + zoom if the engine never booted. */
-.gh-anim-failsafe [data-gh-image-reveal]::after {
-    transform: scaleX(0) !important;
-}
+@keyframes gh-drift {
+    from {
+        translate: 0 -6%;
+    }
 
-.gh-anim-failsafe [data-gh-image-reveal] img {
-    transform: none !important;
+    to {
+        translate: 0 6%;
+    }
 }
 
 /* ==========================================================================
@@ -3904,11 +3878,11 @@ a.gh-btn:visited {
 
 @media (prefers-reduced-motion: reduce) {
 
-    /* Scoped alla UI del plugin: il wipe globale *,*::before,*::after
-       azzerava anche le animazioni del tema (Shoptimizer). Qui vengono
-       enumerati i root gh-/ghb-/rp-/rlv- e i loro discendenti; i delay
-       vengono azzerati esplicitamente così gli stagger (hero, reveal)
-       non restano "in coda" sotto reduced motion. */
+    /* Scoped to the plugin's UI: a global *, *::before, *::after reset
+       would stop the theme's animations too. The gh- / ghb- / rlv- roots and
+       their descendants are listed here; delays are zeroed explicitly so
+       staggers (the hero's) don't sit waiting under reduced motion.
+       Scroll motion (js/motion.js) doesn't run at all under reduced motion. */
     .gh-block,
     .gh-block *,
     .gh-block *::before,
@@ -3930,10 +3904,6 @@ a.gh-btn:visited {
     .gh-rail *,
     .gh-cs,
     .gh-cs *,
-    [class^="rp-"],
-    [class^="rp-"] *,
-    [class*=" rp-"],
-    [class*=" rp-"] *,
     [class^="rlv-"],
     [class^="rlv-"] *,
     [class*=" rlv-"],
@@ -3947,24 +3917,6 @@ a.gh-btn:visited {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         transition-delay: 0s !important;
-        /* !important: deve battere lo style inline --gh-reveal-delay
-           emesso da render.php sugli elementi con stagger. */
-        --gh-reveal-delay: 0s !important;
-    }
-
-    [data-gh-reveal] {
-        opacity: 1 !important;
-        transform: none !important;
-    }
-
-    /* Belt-and-braces: l'overlay dell'image reveal non deve mai restare
-       a coprire l'immagine sotto reduced motion. */
-    [data-gh-image-reveal]::after {
-        transform: scaleX(0) !important;
-    }
-
-    [data-gh-image-reveal] img {
-        transform: none !important;
     }
 
     /* Marquee: fermo del tutto (un loop infinito accelerato resterebbe

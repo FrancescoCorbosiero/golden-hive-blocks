@@ -24,10 +24,6 @@
  * CommerceKit's Waitlist shows its form when a sold-out size is selected, so
  * blocking the click (as this module did until 5.13.0) hid the waitlist.
  *
- * Migrated here from a Code Snippet so it lives in version control alongside
- * the rest of the store's UI. NOTE: disable the old Code Snippet once this is
- * active, or the script will run twice (harmless but redundant).
- *
  * @package Golden_Hive_Blocks
  * @since   5.3.0
  */

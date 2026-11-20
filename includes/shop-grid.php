@@ -7,9 +7,8 @@
  * add-to-cart pinned to the bottom. A small JS pass equalizes card heights per
  * row (for filters / infinite scroll / late-loading images).
  *
- * Migrated from a Code Snippet. The bottom-align rule targets our `.ghb-atc`
- * add-to-cart control (which replaced the core `.button` / old
- * `.rp-quick-add-btn`). Mostly generic WooCommerce markup.
+ * The bottom-align rule targets the plugin's `.ghb-atc` add-to-cart control
+ * (includes/add-to-cart.php). Otherwise generic WooCommerce markup.
  *
  * @package Golden_Hive_Blocks
  * @since   5.3.0

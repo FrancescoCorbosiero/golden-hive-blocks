@@ -14,8 +14,11 @@ for t in tests/*-test.php; do php "$t" || exit 1; done && for t in tests/*-test.
 find . -name '*.php' -not -path './node_modules/*' -exec php -l {} \; | grep -v 'No syntax errors'
 ```
 
-There is no CI and no WordPress install here: run the tests yourself, and
-test WordPress-dependent code with stubs in a scratch file.
+`tests/motion-test.js` runs headless Chromium through Playwright (it skips
+itself without it). CI (`.github/workflows/tests.yml`) runs all of this on
+every push, and fails when a `.min` file doesn't match a fresh build. There
+is no WordPress install here: test WordPress-dependent code with stubs in a
+scratch file.
 
 ## Every shipped change
 
@@ -47,6 +50,11 @@ test WordPress-dependent code with stubs in a scratch file.
   automatically from their folder.
 - **Shoptimizer / CommerceKit markup:** only behind `ghb_theme_module()`,
   following the rules at the end of `THEME-COUPLING.md`.
+- **Motion:** use the hooks in README's Motion section (`data-gh-reveal`,
+  `data-gh-split="lines"`, `data-gh-image-reveal`, `data-gh-drift`); a new
+  move goes in `js/motion.js` and keeps its rules. Never hide anything with
+  CSS waiting for a script, and never animate the first screen. One strong
+  move per section. Change motion? Run `tests/motion-test.js`.
 
 ## Rules that aren't obvious
 
@@ -64,13 +72,12 @@ test WordPress-dependent code with stubs in a scratch file.
   advertise new abilities through `/capabilities`.
 - **Archive order** is a `posts_clauses` chain (10 sort, 20 rail pins, 50
   sold-out last). Never `remove_filter()` a callback from inside its own run.
-- **Quick View's AJAX handler** lives in
-  `includes/product-carousel-shortcode.php`, not `quick-view.php`. Don't
-  redeclare it.
+- **Quick View's and Quick Add's data** come from `includes/product-ajax.php`,
+  not `quick-view.php` / `quick-add.php`. Don't redeclare the handlers.
 - **Sizes are `pa_taglia`** with duplicate spellings in the data; compare
   sizes through the key helpers in `size-match-core.php`, never raw labels.
-- **Legacy class names** (`.rp-qv-*`, `.bfl-*`) came from migrated Code
-  Snippets and may be targeted by site CSS: don't rename them.
+- **`[bfl_filters]`** is the filters' older shortcode name and is still
+  placed in the shop sidebar: keep it registered next to `[gh_filters]`.
 - **`pages/homepage.html`** is copy-paste page markup *and* a fixture for
   `tests/hub-rails-test.php`. `tests/fixtures/homepage.html` is the live
   homepage; don't "tidy" either.
@@ -79,10 +86,11 @@ test WordPress-dependent code with stubs in a scratch file.
 
 - Customer-facing strings: Italian, text domain `golden-hive-blocks`.
   Store Hub error messages are Italian too.
-- Code comments: English (`js/animations.js` predates this and is in
-  Italian; leave it unless you are rewriting that part).
+- Code comments: English. Older ones in `style.css` and a few other files
+  are still Italian: translate them when you touch that part.
 - Prefixes: PHP functions `ghb_` (older helpers `gh_`), CSS classes `gh-` /
-  `ghb-`, design tokens `--gh-*`. Every radius is
+  `ghb-` (Quick View `ghb-qv-*`, filters `ghb-filter-*`), design tokens
+  `--gh-*`. Every radius is
   `calc(N * var(--gh-round))`.
 - Escape on output (`esc_html`, `esc_attr`, `esc_url`, `wp_kses`), sanitize
   on input, `$wpdb->prepare()` for anything not a cast integer.

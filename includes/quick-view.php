@@ -8,13 +8,10 @@
  * full product page.
  *
  * Standard WooCommerce loop hooks + data, so it is theme-agnostic. The button
- * is injected on `woocommerce_before_shop_loop_item_title`. The `.rp-qv-*` /
- * `.rp-quick-view-btn` class names are preserved from the original site snippet
- * this was migrated from; the AJAX action and PHP functions use the plugin's
- * `ghb_` prefix so they never collide with that snippet if it is still active.
- *
- * Migrated from a Code Snippet. Disable that snippet once this is active, or
- * the button/modal will be duplicated.
+ * is injected on `woocommerce_before_shop_loop_item_title`. Markup:
+ * `.ghb-qv-btn` on the card, `.ghb-qv-*` in the modal (quick-view.css,
+ * js/quick-view.js); its data comes from `ghb_quick_view`
+ * (includes/product-ajax.php).
  *
  * @package Golden_Hive_Blocks
  * @since   5.3.0
@@ -59,7 +56,7 @@ function ghb_quick_view_button()
     $size_attrs = ($product instanceof WC_Product && function_exists('ghb_size_match_button_attrs'))
         ? ghb_size_match_button_attrs($product)
         : '';
-    echo '<button class="rp-quick-view-btn" data-product-id="' . esc_attr($product->get_id()) . '"' . $size_attrs . ' aria-label="' . esc_attr__('Anteprima rapida', 'golden-hive-blocks') . '">
+    echo '<button class="ghb-qv-btn" data-product-id="' . esc_attr($product->get_id()) . '"' . $size_attrs . ' aria-label="' . esc_attr__('Anteprima rapida', 'golden-hive-blocks') . '">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -70,7 +67,7 @@ function ghb_quick_view_button()
 /**
  * AJAX handler note: the `ghb_quick_view` endpoint (and its identical payload)
  * is already registered, site-wide and unconditionally, by
- * includes/product-carousel-shortcode.php (ghb_quick_view_handler). We
+ * includes/product-ajax.php (ghb_quick_view_handler). We
  * deliberately reuse it here rather than declare a second copy — the JS below
  * fetches that same `ghb_quick_view` action. Do NOT redeclare the handler.
  */
@@ -131,10 +128,10 @@ function ghb_quick_view_modal()
         return;
     }
     ?>
-    <div class="rp-qv-overlay"></div>
-    <div class="rp-qv-modal" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr__('Anteprima rapida prodotto', 'golden-hive-blocks'); ?>" aria-hidden="true">
-        <button class="rp-qv-close" aria-label="<?php echo esc_attr__('Chiudi', 'golden-hive-blocks'); ?>">&#10005;</button>
-        <div class="rp-qv-content"></div>
+    <div class="ghb-qv-overlay"></div>
+    <div class="ghb-qv-modal" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr__('Anteprima rapida prodotto', 'golden-hive-blocks'); ?>" aria-hidden="true">
+        <button class="ghb-qv-close" aria-label="<?php echo esc_attr__('Chiudi', 'golden-hive-blocks'); ?>">&#10005;</button>
+        <div class="ghb-qv-content"></div>
     </div>
     <?php
 }

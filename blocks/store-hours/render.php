@@ -37,7 +37,7 @@ $today_name = $weekday_names[(int) current_time('N')] ?? '';
 <section <?php echo $wrapper_attributes; ?> data-ghb-hours="<?php echo esc_attr($hours_data); ?>">
     <div class="gh-store-hours__container">
         <?php if (!empty($title)) : ?>
-            <h2 class="gh-store-hours__title" data-gh-reveal="up"><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-store-hours__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
         <?php endif; ?>
 
         <p class="gh-hours-status gh-store-hours__status" data-ghb-hours-status hidden>
@@ -46,7 +46,7 @@ $today_name = $weekday_names[(int) current_time('N')] ?? '';
         </p>
 
         <div class="gh-store-hours__card">
-            <?php foreach ($hours as $index => $entry) :
+            <?php foreach ($hours as $entry) :
                 $day  = $entry['day'] ?? '';
                 $time = $entry['time'] ?? '';
 
@@ -60,14 +60,10 @@ $today_name = $weekday_names[(int) current_time('N')] ?? '';
                 $row_class = 'gh-store-hours__row' . ($is_today ? ' gh-store-hours__row--today' : '');
 
                 $time_class = 'gh-store-hours__time' . ($is_closed ? ' gh-store-hours__time--closed' : '');
-
-                $delay = $index * 50;
             ?>
                 <div class="<?php echo esc_attr($row_class); ?>"
                      data-ghb-day="<?php echo esc_attr($day); ?>"
-                     data-gh-reveal="up"
-                     data-gh-reveal-delay="<?php echo (int) $delay; ?>"
-                     style="--gh-reveal-delay: <?php echo (int) $delay; ?>ms">
+                     data-gh-reveal="up">
                     <span class="gh-store-hours__day">
                         <?php echo esc_html($day); ?>
                         <span class="gh-store-hours__badge" data-ghb-today-badge<?php echo $is_today ? '' : ' hidden'; ?>>Oggi</span>
@@ -80,9 +76,7 @@ $today_name = $weekday_names[(int) current_time('N')] ?? '';
 
         <?php if (!empty($note)) : ?>
             <p class="gh-store-hours__note"
-               data-gh-reveal="up"
-               data-gh-reveal-delay="<?php echo (int) (count($hours) * 50); ?>"
-               style="--gh-reveal-delay: <?php echo (int) (count($hours) * 50); ?>ms"><?php echo esc_html($note); ?></p>
+               data-gh-reveal="up"><?php echo esc_html($note); ?></p>
         <?php endif; ?>
     </div>
 </section>

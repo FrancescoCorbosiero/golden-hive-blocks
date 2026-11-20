@@ -9,7 +9,7 @@
  * Both buttons are rendered by includes/add-to-cart.php on the loop cards.
  *
  * Variations come from the read-only ghb_get_variations AJAX handler in
- * product-carousel-shortcode.php; cart writes go through WooCommerce's native
+ * product-ajax.php; cart writes go through WooCommerce's native
  * wc-ajax=add_to_cart endpoint (posting the variation ID as product_id), so
  * validation, notices and fragment refresh are all native.
  *

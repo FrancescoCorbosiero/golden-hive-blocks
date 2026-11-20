@@ -16,7 +16,7 @@ if (empty($title)) {
 }
 ?>
 <section <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-cta-image' . ($reverse ? ' gh-cta-image--reverse' : ''))); ?>>
-    <div class="gh-cta-image__visual" data-gh-reveal="<?php echo $reverse ? 'right' : 'left'; ?>" data-gh-image-reveal>
+    <div class="gh-cta-image__visual" data-gh-image-reveal data-gh-drift>
         <?php if (!empty($image_url)) : ?>
             <?php echo gh_img((int) ($attributes['imageUrlId'] ?? 0), $image_url, array(
                 'alt'     => $title,
@@ -30,7 +30,7 @@ if (empty($title)) {
             <span class="gh-eyebrow gh-cta-image__eyebrow"><?php echo esc_html($eyebrow); ?></span>
         <?php endif; ?>
 
-        <h2 class="gh-section-title gh-cta-image__title"><?php echo esc_html($title); ?></h2>
+        <h2 class="gh-section-title gh-cta-image__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
 
         <?php if (!empty($text)) : ?>
             <p class="gh-cta-image__text"><?php echo esc_html($text); ?></p>

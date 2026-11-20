@@ -176,9 +176,9 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
 
     ob_start();
     ?>
-    <div class="<?php echo esc_attr($rail_classes); ?>" data-gh-reveal="up">
+    <div class="<?php echo esc_attr($rail_classes); ?>" data-gh-reveal="stagger" data-gh-stagger=".gh-rail__track > li">
         <?php if ('' !== $atts['title']) : ?>
-            <h2 class="gh-rail__title"><?php echo esc_html($atts['title']); ?></h2>
+            <h2 class="gh-rail__title" data-gh-split="lines"><?php echo esc_html($atts['title']); ?></h2>
         <?php endif; ?>
         <div class="gh-rail__viewport">
             <ul class="products gh-rail__track" style="<?php echo esc_attr($track_vars); ?>">

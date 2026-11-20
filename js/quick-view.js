@@ -5,8 +5,8 @@
  * AJAX and renders it in a modal built with createElement/textContent (no
  * HTML injection from product data). The ajax URL/action and the cart
  * endpoint come from the localized `ghbQuickView` object (see
- * includes/quick-view.php). Class names (.rp-qv-*) are preserved from the
- * original site snippet this was migrated from.
+ * includes/quick-view.php); the product data from `ghb_quick_view`
+ * (includes/product-ajax.php).
  *
  * Add-to-cart posts to WooCommerce's native wc-ajax=add_to_cart endpoint
  * (posting the variation ID for variable products), so cart fragments and
@@ -16,10 +16,10 @@
     'use strict';
 
     var cfg = window.ghbQuickView || {};
-    var overlay = document.querySelector('.rp-qv-overlay');
-    var modal = document.querySelector('.rp-qv-modal');
-    var content = modal ? modal.querySelector('.rp-qv-content') : null;
-    var closeBtn = modal ? modal.querySelector('.rp-qv-close') : null;
+    var overlay = document.querySelector('.ghb-qv-overlay');
+    var modal = document.querySelector('.ghb-qv-modal');
+    var content = modal ? modal.querySelector('.ghb-qv-content') : null;
+    var closeBtn = modal ? modal.querySelector('.ghb-qv-close') : null;
 
     if (!overlay || !modal || !content) {
         return;
@@ -62,7 +62,7 @@
 
     function setLoading(message) {
         content.textContent = '';
-        content.appendChild(el('div', 'rp-qv-loading', message));
+        content.appendChild(el('div', 'ghb-qv-loading', message));
     }
 
     /* ── Open / close ── */
@@ -127,7 +127,7 @@
     // Also any [data-ghb-quick-view][data-product-id] — the Instagram
     // block's "Shop the look" tags.
     document.addEventListener('click', function (e) {
-        var btn = e.target.closest('.rp-quick-view-btn, [data-ghb-quick-view][data-product-id]');
+        var btn = e.target.closest('.ghb-qv-btn, [data-ghb-quick-view][data-product-id]');
         if (!btn) return;
         e.preventDefault();
         e.stopPropagation();
@@ -172,21 +172,21 @@
         selectedSize = null;
         basePrice = { html: p.price_html || '', text: p.price || '' };
 
-        var body = el('div', 'rp-qv-body');
+        var body = el('div', 'ghb-qv-body');
 
         // Gallery
-        var gallery = el('div', 'rp-qv-gallery');
+        var gallery = el('div', 'ghb-qv-gallery');
         var images = Array.isArray(p.images) ? p.images : [];
         if (images.length) {
-            var mainImg = el('img', 'rp-qv-main-img');
+            var mainImg = el('img', 'ghb-qv-main-img');
             mainImg.src = images[0];
             mainImg.alt = p.title || '';
             gallery.appendChild(mainImg);
 
             if (images.length > 1) {
-                var thumbs = el('div', 'rp-qv-thumbs');
+                var thumbs = el('div', 'ghb-qv-thumbs');
                 images.forEach(function (src, i) {
-                    var thumb = el('img', 'rp-qv-thumb' + (i === 0 ? ' active' : ''));
+                    var thumb = el('img', 'ghb-qv-thumb' + (i === 0 ? ' active' : ''));
                     thumb.src = src;
                     thumb.alt = '';
                     thumb.setAttribute('data-src', src);
@@ -198,13 +198,13 @@
         body.appendChild(gallery);
 
         // Info
-        var info = el('div', 'rp-qv-info');
+        var info = el('div', 'ghb-qv-info');
         if (p.categories) {
-            info.appendChild(el('div', 'rp-qv-cats', p.categories));
+            info.appendChild(el('div', 'ghb-qv-cats', p.categories));
         }
-        info.appendChild(el('div', 'rp-qv-title', p.title || ''));
+        info.appendChild(el('div', 'ghb-qv-title', p.title || ''));
 
-        var price = el('div', 'rp-qv-price');
+        var price = el('div', 'ghb-qv-price');
         if (p.price_html) {
             // WC-generated price markup (del/ins on sale) — safe server HTML.
             price.innerHTML = p.price_html;
@@ -215,21 +215,21 @@
 
         info.appendChild(el(
             'div',
-            'rp-qv-stock ' + (p.in_stock ? 'in-stock' : 'out-of-stock'),
+            'ghb-qv-stock ' + (p.in_stock ? 'in-stock' : 'out-of-stock'),
             p.stock_text || ''
         ));
 
         if (p.short_desc) {
-            var desc = el('div', 'rp-qv-desc');
+            var desc = el('div', 'ghb-qv-desc');
             // wpautop'd short description from the server (trusted, own site).
             desc.innerHTML = p.short_desc;
             info.appendChild(desc);
         }
 
         if (Array.isArray(p.attributes) && p.attributes.length) {
-            var attrs = el('div', 'rp-qv-attrs');
+            var attrs = el('div', 'ghb-qv-attrs');
             p.attributes.forEach(function (a) {
-                var attr = el('span', 'rp-qv-attr');
+                var attr = el('span', 'ghb-qv-attr');
                 attr.appendChild(el('strong', '', (a.label || '') + ':'));
                 attr.appendChild(document.createTextNode(' ' + (a.value || '')));
                 attrs.appendChild(attr);
@@ -238,15 +238,15 @@
         }
 
         if (p.sku) {
-            info.appendChild(el('div', 'rp-qv-sku', 'SKU: ' + p.sku));
+            info.appendChild(el('div', 'ghb-qv-sku', 'SKU: ' + p.sku));
         }
 
-        info.appendChild(el('div', 'rp-qv-atc'));
+        info.appendChild(el('div', 'ghb-qv-atc'));
 
         // Secondary action: the add-to-cart button above is the primary one.
-        var viewFull = el('a', 'rp-qv-view-full', 'Vedi prodotto completo');
+        var viewFull = el('a', 'ghb-qv-view-full', 'Vedi prodotto completo');
         viewFull.href = p.url || '#';
-        var arrow = el('span', 'rp-qv-view-full__arrow', '→');
+        var arrow = el('span', 'ghb-qv-view-full__arrow', '→');
         arrow.setAttribute('aria-hidden', 'true');
         viewFull.appendChild(arrow);
         info.appendChild(viewFull);
@@ -260,7 +260,7 @@
         renderCartControl(productId, p);
 
         if (preselect) {
-            var picked = content.querySelector('.rp-qv-size[data-variation-id="' + parseInt(preselect, 10) + '"]');
+            var picked = content.querySelector('.ghb-qv-size[data-variation-id="' + parseInt(preselect, 10) + '"]');
             if (picked) pickSize(picked);
         }
     }
@@ -272,18 +272,18 @@
         var canShare = !!(navigator.share || (navigator.clipboard && window.isSecureContext));
         if (!cfg.whatsapp && !canShare) return null;
 
-        var row = el('div', 'rp-qv-actions');
+        var row = el('div', 'ghb-qv-actions');
         row.setAttribute('data-name', p.title || '');
         row.setAttribute('data-url', p.url || '');
         if (cfg.whatsapp) {
-            var wa = el('a', 'rp-qv-action rp-qv-action--whatsapp', 'Chiedi su WhatsApp');
+            var wa = el('a', 'ghb-qv-action ghb-qv-action--whatsapp', 'Chiedi su WhatsApp');
             wa.href = whatsappUrl(p.title, '', p.url);
             wa.target = '_blank';
             wa.rel = 'noopener noreferrer';
             row.appendChild(wa);
         }
         if (canShare) {
-            var shareBtn = el('button', 'rp-qv-action rp-qv-action--share', 'Condividi');
+            var shareBtn = el('button', 'ghb-qv-action ghb-qv-action--share', 'Condividi');
             shareBtn.type = 'button';
             row.appendChild(shareBtn);
         }
@@ -309,12 +309,12 @@
     // Build the add-to-cart control (simple button or size pills) straight
     // from the Quick View payload — no extra request.
     function renderCartControl(productId, p) {
-        var slot = content.querySelector('.rp-qv-atc');
+        var slot = content.querySelector('.ghb-qv-atc');
         if (!slot) return;
 
         // A drop not out yet (includes/drops.php): say when, buy nothing.
         if (p.drop && p.drop.ts * 1000 > Date.now()) {
-            var soon = el('button', 'rp-qv-add', p.drop.label || 'In arrivo');
+            var soon = el('button', 'ghb-qv-add', p.drop.label || 'In arrivo');
             soon.type = 'button';
             soon.disabled = true;
             slot.appendChild(soon);
@@ -323,13 +323,13 @@
 
         if (p.type === 'variable') {
             if (!Array.isArray(p.sizes) || !p.sizes.length) {
-                var optionsLink = el('a', 'rp-qv-add rp-qv-add--link', 'Seleziona opzioni');
+                var optionsLink = el('a', 'ghb-qv-add ghb-qv-add--link', 'Seleziona opzioni');
                 optionsLink.href = p.url || '#';
                 slot.appendChild(optionsLink);
                 return;
             }
-            slot.appendChild(el('div', 'rp-qv-sizes-label', 'Seleziona taglia'));
-            var sizes = el('div', 'rp-qv-sizes');
+            slot.appendChild(el('div', 'ghb-qv-sizes-label', 'Seleziona taglia'));
+            var sizes = el('div', 'ghb-qv-sizes');
             sizes.setAttribute('role', 'group');
             sizes.setAttribute('aria-label', 'Taglia');
             var anyInStock = false;
@@ -337,19 +337,19 @@
                 if (s.in_stock) {
                     anyInStock = true;
                     sizeData[s.variation_id] = s;
-                    var sizeBtn = el('button', 'rp-qv-size', s.label);
+                    var sizeBtn = el('button', 'ghb-qv-size', s.label);
                     sizeBtn.type = 'button';
                     sizeBtn.setAttribute('aria-pressed', 'false');
                     sizeBtn.setAttribute('data-variation-id', s.variation_id);
                     sizes.appendChild(sizeBtn);
                 } else {
-                    sizes.appendChild(el('span', 'rp-qv-size is-oos', s.label));
+                    sizes.appendChild(el('span', 'ghb-qv-size is-oos', s.label));
                 }
             });
             slot.appendChild(sizes);
 
             if (!anyInStock) {
-                var allGone = el('button', 'rp-qv-add', 'Esaurito');
+                var allGone = el('button', 'ghb-qv-add', 'Esaurito');
                 allGone.type = 'button';
                 allGone.disabled = true;
                 slot.appendChild(allGone);
@@ -357,27 +357,27 @@
             }
 
             // Filled in only when the shopper tries to add without a size.
-            var hint = el('div', 'rp-qv-size-hint');
+            var hint = el('div', 'ghb-qv-size-hint');
             hint.setAttribute('aria-live', 'assertive');
             slot.appendChild(hint);
 
-            var confirmBtn = el('button', 'rp-qv-add', ADD_LABEL);
+            var confirmBtn = el('button', 'ghb-qv-add', ADD_LABEL);
             confirmBtn.type = 'button';
             confirmBtn.setAttribute('data-needs-size', '1');
             slot.appendChild(confirmBtn);
             slot.appendChild(statusLine());
         } else if (p.purchasable) {
-            var addBtn = el('button', 'rp-qv-add', ADD_LABEL);
+            var addBtn = el('button', 'ghb-qv-add', ADD_LABEL);
             addBtn.type = 'button';
             addBtn.setAttribute('data-product-id', productId);
             slot.appendChild(addBtn);
             slot.appendChild(statusLine());
         } else if (p.type !== 'simple') {
-            var viewLink = el('a', 'rp-qv-add rp-qv-add--link', 'Vedi prodotto');
+            var viewLink = el('a', 'ghb-qv-add ghb-qv-add--link', 'Vedi prodotto');
             viewLink.href = p.url || '#';
             slot.appendChild(viewLink);
         } else {
-            var soldOut = el('button', 'rp-qv-add', 'Esaurito');
+            var soldOut = el('button', 'ghb-qv-add', 'Esaurito');
             soldOut.type = 'button';
             soldOut.disabled = true;
             slot.appendChild(soldOut);
@@ -393,7 +393,7 @@
     }
 
     function showPrice(html, text) {
-        var priceEl = content.querySelector('.rp-qv-price');
+        var priceEl = content.querySelector('.ghb-qv-price');
         if (!priceEl) return;
         if (html) {
             // WC-generated price markup (del/ins on sale) — safe server HTML.
@@ -406,11 +406,11 @@
     // Toggle a size: select it (price line + button show that size's price)
     // or, clicking it again, deselect and restore the product price.
     function pickSize(btn) {
-        var slot = btn.closest('.rp-qv-atc');
+        var slot = btn.closest('.ghb-qv-atc');
         var id = btn.getAttribute('data-variation-id');
         var deselect = !!selectedSize && String(selectedSize.variation_id) === id;
 
-        slot.querySelectorAll('.rp-qv-size[data-variation-id]').forEach(function (b) {
+        slot.querySelectorAll('.ghb-qv-size[data-variation-id]').forEach(function (b) {
             var on = !deselect && b === btn;
             b.classList.toggle('is-selected', on);
             b.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -423,7 +423,7 @@
             showPrice(basePrice.html, basePrice.text);
         }
 
-        var confirmBtn = slot.querySelector('.rp-qv-add[data-needs-size]');
+        var confirmBtn = slot.querySelector('.ghb-qv-add[data-needs-size]');
         if (confirmBtn) confirmBtn.textContent = addLabel(confirmBtn);
         setHint(slot, false);
         clearStatus(slot);
@@ -432,8 +432,8 @@
     // "Aggiungi al carrello" without a size: point at the size grid instead
     // of failing silently.
     function setHint(slot, show) {
-        var hint = slot.querySelector('.rp-qv-size-hint');
-        var grid = slot.querySelector('.rp-qv-sizes');
+        var hint = slot.querySelector('.ghb-qv-size-hint');
+        var grid = slot.querySelector('.ghb-qv-sizes');
         if (hint) {
             hint.textContent = show ? 'Seleziona una taglia' : '';
             hint.classList.toggle('is-visible', show);
@@ -443,27 +443,27 @@
         if (show) {
             void grid.offsetWidth; // restart the nudge animation on repeat clicks
             grid.classList.add('is-invalid');
-            var first = grid.querySelector('.rp-qv-size[data-variation-id]');
+            var first = grid.querySelector('.ghb-qv-size[data-variation-id]');
             if (first) first.focus();
         }
     }
 
     /* ── Status line under the button (polite live region) ── */
     function statusLine() {
-        var msg = el('div', 'rp-qv-cart-msg');
+        var msg = el('div', 'ghb-qv-cart-msg');
         msg.setAttribute('role', 'status');
         return msg;
     }
 
     function feedback(slot, text, isError, link) {
-        var msg = slot.querySelector('.rp-qv-cart-msg');
+        var msg = slot.querySelector('.ghb-qv-cart-msg');
         if (!msg) {
             msg = statusLine();
             slot.appendChild(msg);
         }
         msg.textContent = text;
         if (link && link.href) {
-            var a = el('a', 'rp-qv-cart-link', link.text);
+            var a = el('a', 'ghb-qv-cart-link', link.text);
             a.href = link.href;
             msg.appendChild(document.createTextNode(' '));
             msg.appendChild(a);
@@ -473,7 +473,7 @@
     }
 
     function clearStatus(slot) {
-        var msg = slot.querySelector('.rp-qv-cart-msg');
+        var msg = slot.querySelector('.ghb-qv-cart-msg');
         if (!msg) return;
         msg.classList.remove('show', 'is-error');
         msg.textContent = '';
@@ -554,12 +554,12 @@
 
     /* ── Delegated clicks inside the modal ── */
     document.addEventListener('click', function (e) {
-        var action = e.target.closest('.rp-qv-action');
+        var action = e.target.closest('.ghb-qv-action');
         if (action && modal.contains(action)) {
-            var row = action.closest('.rp-qv-actions');
+            var row = action.closest('.ghb-qv-actions');
             var name = row.getAttribute('data-name');
             var url = row.getAttribute('data-url');
-            if (action.classList.contains('rp-qv-action--whatsapp')) {
+            if (action.classList.contains('ghb-qv-action--whatsapp')) {
                 // Rewritten before the browser follows it.
                 action.href = whatsappUrl(name, selectedSize ? selectedSize.label : '', url);
             } else {
@@ -569,15 +569,15 @@
         }
 
         // Simple product → add directly.
-        var addBtn = e.target.closest('.rp-qv-atc .rp-qv-add[data-product-id]');
+        var addBtn = e.target.closest('.ghb-qv-atc .ghb-qv-add[data-product-id]');
         if (addBtn) {
             e.preventDefault();
-            addToCart(addBtn.closest('.rp-qv-atc'), addBtn.getAttribute('data-product-id'), addBtn);
+            addToCart(addBtn.closest('.ghb-qv-atc'), addBtn.getAttribute('data-product-id'), addBtn);
             return;
         }
 
         // Variable product: a size click only selects it…
-        var sizeBtn = e.target.closest('.rp-qv-atc .rp-qv-size[data-variation-id]');
+        var sizeBtn = e.target.closest('.ghb-qv-atc .ghb-qv-size[data-variation-id]');
         if (sizeBtn) {
             e.preventDefault();
             pickSize(sizeBtn);
@@ -586,10 +586,10 @@
 
         // …and the button adds the picked size's variation (posted as
         // product_id: WooCommerce resolves parent + attributes natively).
-        var confirmBtn = e.target.closest('.rp-qv-atc .rp-qv-add[data-needs-size]');
+        var confirmBtn = e.target.closest('.ghb-qv-atc .ghb-qv-add[data-needs-size]');
         if (confirmBtn) {
             e.preventDefault();
-            var slot = confirmBtn.closest('.rp-qv-atc');
+            var slot = confirmBtn.closest('.ghb-qv-atc');
             if (!selectedSize) {
                 setHint(slot, true);
                 return;
@@ -599,14 +599,14 @@
         }
 
         // Thumbnail click → swap the main image.
-        var thumb = e.target.closest('.rp-qv-thumb');
+        var thumb = e.target.closest('.ghb-qv-thumb');
         if (thumb) {
             var src = thumb.getAttribute('data-src');
-            var siblings = thumb.parentElement.querySelectorAll('.rp-qv-thumb');
+            var siblings = thumb.parentElement.querySelectorAll('.ghb-qv-thumb');
             siblings.forEach(function (t) { t.classList.remove('active'); });
             thumb.classList.add('active');
-            var gallery = thumb.closest('.rp-qv-gallery');
-            var mainImg = gallery ? gallery.querySelector('.rp-qv-main-img') : null;
+            var gallery = thumb.closest('.ghb-qv-gallery');
+            var mainImg = gallery ? gallery.querySelector('.ghb-qv-main-img') : null;
             if (mainImg && src) mainImg.src = src;
         }
     });

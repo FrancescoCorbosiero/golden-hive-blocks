@@ -38,7 +38,7 @@ $faq_uid = wp_unique_id('gh-faq-');
 ?>
 <section <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-faq')); ?> data-gh-faq<?php echo $allow_multiple ? ' data-gh-faq-multiple="true"' : ''; ?>>
     <div class="gh-section-header gh-faq__header">
-        <h2 class="gh-section-title gh-faq__title"><?php echo esc_html($title); ?></h2>
+        <h2 class="gh-section-title gh-faq__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
         <?php if (!empty($subtitle)) : ?>
             <p class="gh-faq__subtitle"><?php echo esc_html($subtitle); ?></p>
         <?php endif; ?>
@@ -47,7 +47,7 @@ $faq_uid = wp_unique_id('gh-faq-');
     <div class="gh-faq__list">
         <?php foreach ($items as $index => $item) : ?>
             <?php if (!empty($item['question']) && !empty($item['answer'])) : ?>
-                <div class="gh-faq__item" data-gh-faq-item data-gh-reveal="up" data-gh-reveal-delay="<?php echo $index * 50; ?>" style="--gh-reveal-delay: <?php echo $index * 50; ?>ms">
+                <div class="gh-faq__item" data-gh-faq-item data-gh-reveal="up">
                     <button class="gh-faq__trigger"
                             data-gh-faq-trigger
                             aria-expanded="false"

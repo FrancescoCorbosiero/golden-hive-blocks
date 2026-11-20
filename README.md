@@ -24,9 +24,12 @@ classic WooCommerce theme.
 | `includes/*.php` | The WooCommerce features, one file per feature. |
 | `includes/*-core.php` | Plain PHP with no WordPress calls: the decisions a feature makes, unit-tested in `tests/`. |
 | `*.css` (root), `js/*.js` | Front-end sources. `npm run build` writes the `.min` siblings, which are served when present. |
+| `js/motion.js` | Scroll motion: how sections arrive as the page scrolls (see [Motion](#motion)). |
+| `js/animations.js` | The blocks' behaviour: modals, FAQ, hero carousel, countdowns, newsletter, the social-proof toast, the remembered size. |
 | `templates/search-results.php` | Result card for the Relevanssi live-search modal. |
-| `pages/*.html` | Block markup for the store's pages, to paste into WordPress's code editor. `pages/homepage.html` is also a test fixture. |
-| `tests/` | Framework-free tests (PHP and Node). `tests/wp/` holds copies of WordPress's block parser; `tests/fixtures/homepage.html` is the live homepage's markup. |
+| `pages/*.html` | Starting markup for the store's pages, to paste into WordPress's code editor. The live pages are the truth from then on (the Store Hub edits the homepage directly, with WordPress revisions); `pages/homepage.html` is also a test fixture. |
+| `tests/` | Framework-free tests (PHP, Node, and one browser test). `tests/wp/` holds copies of WordPress's block parser; `tests/fixtures/` the homepage's markup and the motion test page. |
+| `.github/workflows/tests.yml` | CI: runs on every push (see [Development](#development)). |
 
 ## What the plugin does
 
@@ -52,9 +55,9 @@ All are in the **Golden Hive** inserter category and are server-rendered.
 | Shortcode | What it shows | File |
 |---|---|---|
 | `[gh_product_rail]` | A product rail (scroll-snap carousel): by category, brand, tag, IDs or type, with `pin` / `exclude` / `fallback` ordering | `includes/product-rail.php` |
-| `[carousel_section]`, `[product_carousel]`, `[bestsellers]`, `[new_arrivals]`, `[on_sale]`, `[featured_products]` | Older names, kept so existing pages still work; all render the product rail | `includes/product-carousel-shortcode.php` |
+| `[carousel_section]`, `[product_carousel]`, `[bestsellers]`, `[new_arrivals]`, `[on_sale]`, `[featured_products]` | Older names, kept so existing pages still work; all render the product rail | `includes/product-query.php` |
 | `[gh_size_rail]` | "Nella tua taglia": products in the size this browser remembers | `includes/size-rail.php` |
-| `[bfl_filters]`, `[gh_filters]` | The shop filters panel (`mode="inline"` for a sidebar) | `includes/filters.php` |
+| `[gh_filters]` (older name `[bfl_filters]`, still in the shop sidebar) | The shop filters panel (`mode="inline"` for a sidebar) | `includes/filters.php` |
 | `[gh_bank_details]` | The bank-transfer details drawer | `includes/bank-details.php` |
 
 ### Store interface
@@ -62,7 +65,8 @@ All are in the **Golden Hive** inserter category and are server-rendered.
 | Feature | File | Notes |
 |---|---|---|
 | Card add-to-cart with inline size picker, "Esaurito" | `add-to-cart.php`, `quick-add.php` | Replaces WooCommerce's loop button. Cart writes go through WooCommerce's own `wc-ajax=add_to_cart`. |
-| Quick View | `quick-view.php` | Its AJAX handler is in `product-carousel-shortcode.php`. |
+| Quick View | `quick-view.php` | Its data comes from `product-ajax.php` (with Quick Add's). |
+| The product query every rail uses | `product-query.php` | Published, catalogue-visible, sold-out hidden when the store hides them. |
 | Card says "Taglia 42 · 180 €" when the shop is filtered by size | `size-match.php` | Quick View / Quick Add open on that size. |
 | Shop filters (price, category, availability, attributes) | `filters.php` | Follows whatever collection is being viewed; every filtered URL is also a plain page load. |
 | Sold-out products last | `sold-out-last.php` | Done in SQL, so they fill the last pages. |
@@ -100,9 +104,12 @@ and refuse rather than guess when the page changed since the app read it.
 | `/homepage/layout` | write | Add, remove, reorder or switch off sections |
 | `/homepage/history` | GET | One rail's earlier states, from the page's revisions |
 
-Logic lives in `includes/hub-rails-core.php` (tested), WordPress glue in
-`includes/hub-rails.php`. **The app mirrors these rules**, so changing them
-changes what the app previews.
+The decisions live in `includes/hub-rails-core.php` (tested). The WordPress
+side is three files: `hub-rails.php` (what the storefront runs: the rail
+query and category pages following their homepage rail), `hub-page.php`
+(reading and saving the homepage, its fields, product cards) and
+`hub-rest.php` (the routes). **The app mirrors the core's rules**, so
+changing them changes what the app previews.
 
 ## Where the shop owner changes things
 
@@ -147,6 +154,42 @@ token. Keep it that way when adding one.
 | `ghb_drop_ics` | A published product's drop, or a signed event |
 | `ghb_alerts` | Subscriber token; only a POST acts |
 
+## Motion
+
+`js/motion.js` decides how sections arrive as the page scrolls. Its moves and
+rules come from the Alpacode motion catalog
+([alpacode-motion](https://github.com/FrancescoCorbosiero/alpacode-motion) at
+`7b1a203`: `reveal`, `reveal-stagger`, `split-lines`, `clip`, and
+`parallax-cover` as CSS). They're rebuilt on IntersectionObserver and the Web
+Animations API instead of GSAP: the same curves and timings, about 2 KB
+gzipped instead of about 50 KB of libraries, and no smooth-scroll library
+taking over the shop's scrolling.
+
+| Hook | Move | Used on |
+|---|---|---|
+| `data-gh-reveal` (`up`, `down`, `left`, `right`, `scale`) | The block rises into place; blocks entering together land as a staggered batch | Most block content |
+| `data-gh-reveal="stagger"` (+ `data-gh-stagger="<selector>"`) | Its items land in a cascade with a little bounce | Product rails (their cards) |
+| `data-gh-split="lines"` | A heading's lines rise out of their masks | Every block title except the hero carousel's |
+| `data-gh-image-reveal` | A photo opens from a clip, its image settling from a slight zoom | CTA Image, About Hero, Product Spotlight |
+| `data-gh-drift` | A cover photo drifts in its frame while it crosses the screen (a CSS scroll-driven animation, no script) | CTA Image, About Hero |
+
+The rules, which keep it fast and safe on a cached store:
+
+- **Nothing is hidden by CSS.** `motion.js` hides what it animates, at init,
+  and only below the first screen. Without JavaScript, or if the script
+  fails, the page is complete.
+- **The first screen never moves**, so nothing waits on a script to be seen.
+- **"Hidden" is a paused animation, not an inline style.** When a move ends
+  the element is back under the stylesheet, so hover effects keep working.
+- **A split heading keeps its exact height** (no layout shift), and is put
+  back as plain text when its move ends.
+- A jump (anchor, find-in-page) shows what it skipped at once; keyboard focus
+  shows a waiting block at once; reduced motion turns all of it off.
+
+`js/animations.js` keeps the hero titles' own character split
+(`data-gh-split="chars"` / `"words"`) and the pointer effects
+(`data-gh-magnetic`, `data-gh-mouse-parallax`).
+
 ## Development
 
 ```bash
@@ -159,6 +202,12 @@ Run every test (no WordPress needed):
 for t in tests/*-test.php; do php "$t" || exit 1; done && for t in tests/*-test.js; do node "$t" || exit 1; done
 ```
 
+`tests/motion-test.js` drives headless Chromium through Playwright, and skips
+itself where Playwright isn't installed. **CI**
+(`.github/workflows/tests.yml`) runs on every push: PHP syntax and tests on
+PHP 8.0 and 8.4, a check that the committed `.min` files match a fresh
+build, the Node tests, and the motion test in Chromium.
+
 **Release checklist**
 
 1. Bump `Version:` and `GOLDEN_HIVE_BLOCKS_VERSION` in
@@ -170,19 +219,10 @@ for t in tests/*-test.php; do php "$t" || exit 1; done && for t in tests/*-test.
 
 ## Known debt
 
-- **No CI.** Tests only run when someone runs them.
-- **Big files:** `includes/hub-rails.php` (~1,370 lines) and
-  `js/animations.js` (~1,500 lines, comments in Italian, which predates the
-  English-comments rule).
-- **Misleading file name:** `includes/product-carousel-shortcode.php` mostly
-  holds the shared product query and the Quick View / variations AJAX
-  handlers; the old carousel is gone.
-- **Legacy class names** kept from migrated Code Snippets: `.rp-qv-*`,
-  `.rp-quick-view-btn` (Quick View), `.bfl-*` (filters). Custom CSS on the
-  site may target them.
-- **Migrated snippets must stay off on the site.** Quick View, mobile nav,
-  swatch sale badges and shop grid would show twice if their old Code
-  Snippets were re-enabled. The filters detect their old snippet and stand
-  down by themselves.
-- **`pages/homepage.html` can drift** from the live homepage, which the Store
-  Hub edits directly.
+- **Italian code comments** are still in `style.css` (about 50 lines) and a
+  few lines each in other stylesheets and scripts. New comments are English;
+  translate the old ones when you touch them.
+- **Big files:** `js/animations.js` (~1,450 lines, one module per block
+  behaviour), `includes/filters.php` (~970) and `includes/hub-rest.php`
+  (~670). Each is one feature, sectioned, and covered where it decides
+  things, but they're the slowest to read.

@@ -40,7 +40,7 @@ $has_link = !empty($button_url) && !empty($button_text);
                     <span class="gh-eyebrow gh-shortcode-wrapper__eyebrow"><?php echo esc_html($eyebrow); ?></span>
                 <?php endif; ?>
                 <?php if (!empty($title)) : ?>
-                    <h2 class="gh-section-title gh-shortcode-wrapper__title"><?php echo esc_html($title); ?></h2>
+                    <h2 class="gh-section-title gh-shortcode-wrapper__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
                 <?php endif; ?>
             </div>
             <?php if ($has_link) : ?>

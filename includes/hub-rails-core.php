@@ -8,7 +8,8 @@
  * content and replaced — so it is unit-tested against the real homepage markup
  * (tests/hub-rails-test.php) without a WordPress install.
  *
- * The WordPress side (REST routes, queries, caches) lives in hub-rails.php.
+ * The WordPress side: the rail query in hub-rails.php, the REST routes in
+ * hub-rest.php (built on hub-page.php).
  *
  * @package Golden_Hive_Blocks
  * @since   5.9.0

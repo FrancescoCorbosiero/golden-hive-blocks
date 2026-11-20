@@ -1,8 +1,8 @@
 /**
  * Golden Hive Blocks — Shop grid layout alignment.
  * Uniform product-card layout on shop/taxonomy/search loops.
- * See includes/shop-grid.php. Migrated from a Code Snippet; the bottom-align
- * rule now targets our .ghb-atc control (replaces the old .button / .rp-quick-add-btn).
+ * See includes/shop-grid.php. The bottom-align rule targets the plugin's
+ * .ghb-atc add-to-cart control.
  */
 
 /* Each card becomes a flex column */

@@ -314,63 +314,24 @@
     .gh-rail__progress { margin-right: 0; }
 }
 
-/* --------------------------------------------------------------------------
-   Entrata — reveal a basso impatto. Il contenitore .gh-rail porta
-   data-gh-reveal solo come TRIGGER (l'IntersectionObserver di animations.js
-   gli aggiunge .gh-revealed): il contenitore stesso resta sempre visibile,
-   sono le card a salire in sequenza. Tutto gated su html.gh-js, con failsafe
-   e reduced-motion coperti, quindi senza JS le card sono semplicemente lì.
-   -------------------------------------------------------------------------- */
-html.gh-js .gh-rail[data-gh-reveal] {
-    opacity: 1;
-    transform: none;
-}
-
-html.gh-js .gh-rail[data-gh-reveal] .gh-rail__track > li.product {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 0.5s var(--gh-ease-out, ease), transform 0.5s var(--gh-ease-out, ease);
-}
-
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product {
-    opacity: 1;
-    transform: none;
-}
-
-/* Stagger: 60ms a card per le prime sei visibili, poi piatto. */
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(2) { transition-delay: 0.06s; }
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(3) { transition-delay: 0.12s; }
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(4) { transition-delay: 0.18s; }
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(5) { transition-delay: 0.24s; }
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(6) { transition-delay: 0.30s; }
-html.gh-js .gh-rail[data-gh-reveal].gh-revealed .gh-rail__track > li.product:nth-child(n+7) { transition-delay: 0.36s; }
-
-/* Failsafe: engine mai partito → card visibili, nessuna transizione. */
-html.gh-anim-failsafe .gh-rail .gh-rail__track > li.product {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-}
+/* Entrance: the cards land in a cascade (js/motion.js, data-gh-reveal="stagger"
+   on the rail); nothing here hides them. */
 
 @media (prefers-reduced-motion: reduce) {
-    html.gh-js .gh-rail[data-gh-reveal] .gh-rail__track > li.product {
-        transition-duration: 0.01ms;
-        transition-delay: 0s;
-    }
     .gh-rail__track > li.product img { transition: none; }
 }
 
 /* Make sure the Quick View button reveals on the rail too (its default reveal
    is scoped to hover under .woocommerce; we wrap the rail in .woocommerce, but
    keep this explicit for touch + focus robustness). */
-.gh-rail__track > li.product:hover .rp-quick-view-btn,
-.gh-rail__track > li.product:focus-within .rp-quick-view-btn {
+.gh-rail__track > li.product:hover .ghb-qv-btn,
+.gh-rail__track > li.product:focus-within .ghb-qv-btn {
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
 }
 @media (hover: none) {
-    .gh-rail__track .rp-quick-view-btn {
+    .gh-rail__track .ghb-qv-btn {
         opacity: 1;
         transform: scale(1);
         pointer-events: auto;
