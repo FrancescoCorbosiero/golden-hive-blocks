@@ -70,6 +70,59 @@ name and its attributes as JSON:
 - **Floating widgets last**, at most one of each per page:
   `social-buttons`, `social-proof`, `whatsapp-button`.
 
+## House conventions
+
+How the stores' pages are actually built. Follow these unless asked
+otherwise:
+
+- **Keep the store's own copy.** Rearrange sections freely, fix typos and
+  accents, resolve contradictions (and say which version you kept), but
+  don't rewrite claims or invent new ones.
+- **The page's `<h1>` is hidden**: a heading block with the `gh-sr-only`
+  class, first on the page, for search engines and screen readers. The
+  visible titles are the blocks' own `<h2>`s.
+- **Homepage order:** `hero-carousel` (the store's own campaigns) →
+  `trust-badges` (`"variant":"carousel"`) → a 1600px group of category rails
+  → `brand-marquee` (no title: `"title":""`) → a 1600px group of brand rails
+  → one or two `cta-image` (alternate `"reverse":true`) → the authenticity
+  banner → `faq-schema` → `social-buttons` + `whatsapp-button`.
+- **Rails:** `columns='4' columns_tablet='3' columns_mobile='2'`,
+  `limit='12'`, inside `{"layout":{"type":"constrained","contentSize":"1600px"}}`
+  groups. Category rails carry an eyebrow; brand rails don't, and their
+  button reads "Esplora <Brand>".
+- **Colours come from the store, not the page.** Every accent is the
+  store's "Colore principale" (Customizer → Golden Hive — Stile). Never put
+  a colour in a page.
+- **Blocks whose defaults belong to another store.** Contact Info (address,
+  P.IVA), About Hero (title, text) and Trustpilot Widget (a fixed rating)
+  have defaults written for the first store. Set every field you use and
+  blank the rest (`"address":""`), and use the store's official TrustBox
+  embed in an `html` block rather than the Trustpilot block.
+
+The authenticity banner has no block yet; it's this `html` block (the
+styles are the plugin's):
+
+```html
+<!-- wp:html -->
+<section class="gh-block gh-auth-banner" data-gh-reveal="up">
+    <div class="gh-auth-banner__bg">
+        <img src="https://example.com/sfondo.jpg" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="gh-auth-banner__overlay"></div>
+    <div class="gh-auth-banner__container">
+        <div class="gh-auth-banner__icon-ring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h2 class="gh-auth-banner__title">100% Autentico, 100% Garantito</h2>
+        <p class="gh-auth-banner__text">Una o due frasi su come il negozio verifica i prodotti.</p>
+        <div class="gh-auth-banner__badges">
+            <span class="gh-auth-banner__badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg> GARANZIA</span>
+        </div>
+    </div>
+</section>
+<!-- /wp:html -->
+```
+
 ## Product rails
 
 A rail is a `shortcode-wrapper` block holding `[gh_product_rail]`:
@@ -139,31 +192,33 @@ Placeholders in capitals. Each skeleton passes the checker
 ### Homepage
 
 ```html
-<!-- wp:golden-hive/hero-carousel {"slides":[{"image":"https://example.com/slide-1.jpg","eyebrow":"NUOVA COLLEZIONE","title":"TITOLO CAMPAGNA","subtitle":"Una riga che dice perché.","buttonText":"SCOPRI","buttonUrl":"/categoria/collezione/"},{"image":"https://example.com/slide-2.jpg","eyebrow":"DROP","title":"SECONDA CAMPAGNA","buttonText":"ACQUISTA","buttonUrl":"/marchio/brand/"}]} /-->
+<!-- wp:heading {"level":1,"className":"gh-sr-only"} -->
+<h1 class="wp-block-heading gh-sr-only">NOME DEL NEGOZIO — COSA VENDE</h1>
+<!-- /wp:heading -->
 
-<!-- wp:golden-hive/trust-badges /-->
+<!-- wp:golden-hive/hero-carousel {"slides":[{"image":"https://example.com/slide-1.jpg","objectPosition":"center center","eyebrow":"Il tuo store di fiducia","title":"NOME DEL NEGOZIO","subtitle":"Una riga che dice perché.","buttonText":"Esplora","buttonUrl":"/categoria/selezione/"},{"image":"https://example.com/slide-2.jpg","eyebrow":"CAMPAGNA","title":"BRAND O MODELLO","buttonText":"Scopri","buttonUrl":"/marchio/brand/"}]} /-->
 
-<!-- wp:golden-hive/drop-calendar {"title":"Le prossime uscite"} /-->
+<!-- wp:golden-hive/trust-badges {"variant":"carousel"} /-->
 
 <!-- wp:group {"layout":{"type":"constrained","contentSize":"1600px"}} -->
-<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Selezione","title":"IN TENDENZA","shortcode":"[gh_product_rail category='in-tendenza' limit='12']"} /-->
+<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Selezionati da noi","title":"SELEZIONE","shortcode":"[gh_product_rail category='selezione' limit='12' columns='4' columns_tablet='3' columns_mobile='2']","buttonText":"Vedi tutti","buttonUrl":"/categoria/selezione/"} /-->
 
-<!-- wp:golden-hive/shortcode-wrapper {"title":"Nella tua taglia","shortcode":"[gh_size_rail limit='12']"} /-->
-
-<!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Appena arrivate","title":"NUOVI ARRIVI","shortcode":"[gh_product_rail category='nuovi-arrivi' limit='15' columns='5']"} /--></div>
+<!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Release aggiornate","title":"NUOVI ARRIVI","shortcode":"[gh_product_rail type='recent' limit='12' columns='4' columns_tablet='3' columns_mobile='2']","buttonText":"Vedi tutti","buttonUrl":"/negozio/"} /--></div>
 <!-- /wp:group -->
 
-<!-- wp:golden-hive/category-slider {"title":"Categorie","categories":[{"name":"CATEGORIA","image":"https://example.com/categoria.jpg","url":"/categoria/slug/"}]} /-->
+<!-- wp:golden-hive/brand-marquee {"title":"","brands":[{"name":"BRAND","logo":"https://example.com/logo.png","url":"/marchio/brand/"}],"speed":40} /-->
 
-<!-- wp:golden-hive/brand-marquee {"title":"SHOP BY BRAND","brands":[{"name":"BRAND","logo":"https://example.com/logo.png","url":"/marchio/brand/"}]} /-->
+<!-- wp:group {"layout":{"type":"constrained","contentSize":"1600px"}} -->
+<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"title":"BRAND","shortcode":"[gh_product_rail brand='brand' type='best_selling' limit='12' columns='4' columns_tablet='3' columns_mobile='2']","buttonText":"Esplora Brand","buttonUrl":"/marchio/brand/"} /--></div>
+<!-- /wp:group -->
 
-<!-- wp:golden-hive/newsletter {"askSize":true} /-->
+<!-- wp:golden-hive/cta-image {"imageUrl":"https://example.com/cta-1.jpg","eyebrow":"Selezionati da noi","title":"TITOLO","text":"Una frase.","buttonText":"Esplora","buttonUrl":"/categoria/slug/"} /-->
 
-<!-- wp:golden-hive/store-visit /-->
+<!-- wp:golden-hive/cta-image {"imageUrl":"https://example.com/cta-2.jpg","eyebrow":"ETICHETTA","title":"TITOLO","text":"Una frase.","buttonText":"Acquista ora","buttonUrl":"/categoria/slug/","reverse":true} /-->
 
-<!-- wp:golden-hive/faq-schema {"items":[{"question":"DOMANDA?","answer":"<p>RISPOSTA.</p>"}]} /-->
+<!-- wp:golden-hive/faq-schema {"subtitle":"Trova le risposte alle domande più comuni","items":[{"question":"DOMANDA?","answer":"<p>RISPOSTA.</p>"}]} /-->
 
-<!-- wp:golden-hive/social-proof /-->
+<!-- wp:golden-hive/social-buttons {"instagram":"https://www.instagram.com/example"} /-->
 
 <!-- wp:golden-hive/whatsapp-button {"phoneNumber":"390000000000","iconOnly":true} /-->
 ```
@@ -189,7 +244,7 @@ Placeholders in capitals. Each skeleton passes the checker
 ```html
 <!-- wp:golden-hive/hero-video {"mediaType":"image","imageUrl":"https://example.com/contatti.jpg","title":"CONTATTI"} /-->
 
-<!-- wp:golden-hive/contact-info {"title":"Scrivici","address":"VIA, CITTÀ","phone":"+39 000 000 0000","email":"info@example.com"} /-->
+<!-- wp:golden-hive/contact-info {"title":"Scrivici","subtitle":"","address":"VIA, CITTÀ","vat":"P.IVA 00000000000","phone":"+39 000 000 0000","email":"info@example.com","mapEmbed":""} /-->
 
 <!-- wp:golden-hive/store-hours /-->
 
