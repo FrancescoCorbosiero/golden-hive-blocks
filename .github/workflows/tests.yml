@@ -35,6 +35,9 @@ jobs:
       - name: Tests
         run: for t in tests/*-test.php; do echo "== $t"; php "$t" || exit 1; done
 
+      - name: docs/blocks.md matches the blocks
+        run: php tools/block-reference.php --check
+
   js:
     name: Assets and browser
     runs-on: ubuntu-latest

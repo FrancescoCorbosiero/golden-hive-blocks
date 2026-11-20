@@ -27,8 +27,10 @@ classic WooCommerce theme.
 | `js/motion.js` | Scroll motion: how sections arrive as the page scrolls (see [Motion](#motion)). |
 | `js/animations.js` | The blocks' behaviour: modals, FAQ, hero carousel, countdowns, newsletter, the social-proof toast, the remembered size. |
 | `templates/search-results.php` | Result card for the Relevanssi live-search modal. |
-| `pages/*.html` | Starting markup for the store's pages, to paste into WordPress's code editor. The live pages are the truth from then on (the Store Hub edits the homepage directly, with WordPress revisions); `pages/homepage.html` is also a test fixture. |
-| `tests/` | Framework-free tests (PHP, Node, and one browser test). `tests/wp/` holds copies of WordPress's block parser; `tests/fixtures/` the homepage's markup and the motion test page. |
+| `docs/pages.md` | How to build a store page as block markup: rules, product rails, motion, skeletons. The pages themselves live in WordPress, not here. |
+| `docs/blocks.md` | Every block's attributes, generated from the code (`php tools/block-reference.php`). |
+| `tools/check-page.php` | Checks a page's block markup before it goes to the site. |
+| `tests/` | Framework-free tests (PHP, Node, and one browser test). `tests/wp/` holds copies of WordPress's block parser; `tests/fixtures/` a homepage's markup (store details replaced by placeholders), a smaller generic page, and the motion test page. |
 | `.github/workflows/tests.yml` | CI: runs on every push (see [Development](#development)). |
 
 ## What the plugin does
@@ -217,6 +219,21 @@ build, the Node tests, and the motion test in Chromium.
 3. Changed a root `.css` or `js/*.js`? `npm run build`, commit both files.
 4. Run the tests.
 
+## Building pages
+
+Pages are written as block markup and checked before they go to the site:
+[docs/pages.md](docs/pages.md) is the spec, [docs/blocks.md](docs/blocks.md)
+the block reference, and
+
+```bash
+php tools/check-page.php page.html
+```
+
+reports what WordPress would drop or get wrong: attributes that aren't valid
+JSON, unknown blocks or attributes, wrong types, rail attributes the rail
+doesn't know, rails the Store Hub can't see, unknown motion values. It exits
+1 on any error.
+
 ## Known debt
 
 - **Italian code comments** are still in `style.css` (about 50 lines) and a
@@ -226,3 +243,7 @@ build, the Node tests, and the motion test in Chromium.
   behaviour), `includes/filters.php` (~970) and `includes/hub-rest.php`
   (~670). Each is one feature, sectioned, and covered where it decides
   things, but they're the slowest to read.
+- **Store details in block defaults.** A few blocks' defaults in
+  `block.json` (About Hero, Contact Info, Instagram Feed, Store Visit) still
+  carry this store's name, city or handles. They only show when a page
+  leaves that attribute out.

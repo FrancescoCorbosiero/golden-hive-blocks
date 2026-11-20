@@ -32,7 +32,9 @@ scratch file.
    `editor.asset.php`.
 4. Run all tests.
 5. Changed a file's role, a hook, a setting or an endpoint? Update
-   `README.md` / `THEME-COUPLING.md` in the same change.
+   `README.md` / `THEME-COUPLING.md` in the same change. Changed a block's
+   attributes? Run `php tools/block-reference.php` (CI checks
+   `docs/blocks.md` is current).
 
 ## Where code goes
 
@@ -78,9 +80,13 @@ scratch file.
   sizes through the key helpers in `size-match-core.php`, never raw labels.
 - **`[bfl_filters]`** is the filters' older shortcode name and is still
   placed in the shop sidebar: keep it registered next to `[gh_filters]`.
-- **`pages/homepage.html`** is copy-paste page markup *and* a fixture for
-  `tests/hub-rails-test.php`. `tests/fixtures/homepage.html` is the live
-  homepage; don't "tidy" either.
+- **No site content in the repo.** Pages live in WordPress. Writing one?
+  Follow `docs/pages.md`, look attributes up in `docs/blocks.md`, and run
+  `php tools/check-page.php` on it: 0 errors before it goes anywhere. In
+  shortcodes inside block JSON, quote attributes with single quotes.
+- **`tests/fixtures/homepage.html`** is a real homepage's structure with the
+  store's details replaced; the Store Hub tests depend on its exact shape
+  (rail keys, block paths). Don't "tidy" it.
 
 ## Language and style
 
