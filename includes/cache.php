@@ -5,7 +5,7 @@
  * One place that empties whichever page cache the site runs (LiteSpeed, WP
  * Rocket, W3 Total Cache, WP Super Cache, SiteGround Optimizer), for the
  * moments a cached page is wrong for everyone at once: a Store Hub write
- * (includes/hub-rails.php) and a drop going live (includes/drops.php).
+ * (includes/hub-rest.php) and a drop going live (includes/drops.php).
  * A CDN can hook ghb_page_caches_purged.
  *
  * @package Golden_Hive_Blocks

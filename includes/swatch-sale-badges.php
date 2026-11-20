@@ -12,9 +12,6 @@
  * theme module 'swatch-sale-badges' (theme-compat.php; force it on there if
  * CommerceKit is kept on another theme).
  *
- * Migrated from a Code Snippet. Disable that snippet once this is active, or the
- * <style> block will be emitted twice.
- *
  * @package Golden_Hive_Blocks
  * @since   5.3.0
  */

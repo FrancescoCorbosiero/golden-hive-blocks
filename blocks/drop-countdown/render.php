@@ -64,10 +64,10 @@ if ($ts) {
                 <span class="gh-eyebrow gh-drop-countdown__eyebrow" data-gh-reveal="up"><?php echo esc_html(strtoupper($eyebrow)); ?></span>
             <?php endif; ?>
 
-            <h2 class="gh-section-title gh-drop-countdown__title" data-gh-reveal="up" data-gh-reveal-delay="100" style="--gh-reveal-delay: 100ms"><?php echo esc_html($name); ?></h2>
+            <h2 class="gh-section-title gh-drop-countdown__title" data-gh-split="lines"><?php echo esc_html($name); ?></h2>
 
             <?php if ($ts || ($product && '' !== $product->get_price_html())) : ?>
-                <p class="gh-drop-countdown__meta" data-gh-reveal="up" data-gh-reveal-delay="150" style="--gh-reveal-delay: 150ms">
+                <p class="gh-drop-countdown__meta" data-gh-reveal="up">
                     <?php if ($ts) : ?>
                         <span class="gh-drop-countdown__date"><?php echo esc_html(function_exists('ghb_drop_long_date') ? ghb_drop_long_date($ts) : wp_date('j F Y, H:i', $ts)); ?></span>
                     <?php endif; ?>
@@ -78,7 +78,7 @@ if ($ts) {
             <?php endif; ?>
 
             <?php if ($ts) : ?>
-                <div class="gh-drop-countdown__timer" role="timer" aria-live="polite" aria-atomic="true" data-gh-countdown="<?php echo esc_attr(gmdate('c', $ts)); ?>" data-gh-countdown-expired="DISPONIBILE ORA" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms">
+                <div class="gh-drop-countdown__timer" role="timer" aria-live="polite" aria-atomic="true" data-gh-countdown="<?php echo esc_attr(gmdate('c', $ts)); ?>" data-gh-countdown-expired="DISPONIBILE ORA" data-gh-reveal="up">
                     <div class="gh-countdown__item">
                         <span class="gh-countdown__value" data-gh-countdown-giorni>00</span>
                         <span class="gh-countdown__label">Giorni</span>
@@ -98,7 +98,7 @@ if ($ts) {
                 </div>
             <?php endif; ?>
 
-            <div class="gh-drop-countdown__cta" data-gh-reveal="up" data-gh-reveal-delay="300" style="--gh-reveal-delay: 300ms">
+            <div class="gh-drop-countdown__cta" data-gh-reveal="up">
                 <?php if ($ts) : ?>
                     <div class="gh-drop-countdown__actions" data-ghb-drop-before<?php echo $released ? ' hidden' : ''; ?>>
                         <?php
@@ -148,7 +148,7 @@ if ($ts) {
         </div>
 
         <?php if (!empty($image_url)) : ?>
-            <div class="gh-drop-countdown__image" data-gh-reveal="up" data-gh-reveal-delay="150" style="--gh-reveal-delay: 150ms">
+            <div class="gh-drop-countdown__image" data-gh-reveal="up">
                 <?php echo gh_img($image_id, $image_url, array(
                     'alt'     => $name,
                     'loading' => 'lazy',

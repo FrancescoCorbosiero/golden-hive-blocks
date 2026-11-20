@@ -70,7 +70,7 @@ $btn_class = $button_style === 'outline'
             <?php endif; ?>
 
             <?php if (!empty($title)) : ?>
-                <h2 class="gh-section-title gh-hero-split__title"><?php echo esc_html($title); ?></h2>
+                <h2 class="gh-section-title gh-hero-split__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
             <?php endif; ?>
 
             <?php if (!empty($subtitle)) : ?>

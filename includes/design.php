@@ -169,7 +169,7 @@ function ghb_filters_drawer_toggle()
     if (!ghb_filters_drawer_active()) {
         return;
     }
-    echo '<button type="button" class="ghb-filters-toggle bfl-trigger" aria-controls="secondary" aria-expanded="false">'
+    echo '<button type="button" class="ghb-filters-toggle ghb-filter-trigger" aria-controls="secondary" aria-expanded="false">'
         . '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>'
         . '<span>' . esc_html__('Filtri', 'golden-hive-blocks') . '</span></button>';
 }

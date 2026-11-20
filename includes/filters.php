@@ -2,17 +2,14 @@
 /**
  * Golden Hive — AJAX product filters (the "Advanced Filters" panel).
  *
- * Migrated from the "BLACKOUT FASHION LAB — Modern AJAX Filter Drawer (v3)"
- * Code Snippet, with its scope bug fixed: the snippet only recognised product
- * CATEGORY archives, so on every other collection — brand pages such as
- * /marchio/nike/nike-travis-scott/, tags, attribute archives — it listed the
- * whole catalogue's categories / models / sizes, and its AJAX refresh and
- * pagination queried the whole catalogue too. Everything now follows the
- * collection being viewed: the queried term on ANY product taxonomy archive.
+ * Every facet follows the collection being viewed: the queried term on any
+ * product taxonomy archive (category, brand pages such as
+ * /marchio/nike/nike-travis-scott/, tags, attributes), and the AJAX refresh
+ * and pagination query that collection, not the whole catalogue.
  *
- *   [bfl_filters]                → "Filtri" button + its own drawer
- *   [bfl_filters mode="inline"]  → the panel inline (sidebar / theme drawer)
- *   [gh_filters …]               → same, plugin-prefixed alias
+ *   [gh_filters]                 → "Filtri" button + its own drawer
+ *   [gh_filters mode="inline"]   → the panel inline (sidebar / theme drawer)
+ *   [bfl_filters …]              → older name, still placed in the shop sidebar
  *
  * Facets: Prezzo (slider + € inputs), Categoria (pills), Stato → Disponibile,
  * plus product attributes (config below). Options that can't narrow the
@@ -25,11 +22,8 @@
  * the page instead of refreshing over AJAX, so the search engine (Relevanssi)
  * keeps deciding what matches.
  *
- * Kept from the snippet: the .bfl-* markup and classes (custom CSS keeps
- * working) and the URL params. Renamed: the PHP class and the AJAX action
- * (ghb_filter), so the snippet's copy can never collide with this one. While
- * the snippet is still active this module stands down (see ghb_filters_boot)
- * — deactivate it in Code Snippets to switch over.
+ * Markup: .ghb-filter-* classes, data-ghb-filter-* hooks (js/filters.js),
+ * styles in filters.css; the drawer and the inline panel share the facets.
  *
  * @package Golden_Hive_Blocks
  * @since   5.8.0
@@ -46,25 +40,7 @@ function ghb_filters_boot()
         return;
     }
 
-    // Code Snippets runs active snippets on plugins_loaded, before init. While
-    // the original snippet is on it keeps [bfl_filters] and this copy stays
-    // off: two copies would register the same shortcode and query hook.
-    if (class_exists('BFL_Ajax_Filters')) {
-        add_action('admin_notices', 'ghb_filters_snippet_notice');
-        return;
-    }
-
     new GHB_Filters();
-}
-
-function ghb_filters_snippet_notice()
-{
-    if (!current_user_can('manage_options')) {
-        return;
-    }
-    echo '<div class="notice notice-warning"><p>'
-        . esc_html__('Golden Hive Blocks: i filtri prodotto ora sono inclusi nel plugin (limitati alla collezione che si sta guardando). Disattiva lo snippet "Advanced Filters" in Code Snippets per passare alla nuova versione.', 'golden-hive-blocks')
-        . '</p></div>';
 }
 
 class GHB_Filters
@@ -74,8 +50,8 @@ class GHB_Filters
 
     public function __construct()
     {
-        add_shortcode('bfl_filters', array($this, 'shortcode'));
         add_shortcode('gh_filters', array($this, 'shortcode'));
+        add_shortcode('bfl_filters', array($this, 'shortcode'));
         add_action('wp_ajax_ghb_filter', array($this, 'ajax_filter'));
         add_action('wp_ajax_nopriv_ghb_filter', array($this, 'ajax_filter'));
         add_action('woocommerce_product_query', array($this, 'apply_extra_query_vars'), 20);
@@ -742,7 +718,7 @@ class GHB_Filters
         if (is_admin()) {
             return '';
         }
-        $atts   = shortcode_atts(array('mode' => 'drawer'), $atts, 'bfl_filters');
+        $atts   = shortcode_atts(array('mode' => 'drawer'), $atts, 'gh_filters');
         $inline = ('inline' === $atts['mode']);
         $cfg    = $this->config();
 
@@ -800,32 +776,32 @@ class GHB_Filters
 
         wp_enqueue_style('golden-hive-filters');
         wp_enqueue_script('golden-hive-filters');
-        wp_add_inline_script('golden-hive-filters', 'window.BFL_CFG = ' . wp_json_encode($js_cfg) . ';', 'before');
+        wp_add_inline_script('golden-hive-filters', 'window.GHB_FILTERS_CFG = ' . wp_json_encode($js_cfg) . ';', 'before');
 
         ob_start();
         if ($inline) {
-            echo '<div class="bfl-inline" data-bfl-root>' . $facets_html . '</div>';
+            echo '<div class="ghb-filter-inline" data-ghb-filter-root>' . $facets_html . '</div>';
         } else {
             ?>
-            <button type="button" class="bfl-trigger" data-bfl-open>
+            <button type="button" class="ghb-filter-trigger" data-ghb-filter-open>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                 <span><?php echo esc_html($cfg['button_label']); ?></span>
-                <span class="bfl-badge" data-bfl-badge hidden>0</span>
+                <span class="ghb-filter-badge" data-ghb-filter-badge hidden>0</span>
             </button>
             <?php
             static $drawer_done = false;
             if (!$drawer_done) :
                 $drawer_done = true; ?>
-                <div class="bfl-drawer" data-bfl-drawer aria-hidden="true">
-                    <div class="bfl-backdrop" data-bfl-close></div>
-                    <aside class="bfl-panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Filtri', 'golden-hive-blocks'); ?>">
-                        <header class="bfl-dhead">
-                            <span class="bfl-dtitle"><?php esc_html_e('Filtra per:', 'golden-hive-blocks'); ?></span>
-                            <button type="button" class="bfl-x" data-bfl-close aria-label="<?php esc_attr_e('Chiudi', 'golden-hive-blocks'); ?>">&times;</button>
+                <div class="ghb-filter-drawer" data-ghb-filter-drawer aria-hidden="true">
+                    <div class="ghb-filter-backdrop" data-ghb-filter-close></div>
+                    <aside class="ghb-filter-panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Filtri', 'golden-hive-blocks'); ?>">
+                        <header class="ghb-filter-dhead">
+                            <span class="ghb-filter-dtitle"><?php esc_html_e('Filtra per:', 'golden-hive-blocks'); ?></span>
+                            <button type="button" class="ghb-filter-x" data-ghb-filter-close aria-label="<?php esc_attr_e('Chiudi', 'golden-hive-blocks'); ?>">&times;</button>
                         </header>
-                        <div class="bfl-dbody" data-bfl-root><?php echo $facets_html; ?></div>
-                        <footer class="bfl-dfoot">
-                            <button type="button" class="bfl-apply" data-bfl-close><?php esc_html_e('Vedi risultati', 'golden-hive-blocks'); ?></button>
+                        <div class="ghb-filter-dbody" data-ghb-filter-root><?php echo $facets_html; ?></div>
+                        <footer class="ghb-filter-dfoot">
+                            <button type="button" class="ghb-filter-apply" data-ghb-filter-close><?php esc_html_e('Vedi risultati', 'golden-hive-blocks'); ?></button>
                         </footer>
                     </aside>
                 </div>
@@ -843,10 +819,10 @@ class GHB_Filters
         $instance++;
 
         ob_start(); ?>
-        <div class="bfl-activewrap" data-bfl-activewrap hidden>
-            <div class="bfl-sub"><?php esc_html_e('Filtri', 'golden-hive-blocks'); ?></div>
-            <div class="bfl-active" data-bfl-active></div>
-            <button type="button" class="bfl-reset" data-bfl-reset><?php esc_html_e('Cancella filtri', 'golden-hive-blocks'); ?></button>
+        <div class="ghb-filter-activewrap" data-ghb-filter-activewrap hidden>
+            <div class="ghb-filter-sub"><?php esc_html_e('Filtri', 'golden-hive-blocks'); ?></div>
+            <div class="ghb-filter-active" data-ghb-filter-active></div>
+            <button type="button" class="ghb-filter-reset" data-ghb-filter-reset><?php esc_html_e('Cancella filtri', 'golden-hive-blocks'); ?></button>
         </div>
 
         <?php foreach ($cfg['facets'] as $key => $f) : ?>
@@ -856,16 +832,16 @@ class GHB_Filters
                 }
                 $cmin = null !== $current['min_price'] ? (int) $current['min_price'] : $price[0];
                 $cmax = null !== $current['max_price'] ? (int) $current['max_price'] : $price[1]; ?>
-                <div class="bfl-facet">
-                    <div class="bfl-flabel"><?php echo esc_html($f['label']); ?></div>
-                    <div class="bfl-slider" data-bfl-slider data-floor="<?php echo esc_attr($price[0]); ?>" data-ceil="<?php echo esc_attr($price[1]); ?>">
-                        <div class="bfl-track"><div class="bfl-fill" data-fill></div></div>
+                <div class="ghb-filter-facet">
+                    <div class="ghb-filter-flabel"><?php echo esc_html($f['label']); ?></div>
+                    <div class="ghb-filter-slider" data-ghb-filter-slider data-floor="<?php echo esc_attr($price[0]); ?>" data-ceil="<?php echo esc_attr($price[1]); ?>">
+                        <div class="ghb-filter-track"><div class="ghb-filter-fill" data-fill></div></div>
                         <input type="range" data-range="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>">
                         <input type="range" data-range="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>">
                     </div>
-                    <div class="bfl-nums">
-                        <div class="bfl-num"><input type="number" data-price-input="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
-                        <div class="bfl-num"><input type="number" data-price-input="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
+                    <div class="ghb-filter-nums">
+                        <div class="ghb-filter-num"><input type="number" data-price-input="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
+                        <div class="ghb-filter-num"><input type="number" data-price-input="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
                     </div>
                 </div>
 
@@ -876,11 +852,11 @@ class GHB_Filters
                     && $base_counts['instock'] >= $total) {
                     continue;
                 } ?>
-                <div class="bfl-facet">
-                    <div class="bfl-flabel"><?php echo esc_html($f['label']); ?></div>
-                    <label class="bfl-check">
-                        <input type="checkbox" data-bfl-stock <?php checked(!empty($current['instock'])); ?>>
-                        <span class="bfl-box"></span>
+                <div class="ghb-filter-facet">
+                    <div class="ghb-filter-flabel"><?php echo esc_html($f['label']); ?></div>
+                    <label class="ghb-filter-check">
+                        <input type="checkbox" data-ghb-filter-stock <?php checked(!empty($current['instock'])); ?>>
+                        <span class="ghb-filter-box"></span>
                         <span><?php echo esc_html(isset($f['text']) ? $f['text'] : __('Disponibile', 'golden-hive-blocks')); ?></span>
                     </label>
                 </div>
@@ -939,7 +915,7 @@ class GHB_Filters
                 // Layout: 'chips' (size grid), 'pills' (categories) or 'list'.
                 $ui          = isset($f['ui']) ? $f['ui'] : (('category' === $f['type']) ? 'pills' : 'list');
                 $collapsible = !empty($f['collapsible']);
-                $opts_id     = 'bfl-f-' . $instance . '-' . $key;
+                $opts_id     = 'ghb-filter-f-' . $instance . '-' . $key;
 
                 // Long lists show their first `limit` options, the rest behind
                 // "Mostra tutti" (never for just one or two leftovers), and get
@@ -949,35 +925,35 @@ class GHB_Filters
                 $fold  = $limit > 0 && count($options) > $limit + 2;
                 $all   = $fold && in_array(true, array_column(array_slice($options, $limit), 'checked'), true);
                 $find  = 'list' === $ui && count($options) >= (int) $cfg['search_min']; ?>
-                <div class="bfl-facet bfl-facet--<?php echo esc_attr($ui); ?><?php echo $all ? ' is-all' : ''; ?>" data-bfl-facet>
+                <div class="ghb-filter-facet ghb-filter-facet--<?php echo esc_attr($ui); ?><?php echo $all ? ' is-all' : ''; ?>" data-ghb-filter-facet>
                     <?php if ($collapsible) : ?>
-                        <button type="button" class="bfl-flabel bfl-toggle" aria-expanded="true" aria-controls="<?php echo esc_attr($opts_id); ?>"><span><?php echo esc_html($f['label']); ?></span><i class="bfl-pm" aria-hidden="true"></i></button>
+                        <button type="button" class="ghb-filter-flabel ghb-filter-toggle" aria-expanded="true" aria-controls="<?php echo esc_attr($opts_id); ?>"><span><?php echo esc_html($f['label']); ?></span><i class="ghb-filter-pm" aria-hidden="true"></i></button>
                     <?php else : ?>
-                        <div class="bfl-flabel"><?php echo esc_html($f['label']); ?></div>
+                        <div class="ghb-filter-flabel"><?php echo esc_html($f['label']); ?></div>
                     <?php endif; ?>
-                    <div class="bfl-opts" id="<?php echo esc_attr($opts_id); ?>">
-                        <div class="bfl-opts__inner">
+                    <div class="ghb-filter-opts" id="<?php echo esc_attr($opts_id); ?>">
+                        <div class="ghb-filter-opts__inner">
                             <?php if ($find) :
                                 $noun = strtolower(isset($f['chip']) && '' !== $f['chip'] ? $f['chip'] : $f['label']); ?>
-                                <input type="search" class="bfl-search" data-bfl-search placeholder="<?php echo esc_attr(sprintf(__('Cerca %s…', 'golden-hive-blocks'), $noun)); ?>" aria-label="<?php echo esc_attr(sprintf(__('Cerca %s', 'golden-hive-blocks'), $noun)); ?>" autocomplete="off">
+                                <input type="search" class="ghb-filter-search" data-ghb-filter-search placeholder="<?php echo esc_attr(sprintf(__('Cerca %s…', 'golden-hive-blocks'), $noun)); ?>" aria-label="<?php echo esc_attr(sprintf(__('Cerca %s', 'golden-hive-blocks'), $noun)); ?>" autocomplete="off">
                             <?php endif; ?>
-                            <div class="bfl-opts__list">
+                            <div class="ghb-filter-opts__list">
                                 <?php foreach ($options as $i => $o) : ?>
-                                    <label class="bfl-opt<?php echo $o['dis'] ? ' is-disabled' : ''; ?><?php echo ($fold && $i >= $limit) ? ' is-extra' : ''; ?>">
-                                        <input type="checkbox" data-bfl-term data-key="<?php echo esc_attr($o['sfx']); ?>" value="<?php echo esc_attr($o['slug']); ?>" <?php checked($o['checked']); ?> <?php disabled($o['dis']); ?>>
-                                        <span class="bfl-mark"></span>
-                                        <span class="bfl-name"><?php echo esc_html($o['name']); ?></span>
-                                        <?php if (null !== $o['count']) : ?><span class="bfl-count" data-count><?php echo esc_html($o['count']); ?></span><?php endif; ?>
+                                    <label class="ghb-filter-opt<?php echo $o['dis'] ? ' is-disabled' : ''; ?><?php echo ($fold && $i >= $limit) ? ' is-extra' : ''; ?>">
+                                        <input type="checkbox" data-ghb-filter-term data-key="<?php echo esc_attr($o['sfx']); ?>" value="<?php echo esc_attr($o['slug']); ?>" <?php checked($o['checked']); ?> <?php disabled($o['dis']); ?>>
+                                        <span class="ghb-filter-mark"></span>
+                                        <span class="ghb-filter-name"><?php echo esc_html($o['name']); ?></span>
+                                        <?php if (null !== $o['count']) : ?><span class="ghb-filter-count" data-count><?php echo esc_html($o['count']); ?></span><?php endif; ?>
                                     </label>
                                 <?php endforeach; ?>
                             </div>
                             <?php if ($find) : ?>
-                                <p class="bfl-nomatch" data-bfl-nomatch hidden><?php esc_html_e('Nessun risultato', 'golden-hive-blocks'); ?></p>
+                                <p class="ghb-filter-nomatch" data-ghb-filter-nomatch hidden><?php esc_html_e('Nessun risultato', 'golden-hive-blocks'); ?></p>
                             <?php endif; ?>
                             <?php if ($fold) :
                                 $more = sprintf(__('Mostra tutti (%d)', 'golden-hive-blocks'), count($options));
                                 $less = __('Mostra meno', 'golden-hive-blocks'); ?>
-                                <button type="button" class="bfl-more" data-bfl-more aria-expanded="<?php echo $all ? 'true' : 'false'; ?>" data-more="<?php echo esc_attr($more); ?>" data-less="<?php echo esc_attr($less); ?>"><?php echo esc_html($all ? $less : $more); ?></button>
+                                <button type="button" class="ghb-filter-more" data-ghb-filter-more aria-expanded="<?php echo $all ? 'true' : 'false'; ?>" data-more="<?php echo esc_attr($more); ?>" data-less="<?php echo esc_attr($less); ?>"><?php echo esc_html($all ? $less : $more); ?></button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -985,7 +961,7 @@ class GHB_Filters
             <?php endif; ?>
         <?php endforeach; ?>
 
-        <div class="bfl-loading" data-bfl-spinner aria-hidden="true"><span></span></div>
+        <div class="ghb-filter-loading" data-ghb-filter-spinner aria-hidden="true"><span></span></div>
         <?php
         return ob_get_clean();
     }

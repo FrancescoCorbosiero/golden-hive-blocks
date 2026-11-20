@@ -42,7 +42,7 @@ if (empty($title)) {
                 <span class="gh-eyebrow gh-authenticity__eyebrow"><?php echo esc_html($eyebrow); ?></span>
             <?php endif; ?>
 
-            <h2 class="gh-section-title gh-authenticity__title"><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-section-title gh-authenticity__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
 
             <?php if (!empty($description)) : ?>
                 <p class="gh-authenticity__description"><?php echo esc_html($description); ?></p>

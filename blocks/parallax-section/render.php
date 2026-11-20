@@ -59,7 +59,7 @@ if (empty($title) && empty($bg_image)) {
 
     <div class="gh-parallax-section__content" data-gh-reveal="up">
         <?php if (!empty($title)) : ?>
-            <h2 class="gh-section-title gh-parallax-section__title"><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-section-title gh-parallax-section__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
         <?php endif; ?>
 
         <?php if (!empty($text)) : ?>

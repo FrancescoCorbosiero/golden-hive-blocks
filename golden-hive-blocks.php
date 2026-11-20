@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.16.0
+ * Version: 5.17.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.16.0');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.17.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -54,7 +54,7 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/design.php';
  * skipped the stylesheet on archives, FSE templates, pages where `$post` isn't
  * the primary query, custom HTML blocks using `.gh-*` classes, etc. — leaving
  * those pages unstyled. CSS is small (~80KB, cached) so we always enqueue it,
- * and the animations script is loaded with `defer` so it never blocks paint.
+ * and the scripts are loaded with `defer` so they never block paint.
  */
 function golden_hive_blocks_enqueue_assets()
 {
@@ -71,10 +71,20 @@ function golden_hive_blocks_enqueue_assets()
         GOLDEN_HIVE_BLOCKS_VERSION
     );
 
+    // Scroll motion (js/motion.js) first: animations.js hands it the content
+    // it refreshes later.
+    wp_enqueue_script(
+        'golden-hive-motion',
+        gh_asset_url('js/motion.js'),
+        array(),
+        GOLDEN_HIVE_BLOCKS_VERSION,
+        array('in_footer' => true, 'strategy' => 'defer')
+    );
+
     wp_enqueue_script(
         'golden-hive-animations',
         gh_asset_url('js/animations.js'),
-        array(),
+        array('golden-hive-motion'),
         GOLDEN_HIVE_BLOCKS_VERSION,
         array('in_footer' => true, 'strategy' => 'defer')
     );
@@ -84,22 +94,18 @@ add_action('wp_enqueue_scripts', 'golden_hive_blocks_enqueue_assets');
 /**
  * Animation bootstrap — printed inline in <head>, before the stylesheet.
  *
- * Adds `gh-js` to <html> so the scroll-reveal "hidden" states (opacity:0) apply
- * ONLY while JavaScript is actually running. Server-rendered block content is
- * therefore always painted: if js/animations.js is disabled, blocked, deferred,
- * or throws (a frequent side effect of a CDN / Cloudflare Rocket Loader), the
- * content stays visible instead of being trapped invisible until full load.
+ * Adds `gh-js` to <html> while JavaScript runs. The few CSS states that wait
+ * on a script (the marquee loop, the WhatsApp button's entrance, the hero
+ * titles' split characters) are scoped to it, so without JavaScript the page
+ * is simply complete. Scroll motion doesn't use it: js/motion.js hides what
+ * it animates itself, at init, and only below the first screen.
  *
- * A failsafe timer adds `gh-anim-failsafe` if the engine hasn't signalled
- * `window.__ghAnimReady` shortly after load, force-revealing everything as a
- * last resort. `data-cfasync="false"` keeps Rocket Loader from deferring this
- * tiny bootstrap, so `gh-js` is set before first paint (no flash).
- *
- * The window is 3000ms (was 1500ms): the no-JS case is already covered by
- * gating hidden states on `html.gh-js`, so the failsafe only needs to catch a
- * script that *errored*, and on slow mobile connections the deferred engine
- * routinely boots after 1.5s — which used to permanently disable animations
- * for the whole pageview. The engine also removes the class if it boots late.
+ * A failsafe timer adds `gh-anim-failsafe` if js/animations.js hasn't set
+ * `window.__ghAnimReady` 3 s after this runs, undoing those states for a
+ * script that errored or was blocked (a CDN's Rocket Loader, say). The
+ * engine removes the class if it boots late. `data-cfasync="false"` keeps
+ * Rocket Loader from deferring this bootstrap, so `gh-js` is set before
+ * first paint.
  */
 function golden_hive_blocks_anim_bootstrap()
 {
@@ -223,9 +229,11 @@ add_action('plugins_loaded', 'golden_hive_blocks_load_textdomain');
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/newsletter.php';
 
 /**
- * Include shortcodes.
+ * Include the shared product query (and the older rail shortcode names) and
+ * the read-only product endpoints Quick View and Quick Add read.
  */
-require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-carousel-shortcode.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-query.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-ajax.php';
 
 /**
  * Include preload + speculation rules (Tools → GH Preload).
@@ -332,9 +340,12 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-page.php';
 
 /**
  * Include the Store Hub bridge ("Vetrina"): rails honour pin / exclude /
- * fallback, and the Hub reads and edits the homepage through wc-gh/v1.
+ * fallback (hub-rails.php), and the Hub reads and edits the homepage through
+ * wc-gh/v1 (hub-rest.php, built on hub-page.php).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/hub-rails.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/hub-page.php';
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/hub-rest.php';
 
 /**
  * Include the parallax archive hero (shop / category / tag pages).

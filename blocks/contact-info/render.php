@@ -22,7 +22,7 @@ $has_map = !empty($map_embed) || !empty($map_url);
     <div class="gh-contact-info__container">
 
         <div class="gh-section-header gh-contact-info__header" data-gh-reveal="up">
-            <h2 class="gh-contact-info__title"><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-contact-info__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
             <?php if (!empty($subtitle)) : ?>
                 <p class="gh-contact-info__subtitle"><?php echo esc_html($subtitle); ?></p>
             <?php endif; ?>
@@ -33,7 +33,7 @@ $has_map = !empty($map_embed) || !empty($map_url);
             <div class="gh-contact-info__details">
 
                 <?php if (!empty($address)) : ?>
-                    <div class="gh-contact-info__item" data-gh-reveal="up" data-gh-reveal-delay="100" style="--gh-reveal-delay: 100ms">
+                    <div class="gh-contact-info__item" data-gh-reveal="up">
                         <span class="gh-contact-info__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
@@ -45,7 +45,7 @@ $has_map = !empty($map_embed) || !empty($map_url);
                 <?php endif; ?>
 
                 <?php if (!empty($vat)) : ?>
-                    <div class="gh-contact-info__item" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms">
+                    <div class="gh-contact-info__item" data-gh-reveal="up">
                         <span class="gh-contact-info__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
@@ -57,7 +57,7 @@ $has_map = !empty($map_embed) || !empty($map_url);
                 <?php endif; ?>
 
                 <?php if (!empty($phone)) : ?>
-                    <div class="gh-contact-info__item" data-gh-reveal="up" data-gh-reveal-delay="300" style="--gh-reveal-delay: 300ms">
+                    <div class="gh-contact-info__item" data-gh-reveal="up">
                         <span class="gh-contact-info__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
@@ -68,7 +68,7 @@ $has_map = !empty($map_embed) || !empty($map_url);
                 <?php endif; ?>
 
                 <?php if (!empty($email)) : ?>
-                    <div class="gh-contact-info__item" data-gh-reveal="up" data-gh-reveal-delay="400" style="--gh-reveal-delay: 400ms">
+                    <div class="gh-contact-info__item" data-gh-reveal="up">
                         <span class="gh-contact-info__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -88,13 +88,13 @@ $has_map = !empty($map_embed) || !empty($map_url);
                     ? gh_map_facade($map_embed, array('address' => $address, 'open_url' => $map_url))
                     : '';
                 ?>
-                <div class="gh-contact-info__map" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms">
+                <div class="gh-contact-info__map" data-gh-reveal="up">
                     <div class="gh-contact-info__map-wrapper">
                         <?php echo '' !== $map_html ? $map_html : gh_kses_map_iframe($map_embed); // Sanitised iframe. ?>
                     </div>
                 </div>
             <?php elseif (!empty($map_url)) : ?>
-                <div class="gh-contact-info__map" data-gh-reveal="up" data-gh-reveal-delay="200" style="--gh-reveal-delay: 200ms">
+                <div class="gh-contact-info__map" data-gh-reveal="up">
                     <a href="<?php echo esc_url($map_url); ?>" class="gh-contact-info__map-link" target="_blank" rel="noopener noreferrer">
                         <span class="gh-contact-info__map-link-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

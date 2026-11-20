@@ -1,31 +1,28 @@
 /**
  * Golden Hive Blocks — AJAX product filters (the "Advanced Filters" panel).
  *
- * Moved out of the Code Snippet's inline <style> (see includes/filters.php) so
- * it is cached and minified like the rest of the plugin. The .bfl-* class
- * names are unchanged. Accent: --gh-filters-accent (set from the config's
- * 'accent', default #111111). Focus rings and a reduced-motion pass were added
- * on the way over.
+ * Markup: includes/filters.php (.ghb-filter-*). Accent: --gh-filters-accent,
+ * set from the config's 'accent' (default #111111).
  */
 
-.bfl-inline,
-.bfl-drawer,
-.bfl-trigger {
-    --bfl-accent: var(--gh-filters-accent, #111111);
+.ghb-filter-inline,
+.ghb-filter-drawer,
+.ghb-filter-trigger {
+    --ghb-filter-accent: var(--gh-filters-accent, #111111);
 }
-.bfl-inline {
+.ghb-filter-inline {
     position: relative;
     font-family: inherit;
     color: #1a1a1a;
     font-size: 14px;
 }
-.bfl-inline * {
+.ghb-filter-inline * {
     box-sizing: border-box;
 }
-[data-bfl-root] {
+[data-ghb-filter-root] {
     position: relative;
 }
-.bfl-trigger {
+.ghb-filter-trigger {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -40,16 +37,16 @@
     color: #1a1a1a;
     transition: background .15s, color .15s;
 }
-.bfl-trigger:hover {
+.ghb-filter-trigger:hover {
     background: #1a1a1a;
     color: #fff;
 }
-.bfl-badge {
+.ghb-filter-badge {
     min-width: 19px;
     height: 19px;
     padding: 0 5px;
     border-radius: calc(999px * var(--gh-round, 1));
-    background: var(--bfl-accent);
+    background: var(--ghb-filter-accent);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
@@ -57,32 +54,32 @@
     align-items: center;
     justify-content: center;
 }
-.bfl-trigger:hover .bfl-badge {
+.ghb-filter-trigger:hover .ghb-filter-badge {
     background: #fff;
     color: #1a1a1a;
 }
-.bfl-drawer {
+.ghb-filter-drawer {
     position: fixed;
     inset: 0;
     z-index: 99990;
     visibility: hidden;
     pointer-events: none;
 }
-.bfl-drawer.is-open {
+.ghb-filter-drawer.is-open {
     visibility: visible;
     pointer-events: auto;
 }
-.bfl-backdrop {
+.ghb-filter-backdrop {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, .45);
     opacity: 0;
     transition: opacity .3s;
 }
-.bfl-drawer.is-open .bfl-backdrop {
+.ghb-filter-drawer.is-open .ghb-filter-backdrop {
     opacity: 1;
 }
-.bfl-panel {
+.ghb-filter-panel {
     position: absolute;
     top: 0;
     left: 0;
@@ -99,13 +96,13 @@
     color: #1a1a1a;
     font-size: 14px;
 }
-.bfl-drawer.is-open .bfl-panel {
+.ghb-filter-drawer.is-open .ghb-filter-panel {
     transform: translateX(0);
 }
-.bfl-panel * {
+.ghb-filter-panel * {
     box-sizing: border-box;
 }
-.bfl-dhead {
+.ghb-filter-dhead {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -113,11 +110,11 @@
     border-bottom: 1px solid #ededed;
     flex: 0 0 auto;
 }
-.bfl-dtitle {
+.ghb-filter-dtitle {
     font-size: 20px;
     font-weight: 700;
 }
-.bfl-x {
+.ghb-filter-x {
     background: none;
     border: none;
     font-size: 26px;
@@ -126,19 +123,19 @@
     color: #1a1a1a;
     padding: 0 2px;
 }
-.bfl-dbody {
+.ghb-filter-dbody {
     flex: 1 1 auto;
     overflow-y: auto;
     padding: 8px 22px 22px;
 }
-.bfl-dfoot {
+.ghb-filter-dfoot {
     flex: 0 0 auto;
     padding: 14px 22px;
     border-top: 1px solid #ededed;
 }
-.bfl-apply {
+.ghb-filter-apply {
     width: 100%;
-    background: var(--bfl-accent);
+    background: var(--ghb-filter-accent);
     color: #fff;
     border: none;
     border-radius: calc(999px * var(--gh-round, 1));
@@ -148,26 +145,26 @@
     font-weight: 600;
     cursor: pointer;
 }
-.bfl-apply:hover {
+.ghb-filter-apply:hover {
     opacity: .9;
 }
-.bfl-activewrap {
+.ghb-filter-activewrap {
     padding: 16px 0 4px;
     border-bottom: 1px solid #ededed;
     margin-bottom: 4px;
 }
-.bfl-sub {
+.ghb-filter-sub {
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 12px;
 }
-.bfl-active {
+.ghb-filter-active {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 14px;
 }
-.bfl-chip {
+.ghb-filter-chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -177,9 +174,9 @@
     font-size: 13px;
     line-height: 1;
     white-space: nowrap;
-    animation: bflIn .18s ease;
+    animation: ghbFilterIn .18s ease;
 }
-.bfl-chip button {
+.ghb-filter-chip button {
     background: none;
     border: none;
     padding: 0;
@@ -189,10 +186,10 @@
     line-height: 1;
     color: #333;
 }
-.bfl-chip button:hover {
-    color: var(--bfl-accent);
+.ghb-filter-chip button:hover {
+    color: var(--ghb-filter-accent);
 }
-.bfl-reset {
+.ghb-filter-reset {
     width: 100%;
     background: #fff;
     border: 1.5px solid #1a1a1a;
@@ -204,24 +201,24 @@
     cursor: pointer;
     transition: background .15s, color .15s;
 }
-.bfl-reset:hover {
+.ghb-filter-reset:hover {
     background: #1a1a1a;
     color: #fff;
 }
-.bfl-facet {
+.ghb-filter-facet {
     padding: 18px 0;
     border-bottom: 1px solid #ededed;
 }
-.bfl-facet:last-of-type {
+.ghb-filter-facet:last-of-type {
     border-bottom: none;
 }
-.bfl-flabel {
+.ghb-filter-flabel {
     font-size: 16px;
     font-weight: 700;
     margin: 0 0 14px;
     display: block;
 }
-button.bfl-flabel {
+button.ghb-filter-flabel {
     width: 100%;
     display: flex;
     align-items: center;
@@ -236,61 +233,60 @@ button.bfl-flabel {
     margin-bottom: 14px;
     color: #1a1a1a;
 }
-.bfl-pm {
+.ghb-filter-pm {
     position: relative;
     width: 14px;
     height: 14px;
     flex: 0 0 auto;
 }
-.bfl-pm::before,
-.bfl-pm::after {
+.ghb-filter-pm::before,
+.ghb-filter-pm::after {
     content: "";
     position: absolute;
     background: #1a1a1a;
     transition: opacity .2s;
 }
-.bfl-pm::before {
+.ghb-filter-pm::before {
     left: 0;
     top: 6px;
     width: 14px;
     height: 2px;
 }
-.bfl-pm::after {
+.ghb-filter-pm::after {
     left: 6px;
     top: 0;
     width: 2px;
     height: 14px;
 }
-button.bfl-flabel[aria-expanded=true] .bfl-pm::after {
+button.ghb-filter-flabel[aria-expanded=true] .ghb-filter-pm::after {
     opacity: 0;
 }
 /* Collapsible option area. The fold animates a 0fr ↔ 1fr grid row, so an open
-   facet is always exactly as tall as its content: the snippet's fixed
-   max-height (1200px) cut long size lists off mid-way. */
-.bfl-opts {
+   facet is always exactly as tall as its content, however long its list. */
+.ghb-filter-opts {
     display: grid;
     grid-template-rows: 1fr;
     transition: grid-template-rows .28s ease, opacity .2s ease;
 }
-.bfl-opts__inner {
+.ghb-filter-opts__inner {
     min-height: 0;
     overflow: hidden;
     /* Room for focus rings at the edges, cancelled out by the margin. */
     padding: 4px;
     margin: -4px;
 }
-button.bfl-flabel[aria-expanded=false] + .bfl-opts {
+button.ghb-filter-flabel[aria-expanded=false] + .ghb-filter-opts {
     grid-template-rows: 0fr;
     opacity: 0;
     /* Hidden once folded, so collapsed options leave the tab order. */
     visibility: hidden;
     transition: grid-template-rows .28s ease, opacity .2s ease, visibility 0s linear .28s;
 }
-.bfl-facet--list .bfl-opts__list {
+.ghb-filter-facet--list .ghb-filter-opts__list {
     display: grid;
     gap: 12px;
 }
-.bfl-opt {
+.ghb-filter-opt {
     display: flex;
     align-items: center;
     gap: 11px;
@@ -298,13 +294,13 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     user-select: none;
     line-height: 1.15;
 }
-.bfl-opt input {
+.ghb-filter-opt input {
     position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
 }
-.bfl-mark {
+.ghb-filter-mark {
     width: 20px;
     height: 20px;
     border: 1.5px solid #cdcdcd;
@@ -313,11 +309,11 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     position: relative;
     transition: border-color .15s, background .15s;
 }
-.bfl-opt input:checked + .bfl-mark {
-    background: var(--bfl-accent);
-    border-color: var(--bfl-accent);
+.ghb-filter-opt input:checked + .ghb-filter-mark {
+    background: var(--ghb-filter-accent);
+    border-color: var(--ghb-filter-accent);
 }
-.bfl-opt input:checked + .bfl-mark:after {
+.ghb-filter-opt input:checked + .ghb-filter-mark:after {
     content: "";
     position: absolute;
     left: 6px;
@@ -328,34 +324,34 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
-.bfl-opt input:focus-visible + .bfl-mark {
-    outline: 2px solid var(--bfl-accent);
+.ghb-filter-opt input:focus-visible + .ghb-filter-mark {
+    outline: 2px solid var(--ghb-filter-accent);
     outline-offset: 2px;
 }
-.bfl-name {
+.ghb-filter-name {
     flex: 1 1 auto;
 }
-.bfl-count {
+.ghb-filter-count {
     font-size: 13px;
     color: #9a9a9a;
     font-variant-numeric: tabular-nums;
 }
-.bfl-opt.is-disabled {
+.ghb-filter-opt.is-disabled {
     opacity: .38;
     cursor: not-allowed;
 }
-.bfl-facet--pills .bfl-opts__list {
+.ghb-filter-facet--pills .ghb-filter-opts__list {
     display: flex;
     flex-wrap: wrap;
     gap: 9px;
 }
-.bfl-facet--pills .bfl-opt {
+.ghb-filter-facet--pills .ghb-filter-opt {
     gap: 0;
 }
-.bfl-facet--pills .bfl-mark {
+.ghb-filter-facet--pills .ghb-filter-mark {
     display: none;
 }
-.bfl-facet--pills .bfl-name {
+.ghb-filter-facet--pills .ghb-filter-name {
     border: 1.5px solid #dcdcdc;
     border-radius: calc(999px * var(--gh-round, 1));
     padding: 8px 15px;
@@ -365,37 +361,37 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
         background .15s,
         color .15s;
 }
-.bfl-facet--pills .bfl-count {
+.ghb-filter-facet--pills .ghb-filter-count {
     display: none;
 }
-.bfl-facet--pills .bfl-opt input:checked + .bfl-mark + .bfl-name {
-    background: var(--bfl-accent);
-    border-color: var(--bfl-accent);
+.ghb-filter-facet--pills .ghb-filter-opt input:checked + .ghb-filter-mark + .ghb-filter-name {
+    background: var(--ghb-filter-accent);
+    border-color: var(--ghb-filter-accent);
     color: #fff;
 }
-.bfl-facet--pills .bfl-opt input:focus-visible + .bfl-mark + .bfl-name {
-    outline: 2px solid var(--bfl-accent);
+.ghb-filter-facet--pills .ghb-filter-opt input:focus-visible + .ghb-filter-mark + .ghb-filter-name {
+    outline: 2px solid var(--ghb-filter-accent);
     outline-offset: 2px;
 }
-.bfl-facet--pills .bfl-opt.is-disabled .bfl-name {
+.ghb-filter-facet--pills .ghb-filter-opt.is-disabled .ghb-filter-name {
     opacity: .4;
 }
 
 /* Sizes: a compact grid of chips (like the Quick View size picker) instead
    of a 60-row checkbox list. */
-.bfl-facet--chips .bfl-opts__list {
+.ghb-filter-facet--chips .ghb-filter-opts__list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
     gap: 8px;
 }
-.bfl-facet--chips .bfl-opt {
+.ghb-filter-facet--chips .ghb-filter-opt {
     gap: 0;
 }
-.bfl-facet--chips .bfl-mark,
-.bfl-facet--chips .bfl-count {
+.ghb-filter-facet--chips .ghb-filter-mark,
+.ghb-filter-facet--chips .ghb-filter-count {
     display: none;
 }
-.bfl-facet--chips .bfl-name {
+.ghb-filter-facet--chips .ghb-filter-name {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -413,23 +409,23 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
         color .15s;
 }
 @media (hover: hover) {
-    .bfl-facet--chips .bfl-opt:not(.is-disabled):hover .bfl-name {
+    .ghb-filter-facet--chips .ghb-filter-opt:not(.is-disabled):hover .ghb-filter-name {
         border-color: #1a1a1a;
     }
 }
-.bfl-facet--chips .bfl-opt input:checked + .bfl-mark + .bfl-name {
-    background: var(--bfl-accent);
-    border-color: var(--bfl-accent);
+.ghb-filter-facet--chips .ghb-filter-opt input:checked + .ghb-filter-mark + .ghb-filter-name {
+    background: var(--ghb-filter-accent);
+    border-color: var(--ghb-filter-accent);
     color: #fff;
 }
-.bfl-facet--chips .bfl-opt input:focus-visible + .bfl-mark + .bfl-name {
-    outline: 2px solid var(--bfl-accent);
+.ghb-filter-facet--chips .ghb-filter-opt input:focus-visible + .ghb-filter-mark + .ghb-filter-name {
+    outline: 2px solid var(--ghb-filter-accent);
     outline-offset: 2px;
 }
-.bfl-facet--chips .bfl-opt.is-disabled {
+.ghb-filter-facet--chips .ghb-filter-opt.is-disabled {
     opacity: 1;
 }
-.bfl-facet--chips .bfl-opt.is-disabled .bfl-name {
+.ghb-filter-facet--chips .ghb-filter-opt.is-disabled .ghb-filter-name {
     color: #c4c4c4;
     background: #fafafa;
     border-color: #eee;
@@ -438,11 +434,11 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
 
 /* Long lists: the first options, the rest behind "Mostra tutti". While a
    search runs, every match shows regardless. */
-.bfl-facet:not(.is-all):not(.is-searching) .bfl-opt.is-extra,
-.bfl-opt.is-miss {
+.ghb-filter-facet:not(.is-all):not(.is-searching) .ghb-filter-opt.is-extra,
+.ghb-filter-opt.is-miss {
     display: none;
 }
-.bfl-more {
+.ghb-filter-more {
     margin-top: 14px;
     padding: 0;
     background: none;
@@ -455,14 +451,14 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     text-underline-offset: 3px;
     cursor: pointer;
 }
-.bfl-more:focus-visible {
-    outline: 2px solid var(--bfl-accent);
+.ghb-filter-more:focus-visible {
+    outline: 2px solid var(--ghb-filter-accent);
     outline-offset: 2px;
 }
-.bfl-facet.is-searching .bfl-more {
+.ghb-filter-facet.is-searching .ghb-filter-more {
     display: none;
 }
-.bfl-opts__inner input.bfl-search {
+.ghb-filter-opts__inner input.ghb-filter-search {
     display: block;
     width: 100%;
     height: 40px;
@@ -476,29 +472,29 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     font-size: 14px;
     color: #1a1a1a;
 }
-.bfl-opts__inner input.bfl-search:focus {
+.ghb-filter-opts__inner input.ghb-filter-search:focus {
     outline: none;
-    border-color: var(--bfl-accent);
+    border-color: var(--ghb-filter-accent);
 }
-.bfl-nomatch {
+.ghb-filter-nomatch {
     margin: 0;
     font-size: 13px;
     color: #9a9a9a;
 }
-.bfl-check {
+.ghb-filter-check {
     display: flex;
     align-items: center;
     gap: 11px;
     cursor: pointer;
     user-select: none;
 }
-.bfl-check input {
+.ghb-filter-check input {
     position: absolute;
     opacity: 0;
     width: 0;
     height: 0;
 }
-.bfl-check .bfl-box {
+.ghb-filter-check .ghb-filter-box {
     width: 20px;
     height: 20px;
     border: 1.5px solid #cdcdcd;
@@ -507,11 +503,11 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     position: relative;
     transition: .15s;
 }
-.bfl-check input:checked + .bfl-box {
-    background: var(--bfl-accent);
-    border-color: var(--bfl-accent);
+.ghb-filter-check input:checked + .ghb-filter-box {
+    background: var(--ghb-filter-accent);
+    border-color: var(--ghb-filter-accent);
 }
-.bfl-check input:checked + .bfl-box:after {
+.ghb-filter-check input:checked + .ghb-filter-box:after {
     content: "";
     position: absolute;
     left: 6px;
@@ -522,16 +518,16 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
-.bfl-check input:focus-visible + .bfl-box {
-    outline: 2px solid var(--bfl-accent);
+.ghb-filter-check input:focus-visible + .ghb-filter-box {
+    outline: 2px solid var(--ghb-filter-accent);
     outline-offset: 2px;
 }
-.bfl-slider {
+.ghb-filter-slider {
     position: relative;
     height: 24px;
     margin: 2px 2px 16px;
 }
-.bfl-slider .bfl-track {
+.ghb-filter-slider .ghb-filter-track {
     position: absolute;
     top: 10px;
     left: 0;
@@ -540,14 +536,14 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     background: #e6e6e6;
     border-radius: calc(4px * var(--gh-round, 1));
 }
-.bfl-slider .bfl-fill {
+.ghb-filter-slider .ghb-filter-fill {
     position: absolute;
     top: 0;
     height: 100%;
-    background: var(--bfl-accent);
+    background: var(--ghb-filter-accent);
     border-radius: calc(4px * var(--gh-round, 1));
 }
-.bfl-slider input[type=range] {
+.ghb-filter-slider input[type=range] {
     position: absolute;
     top: 0;
     left: 0;
@@ -561,21 +557,21 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     appearance: none;
     border: none;
 }
-.bfl-slider input[type=range]:focus {
+.ghb-filter-slider input[type=range]:focus {
     outline: none;
 }
-.bfl-slider input[type=range]::-webkit-slider-runnable-track {
+.ghb-filter-slider input[type=range]::-webkit-slider-runnable-track {
     -webkit-appearance: none;
     background: transparent;
     border: none;
     height: 24px;
 }
-.bfl-slider input[type=range]::-moz-range-track {
+.ghb-filter-slider input[type=range]::-moz-range-track {
     background: transparent;
     border: none;
     height: 24px;
 }
-.bfl-slider input[type=range]::-webkit-slider-thumb {
+.ghb-filter-slider input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
     pointer-events: auto;
     width: 20px;
@@ -583,32 +579,32 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     margin-top: 2px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid var(--bfl-accent);
+    border: 2px solid var(--ghb-filter-accent);
     cursor: grab;
     box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
     box-sizing: border-box;
 }
-.bfl-slider input[type=range]::-moz-range-thumb {
+.ghb-filter-slider input[type=range]::-moz-range-thumb {
     pointer-events: auto;
     width: 20px;
     height: 20px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid var(--bfl-accent);
+    border: 2px solid var(--ghb-filter-accent);
     cursor: grab;
     box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
     box-sizing: border-box;
 }
-.bfl-slider input[type=range]:focus-visible::-webkit-slider-thumb {
-    outline: 2px solid var(--bfl-accent);
+.ghb-filter-slider input[type=range]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--ghb-filter-accent);
     outline-offset: 2px;
 }
-.bfl-nums {
+.ghb-filter-nums {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-.bfl-num {
+.ghb-filter-num {
     flex: 1;
     display: flex;
     align-items: center;
@@ -617,7 +613,7 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     padding: 0 12px;
     height: 44px;
 }
-.bfl-num input {
+.ghb-filter-num input {
     border: none;
     outline: none;
     width: 100%;
@@ -626,19 +622,19 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     background: none;
     -moz-appearance: textfield;
 }
-.bfl-num input::-webkit-outer-spin-button,
-.bfl-num input::-webkit-inner-spin-button {
+.ghb-filter-num input::-webkit-outer-spin-button,
+.ghb-filter-num input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-.bfl-num:focus-within {
-    border-color: var(--bfl-accent);
+.ghb-filter-num:focus-within {
+    border-color: var(--ghb-filter-accent);
 }
-.bfl-num span {
+.ghb-filter-num span {
     color: #888;
     font-size: 14px;
 }
-.bfl-loading {
+.ghb-filter-loading {
     position: absolute;
     inset: 0;
     background: rgba(255, 255, 255, .6);
@@ -648,23 +644,23 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
     padding-top: 60px;
     z-index: 5;
 }
-[data-bfl-root].bfl-busy .bfl-loading {
+[data-ghb-filter-root].ghb-filter-busy .ghb-filter-loading {
     display: flex;
 }
-.bfl-loading span {
+.ghb-filter-loading span {
     width: 28px;
     height: 28px;
     border: 3px solid #e0e0e0;
-    border-top-color: var(--bfl-accent);
+    border-top-color: var(--ghb-filter-accent);
     border-radius: 50%;
-    animation: bflSpin .7s linear infinite;
+    animation: ghbFilterSpin .7s linear infinite;
 }
-@keyframes bflSpin {
+@keyframes ghbFilterSpin {
     to {
         transform: rotate(360deg);
     }
 }
-@keyframes bflIn {
+@keyframes ghbFilterIn {
     from {
         opacity: 0;
         transform: scale(.9);
@@ -674,25 +670,25 @@ button.bfl-flabel[aria-expanded=false] + .bfl-opts {
         transform: scale(1);
     }
 }
-body.bfl-lock {
+body.ghb-filter-lock {
     overflow: hidden;
 }
-.bfl-grid-loading {
+.ghb-filter-grid-loading {
     opacity: .45;
     transition: opacity .2s;
     pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
-    .bfl-panel,
-    .bfl-backdrop,
-    .bfl-opts,
-    button.bfl-flabel[aria-expanded=false] + .bfl-opts {
+    .ghb-filter-panel,
+    .ghb-filter-backdrop,
+    .ghb-filter-opts,
+    button.ghb-filter-flabel[aria-expanded=false] + .ghb-filter-opts {
         transition: none;
     }
-    .bfl-chip {
+    .ghb-filter-chip {
         animation: none;
     }
-    .bfl-loading span {
+    .ghb-filter-loading span {
         animation-duration: 1.5s;
     }
 }

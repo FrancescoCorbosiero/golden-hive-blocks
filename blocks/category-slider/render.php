@@ -61,7 +61,7 @@ if (empty($GLOBALS['gh_cs_assets_done'])) {
     <div class="gh-category-slider__container">
         <?php if (!empty($title)) : ?>
             <header class="gh-category-slider__header">
-                <h2 class="gh-category-slider__title"><?php echo esc_html($title); ?></h2>
+                <h2 class="gh-category-slider__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
             </header>
         <?php endif; ?>
 

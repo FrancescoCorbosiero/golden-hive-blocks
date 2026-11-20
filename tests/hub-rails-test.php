@@ -252,7 +252,7 @@ unset($kept_before['limit'], $kept_after['limit']);
 same($kept_after, $kept_before, 'resizing keeps every other rail attribute');
 same(ghb_hub_set_rail_atts($saldi_shortcode, $nothing), $saldi_shortcode, 'without limit the rail is untouched');
 
-// Stand-in for WordPress's sanitizers (hub-rails.php injects the real ones).
+// Stand-in for WordPress's sanitizers (hub-rest.php injects the real ones).
 $clean = function (string $type, string $value): string {
     if ('url' === $type) {
         $value = trim($value);

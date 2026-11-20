@@ -23,7 +23,7 @@ $instagram_icon_filled = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="
 <section <?php echo get_block_wrapper_attributes(array('class' => 'gh-block gh-instagram-feed')); ?> data-gh-reveal="up">
     <div class="gh-section-header gh-instagram-feed__header">
         <?php if (!empty($title)) : ?>
-            <h2 class="gh-instagram-feed__title"><?php echo esc_html($title); ?></h2>
+            <h2 class="gh-instagram-feed__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
         <?php endif; ?>
 
         <?php if (!empty($subtitle)) : ?>

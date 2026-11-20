@@ -8,7 +8,7 @@
  *   • the product can't be bought (WooCommerce's is_purchasable, variations
  *     too), so a cached page or a direct add-to-cart can't jump the gun;
  *   • its card says "In arrivo · 24 ott" (includes/add-to-cart.php) and
- *     Quick View says when (includes/product-carousel-shortcode.php);
+ *     Quick View says when (includes/product-ajax.php);
  *   • the product page shows the release with a live countdown and
  *     "Ricordamelo": Google Calendar, or an .ics file for Apple Calendar,
  *     Outlook and phones (ghb_drop_ics, built in drops-core.php).

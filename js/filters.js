@@ -1,8 +1,7 @@
 /**
  * Golden Hive Blocks — AJAX product filters (behaviour).
  *
- * Migrated from the "Advanced Filters" Code Snippet (see includes/filters.php).
- * Config comes from window.BFL_CFG, printed with the shortcode:
+ * Markup and config: includes/filters.php. Config comes from window.GHB_FILTERS_CFG, printed with the shortcode:
  *   scope → the collection being viewed ({tax, term}), sent with every
  *           refresh so results, counts and pagination stay inside it;
  *   ajax  → false on search results: filter changes reload the page there,
@@ -13,18 +12,18 @@
  */
 (function(){
 	"use strict";
-	var CFG = window.BFL_CFG || {};
+	var CFG = window.GHB_FILTERS_CFG || {};
 	if(!CFG.ajax_url) return;
-	var root = document.querySelector('[data-bfl-root]');
+	var root = document.querySelector('[data-ghb-filter-root]');
 	if(!root) return;
-	var drawerEl = document.querySelector('[data-bfl-drawer]');
+	var drawerEl = document.querySelector('[data-ghb-filter-drawer]');
 	var AJAX = CFG.ajax !== false;
 	var grid;
 
-	function open(){ if(drawerEl){ drawerEl.classList.add('is-open'); drawerEl.setAttribute('aria-hidden','false'); document.body.classList.add('bfl-lock'); } }
-	function close(){ if(drawerEl){ drawerEl.classList.remove('is-open'); drawerEl.setAttribute('aria-hidden','true'); document.body.classList.remove('bfl-lock'); } }
-	document.querySelectorAll('[data-bfl-open]').forEach(function(b){ b.addEventListener('click', open); });
-	document.querySelectorAll('[data-bfl-close]').forEach(function(b){ b.addEventListener('click', close); });
+	function open(){ if(drawerEl){ drawerEl.classList.add('is-open'); drawerEl.setAttribute('aria-hidden','false'); document.body.classList.add('ghb-filter-lock'); } }
+	function close(){ if(drawerEl){ drawerEl.classList.remove('is-open'); drawerEl.setAttribute('aria-hidden','true'); document.body.classList.remove('ghb-filter-lock'); } }
+	document.querySelectorAll('[data-ghb-filter-open]').forEach(function(b){ b.addEventListener('click', open); });
+	document.querySelectorAll('[data-ghb-filter-close]').forEach(function(b){ b.addEventListener('click', close); });
 	document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
 
 	function basePath(){ return location.pathname.replace(/\/page\/\d+\/?$/, '/'); }
@@ -60,8 +59,8 @@
 	var reqId=0;
 	function load(paged, scroll){
 		grid=document.querySelector(CFG.grid);
-		root.classList.add('bfl-busy');
-		if(grid) grid.classList.add('bfl-grid-loading');
+		root.classList.add('ghb-filter-busy');
+		if(grid) grid.classList.add('ghb-filter-grid-loading');
 		if(!AJAX) return; // the page is already navigating to the filtered URL
 		var id=++reqId;
 		var body=new URLSearchParams();
@@ -73,11 +72,11 @@
 			.then(function(r){return r.json();})
 			.then(function(res){ if(id!==reqId) return; if(!res||!res.success) throw 0; render(res.data, scroll); })
 			.catch(function(){ location.href=toURL(state()); })
-			.finally(function(){ if(id!==reqId) return; root.classList.remove('bfl-busy'); if(grid) grid.classList.remove('bfl-grid-loading'); });
+			.finally(function(){ if(id!==reqId) return; root.classList.remove('ghb-filter-busy'); if(grid) grid.classList.remove('ghb-filter-grid-loading'); });
 	}
 	function render(data, scroll){
 		grid=document.querySelector(CFG.grid);
-		if(grid) grid.innerHTML = data.found ? data.items : '<li class="product bfl-empty">'+(CFG.i18n.empty||'')+'</li>';
+		if(grid) grid.innerHTML = data.found ? data.items : '<li class="product ghb-filter-empty">'+(CFG.i18n.empty||'')+'</li>';
 		if(CFG.countSel){ var c=document.querySelector(CFG.countSel); if(c) c.innerHTML=data.count_html; }
 		updatePagination(data.pagination);
 		if(data.counts) updateCounts(data.counts);
@@ -93,7 +92,7 @@
 	function updateCounts(counts){
 		(CFG.taxKeys||[]).forEach(function(k){
 			var map=counts[k]||{};
-			root.querySelectorAll('[data-bfl-term][data-key="'+k+'"]').forEach(function(cb){
+			root.querySelectorAll('[data-ghb-filter-term][data-key="'+k+'"]').forEach(function(cb){
 				var n=map[cb.value], badge=cb.parentNode.querySelector('[data-count]');
 				if(badge) badge.textContent=(n!=null?n:0);
 				var dis=(n==null||n===0)&&!cb.checked;
@@ -105,12 +104,12 @@
 	function activeCount(st){ var n=0; Object.keys(st.tax).forEach(function(k){n+=st.tax[k].length;}); if(st.min!=null||st.max!=null) n++; if(st.instock) n++; return n; }
 	function syncUI(){
 		var st=state();
-		root.querySelectorAll('[data-bfl-term]').forEach(function(cb){ var arr=st.tax[cb.dataset.key]||[]; cb.checked=arr.indexOf(cb.value)>-1; });
-		var stk=root.querySelector('[data-bfl-stock]'); if(stk) stk.checked=st.instock;
+		root.querySelectorAll('[data-ghb-filter-term]').forEach(function(cb){ var arr=st.tax[cb.dataset.key]||[]; cb.checked=arr.indexOf(cb.value)>-1; });
+		var stk=root.querySelector('[data-ghb-filter-stock]'); if(stk) stk.checked=st.instock;
 		var lo=root.querySelector('[data-price-input="min"]'), hi=root.querySelector('[data-price-input="max"]');
 		if(lo) lo.value=(st.min!=null?st.min:CFG.price.min);
 		if(hi) hi.value=(st.max!=null?st.max:CFG.price.max);
-		var box=root.querySelector('[data-bfl-active]'), wrap=root.querySelector('[data-bfl-activewrap]');
+		var box=root.querySelector('[data-ghb-filter-active]'), wrap=root.querySelector('[data-ghb-filter-activewrap]');
 		if(box){
 			box.innerHTML='';
 			Object.keys(st.tax).forEach(function(k){
@@ -130,10 +129,10 @@
 		}
 		var n=activeCount(st);
 		if(wrap) wrap.hidden = n===0;
-		document.querySelectorAll('[data-bfl-badge]').forEach(function(b){ b.textContent=n; b.hidden=n===0; });
+		document.querySelectorAll('[data-ghb-filter-badge]').forEach(function(b){ b.textContent=n; b.hidden=n===0; });
 	}
 	function chip(text, onRemove){
-		var el=document.createElement('span'); el.className='bfl-chip';
+		var el=document.createElement('span'); el.className='ghb-filter-chip';
 		el.appendChild(document.createTextNode(text));
 		var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label','Rimuovi'); b.innerHTML='&times;';
 		b.addEventListener('click', onRemove); el.appendChild(b);
@@ -149,10 +148,10 @@
 		push(st); syncUI(); load(1,true);
 	}
 	function setPrice(min,max){ var st=state(); st.min=(min>CFG.price.min)?min:null; st.max=(max<CFG.price.max)?max:null; push(st); syncUI(); load(1,true); }
-	function clearPrice(){ var st=state(); st.min=null; st.max=null; push(st); syncUI(); load(1,true); var sl=root.querySelector('[data-bfl-slider]'); if(sl) initSlider(sl,true); }
+	function clearPrice(){ var st=state(); st.min=null; st.max=null; push(st); syncUI(); load(1,true); var sl=root.querySelector('[data-ghb-filter-slider]'); if(sl) initSlider(sl,true); }
 	function toggleStock(on){ var st=state(); st.instock=!!on; push(st); syncUI(); load(1,true); }
 	function clearStock(){ toggleStock(false); }
-	function reset(){ push(emptyState()); syncUI(); load(1,true); var sl=root.querySelector('[data-bfl-slider]'); if(sl) initSlider(sl,true); }
+	function reset(){ push(emptyState()); syncUI(); load(1,true); var sl=root.querySelector('[data-ghb-filter-slider]'); if(sl) initSlider(sl,true); }
 
 	function initSlider(sl, resetVals){
 		var floor=+sl.dataset.floor, ceil=+sl.dataset.ceil;
@@ -194,14 +193,14 @@
 	}
 	function bindThemeSort(){ var sel=document.querySelector('select.orderby'); if(!sel) return; sel.addEventListener('change', function(){ var st=state(); st.orderby=sel.value||null; push(st); load(1,true); }); }
 
-	root.querySelectorAll('[data-bfl-term]').forEach(function(cb){ cb.addEventListener('change', function(){ toggleTerm(cb.dataset.key, cb.value, cb.checked); }); });
-	var stk0=root.querySelector('[data-bfl-stock]'); if(stk0) stk0.addEventListener('change', function(){ toggleStock(stk0.checked); });
-	root.querySelectorAll('.bfl-toggle').forEach(function(h){ h.addEventListener('click', function(){ h.setAttribute('aria-expanded', h.getAttribute('aria-expanded')==='true'?'false':'true'); }); });
+	root.querySelectorAll('[data-ghb-filter-term]').forEach(function(cb){ cb.addEventListener('change', function(){ toggleTerm(cb.dataset.key, cb.value, cb.checked); }); });
+	var stk0=root.querySelector('[data-ghb-filter-stock]'); if(stk0) stk0.addEventListener('change', function(){ toggleStock(stk0.checked); });
+	root.querySelectorAll('.ghb-filter-toggle').forEach(function(h){ h.addEventListener('click', function(){ h.setAttribute('aria-expanded', h.getAttribute('aria-expanded')==='true'?'false':'true'); }); });
 
 	// Long lists: "Mostra tutti (N)" ⇄ "Mostra meno".
-	root.querySelectorAll('[data-bfl-more]').forEach(function(b){
+	root.querySelectorAll('[data-ghb-filter-more]').forEach(function(b){
 		b.addEventListener('click', function(){
-			var facet=b.closest('[data-bfl-facet]'), all=!facet.classList.contains('is-all');
+			var facet=b.closest('[data-ghb-filter-facet]'), all=!facet.classList.contains('is-all');
 			facet.classList.toggle('is-all', all);
 			b.setAttribute('aria-expanded', all?'true':'false');
 			b.textContent = all ? b.dataset.less : b.dataset.more;
@@ -211,13 +210,13 @@
 	// Search inside a long facet: case- and accent-insensitive, every match
 	// shown (the "Mostra tutti" fold steps aside while a search runs).
 	function fold(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
-	root.querySelectorAll('[data-bfl-search]').forEach(function(inp){
-		var facet=inp.closest('[data-bfl-facet]'), none=facet.querySelector('[data-bfl-nomatch]');
+	root.querySelectorAll('[data-ghb-filter-search]').forEach(function(inp){
+		var facet=inp.closest('[data-ghb-filter-facet]'), none=facet.querySelector('[data-ghb-filter-nomatch]');
 		function run(){
 			var q=fold(inp.value), hits=0;
 			facet.classList.toggle('is-searching', q!=='');
-			facet.querySelectorAll('.bfl-opt').forEach(function(o){
-				var hit=!q || fold(o.querySelector('.bfl-name').textContent).indexOf(q)>-1;
+			facet.querySelectorAll('.ghb-filter-opt').forEach(function(o){
+				var hit=!q || fold(o.querySelector('.ghb-filter-name').textContent).indexOf(q)>-1;
 				o.classList.toggle('is-miss', !hit);
 				if(hit) hits++;
 			});
@@ -227,15 +226,15 @@
 		// Escape clears the search first instead of closing the drawer.
 		inp.addEventListener('keydown', function(e){ if(e.key==='Escape' && inp.value){ e.preventDefault(); e.stopPropagation(); inp.value=''; run(); } });
 	});
-	var rb=root.querySelector('[data-bfl-reset]'); if(rb) rb.addEventListener('click', reset);
-	var sl0=root.querySelector('[data-bfl-slider]'); if(sl0) initSlider(sl0,false);
+	var rb=root.querySelector('[data-ghb-filter-reset]'); if(rb) rb.addEventListener('click', reset);
+	var sl0=root.querySelector('[data-ghb-filter-slider]'); if(sl0) initSlider(sl0,false);
 	if(AJAX){
-		window.addEventListener('popstate', function(){ syncUI(); var m=location.pathname.match(/\/page\/(\d+)/); load(m?+m[1]:1,false); var s=root.querySelector('[data-bfl-slider]'); if(s) initSlider(s, !location.search); });
+		window.addEventListener('popstate', function(){ syncUI(); var m=location.pathname.match(/\/page\/(\d+)/); load(m?+m[1]:1,false); var s=root.querySelector('[data-ghb-filter-slider]'); if(s) initSlider(s, !location.search); });
 	}
 	// Back-button from a product: if the page is served from the bfcache the
 	// filtered DOM is preserved as-is; just re-sync the drawer controls to the URL.
 	// (Also clears the busy state a search-results reload leaves behind.)
-	window.addEventListener('pageshow', function(e){ if(e.persisted){ root.classList.remove('bfl-busy'); var g=document.querySelector(CFG.grid); if(g) g.classList.remove('bfl-grid-loading'); syncUI(); var s=root.querySelector('[data-bfl-slider]'); if(s) initSlider(s,false); } });
+	window.addEventListener('pageshow', function(e){ if(e.persisted){ root.classList.remove('ghb-filter-busy'); var g=document.querySelector(CFG.grid); if(g) g.classList.remove('ghb-filter-grid-loading'); syncUI(); var s=root.querySelector('[data-ghb-filter-slider]'); if(s) initSlider(s,false); } });
 
 	syncUI(); bindPagination();
 	if(AJAX) bindThemeSort();

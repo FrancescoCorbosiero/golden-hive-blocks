@@ -26,7 +26,7 @@ if (empty($title)) {
             </svg>
         </div>
 
-        <h2 class="gh-section-title gh-newsletter__title"><?php echo esc_html($title); ?></h2>
+        <h2 class="gh-section-title gh-newsletter__title" data-gh-split="lines"><?php echo esc_html($title); ?></h2>
 
         <?php if (!empty($text)) : ?>
             <p class="gh-newsletter__text"><?php echo esc_html($text); ?></p>

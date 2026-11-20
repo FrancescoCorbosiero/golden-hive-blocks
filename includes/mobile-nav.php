@@ -14,7 +14,6 @@
  *
  * Loads site-wide on the front end (the nav is in every header), with
  * Shoptimizer as the theme only: theme module 'mobile-nav' (theme-compat.php).
- * Migrated from a Code Snippet — disable that snippet once this is active.
  *
  * @package Golden_Hive_Blocks
  * @since   5.3.0
