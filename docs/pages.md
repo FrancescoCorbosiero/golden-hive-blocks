@@ -90,9 +90,9 @@ otherwise:
   `limit='12'`, inside `{"layout":{"type":"constrained","contentSize":"1600px"}}`
   groups. Category rails carry an eyebrow; brand rails don't, and their
   button reads "Esplora <Brand>".
-- **Colours come from the store, not the page.** Every accent is the
-  store's "Colore principale" (Customizer → Golden Hive — Stile). Never put
-  a colour in a page.
+- **Design comes from the store, not the page.** Colours, fonts and title
+  style are the store's design tokens (Customizer → Golden Hive — Stile).
+  Never put a colour, a font or a `<style>` in a page.
 - **Blocks whose defaults belong to another store.** Contact Info (address,
   P.IVA), About Hero (title, text) and Trustpilot Widget (a fixed rating)
   have defaults written for the first store. Set every field you use and

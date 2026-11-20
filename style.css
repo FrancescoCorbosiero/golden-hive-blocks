@@ -8,11 +8,16 @@
    ========================================================================== */
 
 :root {
-    /* Colori principali */
+    /* Design tokens. Neutral defaults: each store sets its own in the
+       Customizer (Golden Hive — Stile), printed by includes/design.php as
+       html:root, which outranks these. */
     --gh-black: #0a0a0a;
     --gh-white: #ffffff;
-    --gh-accent: #721124;
-    --gh-accent-dark: #520c1a;
+    --gh-accent: #111111;
+    --gh-accent-dark: #0c0c0c;
+    --gh-title-transform: none;
+    --gh-title-tracking: 0;
+    --gh-title-weight: 700;
     --gh-success: #16a34a;
     --gh-warning: #f59e0b;
     --gh-error: #dc2626;
@@ -73,8 +78,8 @@
     --gh-border-subtle: rgba(0, 0, 0, 0.06);
     --gh-surface-elevated: #ffffff;
 
-    /* Accent come triplet RGB — per le varianti rgba(var(--gh-accent-rgb), x) */
-    --gh-accent-rgb: 114, 17, 36;
+    /* The accent as an RGB triplet, for rgba(var(--gh-accent-rgb), x) tints */
+    --gh-accent-rgb: 17, 17, 17;
 
     /* Contenitori */
     --gh-max-width: 1200px;
@@ -134,17 +139,18 @@ html.gh-scroll-lock {
 }
 
 .gh-block {
+    font-family: var(--gh-font-body, inherit);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Headings — inherit font-family from theme, keep bold weight */
+/* Headings: the store's title font and weight (the theme's font by default) */
 .gh-block h1,
 .gh-block h2,
 .gh-block h3,
 .gh-block h4 {
     font-family: var(--gh-font-display, inherit);
-    font-weight: 800;
+    font-weight: var(--gh-title-weight, 700);
 }
 
 /* Prevent horizontal overflow from fixed positioned children of GH blocks.
@@ -177,9 +183,9 @@ html.gh-scroll-lock {
 /* Titolo display fluido di sezione */
 .gh-section-title {
     font-size: var(--gh-text-4xl);
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    font-weight: var(--gh-title-weight, 700);
+    letter-spacing: var(--gh-title-tracking, 0);
+    text-transform: var(--gh-title-transform, none);
 }
 
 /* Header di sezione centrato */

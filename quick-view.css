@@ -62,9 +62,9 @@ li.product:focus-within .ghb-qv-btn {
 }
 
 .ghb-qv-btn:hover {
-    background: var(--gh-accent, #721124);
+    background: var(--gh-accent);
     color: #fff;
-    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb, 114, 17, 36), 0.3);
+    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb), 0.3);
     transform: scale(1.1);
 }
 
@@ -111,7 +111,7 @@ li.product:focus-within .ghb-qv-btn {
     transition: color 0.2s;
     line-height: 1;
 }
-.ghb-qv-close:hover { color: var(--gh-accent, #721124); }
+.ghb-qv-close:hover { color: var(--gh-accent); }
 
 .ghb-qv-body {
     display: flex;
@@ -150,7 +150,7 @@ li.product:focus-within .ghb-qv-btn {
 }
 .ghb-qv-thumb:hover,
 .ghb-qv-thumb.active {
-    border-color: var(--gh-accent, #721124);
+    border-color: var(--gh-accent);
 }
 
 /* Info */
@@ -176,7 +176,7 @@ li.product:focus-within .ghb-qv-btn {
 .ghb-qv-price {
     font-size: 22px;
     font-weight: 700;
-    color: var(--gh-accent, #721124);
+    color: var(--gh-accent);
 }
 /* Sale-price markup straight from WooCommerce (del/ins) */
 .ghb-qv-price del {
@@ -186,7 +186,7 @@ li.product:focus-within .ghb-qv-btn {
 }
 .ghb-qv-price ins {
     text-decoration: none;
-    color: var(--gh-accent, #721124);
+    color: var(--gh-accent);
 }
 .ghb-qv-stock {
     font-size: 12px;
@@ -245,7 +245,7 @@ li.product:focus-within .ghb-qv-btn {
     transition: color .15s ease, text-decoration-color .15s ease;
 }
 .ghb-qv-view-full:hover {
-    color: var(--gh-accent, #721124);
+    color: var(--gh-accent);
     text-decoration-color: currentColor;
 }
 .ghb-qv-view-full__arrow { transition: transform .15s ease; }
@@ -278,7 +278,7 @@ li.product:focus-within .ghb-qv-btn {
 }
 .ghb-qv-action:hover {
     border-color: currentColor;
-    color: var(--gh-accent, #721124);
+    color: var(--gh-accent);
 }
 .ghb-qv-action--whatsapp:hover { color: #128c4b; }
 
@@ -297,7 +297,7 @@ li.product:focus-within .ghb-qv-btn {
     padding: 14px 20px;
     border: none;
     border-radius: calc(25px * var(--gh-round, 1));
-    background: var(--gh-accent, #721124);
+    background: var(--gh-accent);
     color: #fff;
     font-size: 14px;
     font-weight: 700;
@@ -307,9 +307,9 @@ li.product:focus-within .ghb-qv-btn {
     transition: background .15s ease, box-shadow .15s ease;
 }
 .ghb-qv-add:hover {
-    background: var(--gh-accent-dark, #520c1a);
+    background: var(--gh-accent-dark);
     color: #fff;
-    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb, 114, 17, 36), .25);
+    box-shadow: 0 4px 12px rgba(var(--gh-accent-rgb), .25);
 }
 .ghb-qv-sizes ~ .ghb-qv-add { margin-top: 16px; }
 .ghb-qv-add.is-added,
@@ -341,12 +341,12 @@ li.product:focus-within .ghb-qv-btn {
     cursor: pointer;
     transition: border-color .12s ease, color .12s ease, background-color .12s ease;
 }
-.ghb-qv-size:hover { border-color: var(--gh-accent, #721124); color: var(--gh-accent, #721124); }
+.ghb-qv-size:hover { border-color: var(--gh-accent); color: var(--gh-accent); }
 /* Picked size (select-then-confirm: nothing is added until the button). */
 .ghb-qv-size.is-selected,
 .ghb-qv-size.is-selected:hover {
-    border-color: var(--gh-accent, #721124);
-    background: var(--gh-accent, #721124);
+    border-color: var(--gh-accent);
+    background: var(--gh-accent);
     color: #fff;
 }
 .ghb-qv-size.is-oos {
@@ -390,7 +390,7 @@ li.product:focus-within .ghb-qv-btn {
     text-decoration: underline;
     text-underline-offset: 3px;
 }
-.ghb-qv-cart-link:hover { color: var(--gh-accent, #721124); }
+.ghb-qv-cart-link:hover { color: var(--gh-accent); }
 
 /* Keyboard focus visibility on every interactive control */
 .ghb-qv-btn:focus-visible,
@@ -401,7 +401,7 @@ li.product:focus-within .ghb-qv-btn {
 .ghb-qv-view-full:focus-visible,
 .ghb-qv-action:focus-visible,
 .ghb-qv-cart-link:focus-visible {
-    outline: 2px solid var(--gh-accent, #721124);
+    outline: 2px solid var(--gh-accent);
     outline-offset: 2px;
 }
 

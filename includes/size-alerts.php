@@ -293,7 +293,7 @@ function ghb_size_alerts_mail(string $to, string $subject, string $heading, stri
 /** The store's accent (Customizer → Golden Hive — Stile), for emails and the confirmation page, which can't read CSS variables. */
 function ghb_size_alerts_accent(): string
 {
-    return function_exists('ghb_design_accent') ? ghb_design_accent() : '#721124';
+    return ghb_design_accent();
 }
 
 function ghb_size_alerts_button(string $url, string $label): string

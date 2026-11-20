@@ -3,7 +3,7 @@
  * Owns all styling for the search modal; the Relevanssi Live Ajax Search
  * base stylesheets are dequeued (see includes/live-search.php).
  */
-#rlv-search-modal { --rlv-brand: var(--gh-accent, #721124); }
+#rlv-search-modal { --rlv-brand: var(--gh-accent); }
 .rlv-modal {
     /* Top of the plugin's z-scale: the search modal must sit above every other
        component, including the theme's own mobile menu / search overlays. */
@@ -45,7 +45,7 @@ body.rlv-open { overflow: hidden; }
 }
 .rlv-close:hover { background: var(--gh-gray-100, #f3f4f6); color: var(--gh-gray-800, #1f2532); }
 .rlv-close:focus-visible {
-    outline: 2px solid var(--gh-accent, #721124);
+    outline: 2px solid var(--gh-accent);
     outline-offset: 2px;
 }
 .rlv-close svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
@@ -107,7 +107,7 @@ body.rlv-open { overflow: hidden; }
 }
 .rlv-result-link:hover, .rlv-result-link:focus-visible { background: var(--gh-gray-100, #f6f6f7); }
 .rlv-result-link:focus-visible {
-    outline: 2px solid var(--gh-accent, #721124);
+    outline: 2px solid var(--gh-accent);
     outline-offset: -2px;
 }
 .rlv-result-thumb {
@@ -143,7 +143,7 @@ body.rlv-open { overflow: hidden; }
 }
 .rlv-seeall:hover { filter: brightness(1.12); }
 .rlv-seeall:focus-visible {
-    outline: 2px solid var(--gh-accent, #721124);
+    outline: 2px solid var(--gh-accent);
     outline-offset: 2px;
 }
 

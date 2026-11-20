@@ -97,7 +97,11 @@ scratch file.
 - Prefixes: PHP functions `ghb_` (older helpers `gh_`), CSS classes `gh-` /
   `ghb-` (Quick View `ghb-qv-*`, filters `ghb-filter-*`), design tokens
   `--gh-*`. Every radius is
-  `calc(N * var(--gh-round))`; every brand colour is `var(--gh-accent)` (set
-  per store in the Customizer), never a hex: the plugin runs on several stores.
+  `calc(N * var(--gh-round))`. The plugin runs on several stores, so nothing
+  store-specific goes in code: colours are `var(--gh-accent)`,
+  `var(--gh-black)`, `var(--gh-white)` (never a hex), title style is
+  `var(--gh-title-weight)` / `var(--gh-title-transform)`, fonts
+  `var(--gh-font-display)` / `var(--gh-font-body)`. Each store sets them in
+  the Customizer (`includes/design.php`).
 - Escape on output (`esc_html`, `esc_attr`, `esc_url`, `wp_kses`), sanitize
   on input, `$wpdb->prepare()` for anything not a cast integer.
