@@ -165,8 +165,9 @@ Rails sit well inside a wide group:
 ```
 
 **"Nella tua taglia"** is `[gh_size_rail]` (attributes `title`, `text`,
-`limit`, `columns`) in a `shortcode-wrapper`. It isn't a Store Hub rail: it
-shows each visitor their own size.
+`limit`, `columns`) in a `shortcode-wrapper` with an eyebrow only (the rail
+prints its own title). It isn't a Store Hub rail: it shows each visitor
+their own size.
 
 ## Motion in raw HTML
 

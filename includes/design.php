@@ -219,6 +219,26 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         ),
     ));
 
+    $wp_customize->add_setting('ghb_rail_nav', array(
+        'type'              => 'option',
+        'capability'        => 'edit_theme_options',
+        'default'           => 'below',
+        'transport'         => 'refresh',
+        'sanitize_callback' => function ($value) {
+            return in_array($value, array('below', 'sides'), true) ? $value : 'below';
+        },
+    ));
+    $wp_customize->add_control('ghb_rail_nav', array(
+        'section'     => 'ghb_design',
+        'type'        => 'radio',
+        'label'       => 'Frecce delle sezioni prodotto',
+        'description' => 'Su telefono le sezioni si scorrono col dito in entrambi i casi.',
+        'choices'     => array(
+            'below' => 'Sotto la fila, con la linea di avanzamento',
+            'sides' => 'Ai lati, sopra le foto',
+        ),
+    ));
+
     $wp_customize->add_setting('ghb_filters_layout', array(
         'type'              => 'option',
         'capability'        => 'edit_theme_options',

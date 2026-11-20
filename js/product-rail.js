@@ -6,57 +6,115 @@
  * prev/next arrows, disables them at the ends, and advances by a full batch
  * (the number of whole cards visible, so a click moves the whole row). No
  * slider library. On the product rail it also moves the progress line under
- * the row and lets a mouse drag the row; a drag never ends in a click.
+ * the row (when the store shows the arrows below it) and lets a mouse drag
+ * the row; a drag never ends in a click.
  *
- * Rails added after load (the product page's "Visti di recente", fetched by
- * js/product-page.js) are wired with window.ghbProductRail.init(root).
+ * Arrow clicks and scrolls are handled once, for the whole document, so a
+ * rail works however it got onto the page: rendered with it, fetched later
+ * (the product page's "Visti di recente"), or copied in by another script or
+ * plugin, which keeps the markup but not the listeners. Which rails are
+ * already set up is kept in memory, not in an attribute a copy would carry.
+ * window.ghbProductRail.init(root) still sets up rails added later at once.
  */
 (function () {
-    function initScroller(rail, trackSel, navSel, progressSel) {
-        var track = rail.querySelector(trackSel);
-        if (!track) return;
-        var navs = rail.querySelectorAll(navSel);
-        var progress = progressSel ? rail.querySelector(progressSel) : null;
-        // Real flex gap from the computed style (columnGap covers `gap` on flex
-        // tracks); "normal"/unset parses to NaN → fall back to the historic 16.
-        function gap() {
-            var g = parseFloat(getComputedStyle(track).columnGap);
-            return isFinite(g) ? g : 16;
-        }
+    var RAILS = '.gh-rail, .gh-cs';
+    var NAVS = '.gh-rail__nav, .gh-cs__nav';
+    var TRACKS = '.gh-rail__track, .gh-cs__track';
+    var ready = typeof WeakSet === 'function' ? new WeakSet() : null;
 
-        function cardStep() {
-            var card = track.querySelector(':scope > *');
-            return card ? card.getBoundingClientRect().width + gap() : track.clientWidth * 0.8;
-        }
-        function pageStep() {
-            var step = cardStep();
-            var perView = Math.max(1, Math.floor((track.clientWidth + gap()) / step));
-            return perView * step;
-        }
-        function update() {
-            var max = track.scrollWidth - track.clientWidth - 1;
-            rail.classList.toggle('is-scrollable', max > 1);
-            navs.forEach(function (n) {
-                var dir = parseInt(n.getAttribute('data-dir'), 10);
-                n.disabled = (dir < 0 && track.scrollLeft <= 1) || (dir > 0 && track.scrollLeft >= max);
-            });
-            if (progress && track.scrollWidth > 0 && track.clientWidth > 0) {
-                progress.style.width = Math.min(1, track.clientWidth / track.scrollWidth) * 100 + '%';
-                progress.style.transform = 'translateX(' + (track.scrollLeft / track.clientWidth) * 100 + '%)';
-            }
-        }
-
-        navs.forEach(function (n) {
-            n.addEventListener('click', function () {
-                track.scrollBy({ left: parseInt(n.getAttribute('data-dir'), 10) * pageStep(), behavior: 'smooth' });
-            });
-        });
-        track.addEventListener('scroll', function () { window.requestAnimationFrame(update); }, { passive: true });
-        window.addEventListener('resize', update);
-        window.addEventListener('load', update); // re-check once images settle
-        update();
-        if (progress) dragToScroll(track);
+    function partsOf(rail) {
+        var isCs = rail.classList.contains('gh-cs');
+        return {
+            track: rail.querySelector(isCs ? '.gh-cs__track' : '.gh-rail__track'),
+            navs: rail.querySelectorAll(isCs ? '.gh-cs__nav' : '.gh-rail__nav'),
+            progress: isCs ? null : rail.querySelector('.gh-rail__progress span')
+        };
     }
+
+    // Real flex gap from the computed style (columnGap covers `gap` on flex
+    // tracks); "normal"/unset parses to NaN → fall back to the historic 16.
+    function gap(track) {
+        var g = parseFloat(getComputedStyle(track).columnGap);
+        return isFinite(g) ? g : 16;
+    }
+
+    /** One batch: as many whole cards as are visible. */
+    function pageStep(track) {
+        var card = track.firstElementChild;
+        var step = card ? card.getBoundingClientRect().width + gap(track) : 0;
+        if (!step) return track.clientWidth * 0.8;
+        var perView = Math.max(1, Math.floor((track.clientWidth + gap(track)) / step));
+        return perView * step;
+    }
+
+    function update(rail) {
+        var p = partsOf(rail);
+        if (!p.track) return;
+        var max = p.track.scrollWidth - p.track.clientWidth - 1;
+        rail.classList.toggle('is-scrollable', max > 1);
+        p.navs.forEach(function (n) {
+            var dir = parseInt(n.getAttribute('data-dir'), 10);
+            n.disabled = (dir < 0 && p.track.scrollLeft <= 2) || (dir > 0 && p.track.scrollLeft >= max);
+        });
+        if (p.progress && p.track.scrollWidth > 0 && p.track.clientWidth > 0) {
+            p.progress.style.width = Math.min(1, p.track.clientWidth / p.track.scrollWidth) * 100 + '%';
+            p.progress.style.transform = 'translateX(' + (p.track.scrollLeft / p.track.clientWidth) * 100 + '%)';
+        }
+    }
+
+    function setUp(rail) {
+        if (ready ? ready.has(rail) : rail.__ghbRail) return;
+        if (ready) { ready.add(rail); } else { rail.__ghbRail = true; }
+        var p = partsOf(rail);
+        if (!p.track) return;
+        update(rail);
+        if (rail.classList.contains('gh-rail')) dragToScroll(p.track);
+    }
+
+    function boot(root) {
+        var scope = root && root.querySelectorAll ? root : document;
+        if (scope.matches && scope.matches(RAILS)) setUp(scope);
+        scope.querySelectorAll(RAILS).forEach(setUp);
+    }
+
+    // Arrows: one listener for every rail on the page.
+    document.addEventListener('click', function (e) {
+        var nav = e.target.closest && e.target.closest(NAVS);
+        if (!nav || nav.disabled) return;
+        var rail = nav.closest(RAILS);
+        var track = rail && partsOf(rail).track;
+        if (!track) return;
+        setUp(rail);
+        var dir = parseInt(nav.getAttribute('data-dir'), 10) || 1;
+        var step = dir * pageStep(track);
+        var from = track.scrollLeft;
+        track.scrollBy({ left: step, behavior: 'smooth' });
+        // If something cancelled the smooth scroll (a script, a browser quirk
+        // with snapping), the click still moves the row.
+        window.setTimeout(function () {
+            if (Math.abs(track.scrollLeft - from) < 2) {
+                track.scrollLeft = from + step;
+            }
+            update(rail);
+        }, 450);
+    });
+
+    // Scroll events don't bubble, but they can be caught on the way down.
+    document.addEventListener('scroll', function (e) {
+        var t = e.target;
+        if (!t || !t.matches || !t.matches(TRACKS)) return;
+        var rail = t.closest(RAILS);
+        if (rail) window.requestAnimationFrame(function () { setUp(rail); update(rail); });
+    }, { capture: true, passive: true });
+
+    // A rail first met by the pointer (copied in after load) gets its state.
+    document.addEventListener('pointerover', function (e) {
+        var rail = e.target.closest && e.target.closest(RAILS);
+        if (rail) setUp(rail);
+    }, { passive: true });
+
+    window.addEventListener('resize', function () { document.querySelectorAll(RAILS).forEach(update); });
+    window.addEventListener('load', function () { boot(); document.querySelectorAll(RAILS).forEach(update); });
 
     // Mouse only: touch already swipes natively.
     function dragToScroll(track) {
@@ -91,20 +149,6 @@
             }
         }, true);
         track.addEventListener('dragstart', function (e) { e.preventDefault(); });
-    }
-
-    function boot(root) {
-        var scope = root && root.querySelectorAll ? root : document;
-        scope.querySelectorAll('.gh-rail').forEach(function (r) {
-            if (r.hasAttribute('data-gh-rail-ready')) return;
-            r.setAttribute('data-gh-rail-ready', '');
-            initScroller(r, '.gh-rail__track', '.gh-rail__nav', '.gh-rail__progress span');
-        });
-        scope.querySelectorAll('.gh-cs').forEach(function (r) {
-            if (r.hasAttribute('data-gh-rail-ready')) return;
-            r.setAttribute('data-gh-rail-ready', '');
-            initScroller(r, '.gh-cs__track', '.gh-cs__nav', null);
-        });
     }
 
     window.ghbProductRail = { init: boot };

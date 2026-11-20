@@ -57,7 +57,7 @@ jobs:
           git diff --exit-code -- '*.min.css' 'js/*.min.js' \
             || { echo '::error::Run npm run build and commit the .min files.'; exit 1; }
 
-      # tests/motion-test.js skips itself here: Chromium comes next.
+      # The browser tests skip themselves here: Chromium comes next.
       - name: Node tests
         run: for t in tests/*-test.js; do echo "== $t"; node "$t" || exit 1; done
 
@@ -66,5 +66,5 @@ jobs:
           npm install --no-save playwright@1.63.0
           npx playwright install --with-deps chromium
 
-      - name: Scroll motion in a browser
-        run: node tests/motion-test.js
+      - name: Browser tests (scroll motion, rail arrows)
+        run: node tests/motion-test.js && node tests/rail-test.js
