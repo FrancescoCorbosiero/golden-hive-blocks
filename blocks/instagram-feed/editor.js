@@ -41,7 +41,7 @@
                         style: {
                             position: 'absolute', left: spot.x + '%', top: spot.y + '%',
                             transform: 'translate(-50%, -50%)', width: '22px', height: '22px',
-                            borderRadius: '50%', background: spot.productId ? '#721124' : '#757575',
+                            borderRadius: '50%', background: spot.productId ? 'var(--gh-accent, #721124)' : '#757575',
                             color: '#fff', border: '2px solid #fff', fontSize: '11px', lineHeight: '18px',
                             textAlign: 'center', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(0,0,0,.4)'
                         }

@@ -5,7 +5,7 @@
 
 /* Icona categoria blocchi */
 .block-editor-block-types-list__list-item[data-type^="golden-hive"] .block-editor-block-types-list__item-icon {
-    color: #721124;
+    color: var(--gh-accent, #721124);
 }
 
 /* Editor Block Wrapper */
@@ -16,7 +16,7 @@
 
 /* Selected State Highlight */
 .wp-block[data-type^="golden-hive"].is-selected > * {
-    outline: 2px solid #721124;
+    outline: 2px solid var(--gh-accent, #721124);
     outline-offset: 2px;
 }
 
@@ -33,7 +33,7 @@
     width: 48px;
     height: 48px;
     margin: 0 auto 16px;
-    color: #721124;
+    color: var(--gh-accent, #721124);
 }
 
 .gh-editor-placeholder__title {

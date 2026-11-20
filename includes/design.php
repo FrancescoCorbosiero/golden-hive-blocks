@@ -9,6 +9,11 @@
  * and — through theme-bridge.css — Shoptimizer's own product cards, buttons
  * and fields. Code can force it: add_filter('ghb_design_shape', fn() => 'sharp').
  *
+ * "Colore principale": the store's accent (buttons, prices, eyebrows, selected
+ * sizes, focus rings), as the --gh-accent tokens every stylesheet reads. Each
+ * store picks its own; until it does, the plugin's original burgundy. Code
+ * can force it: add_filter('ghb_design_accent', fn() => '#1e40af').
+ *
  * "Filtri su desktop": the shop sidebar as the theme lays it out, or a drawer
  * opened from a "Filtri" button in the shop toolbar, with the products using
  * the full width. Phones keep the theme's own filter drawer either way. The
@@ -21,6 +26,15 @@
 
 if (!defined('ABSPATH')) {
     exit;
+}
+
+require_once __DIR__ . '/design-core.php';
+
+/** The store's accent colour, #rrggbb. */
+function ghb_design_accent(): string
+{
+    $hex = (string) apply_filters('ghb_design_accent', (string) get_option('ghb_accent_color', GHB_ACCENT_DEFAULT));
+    return ghb_hex_normalize($hex) ?? GHB_ACCENT_DEFAULT;
 }
 
 /** 'round' (Creativo) or 'sharp' (Elegante). */
@@ -90,6 +104,21 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         ),
     ));
 
+    $wp_customize->add_setting('ghb_accent_color', array(
+        'type'              => 'option',
+        'capability'        => 'edit_theme_options',
+        'default'           => GHB_ACCENT_DEFAULT,
+        'transport'         => 'refresh',
+        'sanitize_callback' => function ($value) {
+            return ghb_hex_normalize((string) $value) ?? GHB_ACCENT_DEFAULT;
+        },
+    ));
+    $wp_customize->add_control(new WP_Customize_Color_Control($wp_customize, 'ghb_accent_color', array(
+        'section'     => 'ghb_design',
+        'label'       => 'Colore principale',
+        'description' => 'Il colore del negozio: pulsanti, prezzi, etichette sopra i titoli, taglie selezionate. Scegline uno che si legga bene su bianco e su nero.',
+    )));
+
     $wp_customize->add_setting('ghb_filters_layout', array(
         'type'              => 'option',
         'capability'        => 'edit_theme_options',
@@ -132,14 +161,22 @@ add_action('customize_preview_init', 'ghb_design_customize_preview');
  * -------------------------------------------------------------------- */
 
 /**
- * The shape: one custom property. html:root outranks the stylesheet's :root
- * default whatever the order the two are printed in.
+ * The shape and the accent: custom properties. html:root outranks the
+ * stylesheet's :root defaults whatever the order they are printed in.
  */
 function ghb_design_print_shape()
 {
     echo '<style id="ghb-shape">html:root{--gh-round:' . ('sharp' === ghb_design_shape() ? '0' : '1') . "}</style>\n";
+    echo '<style id="ghb-accent">' . ghb_accent_css(ghb_design_accent()) . "</style>\n";
 }
 add_action('wp_head', 'ghb_design_print_shape', 2);
+
+/** The same accent in the block editor, so blocks look there as on the site. */
+function ghb_design_editor_accent()
+{
+    wp_add_inline_style('golden-hive-blocks-editor', ghb_accent_css(ghb_design_accent()));
+}
+add_action('enqueue_block_editor_assets', 'ghb_design_editor_accent', 20);
 
 /**
  * Shoptimizer's own surfaces on the same scale, and the drawer layout.

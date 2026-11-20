@@ -244,10 +244,10 @@ function ghb_size_alerts_page(string $title, string $text, string $button = ''):
 <style>
 body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f5f5f5;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#171717}
 main{max-width:440px;margin:24px;padding:36px 28px;border-radius:16px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.08);text-align:center}
-.brand{margin:0 0 18px;color:#721124;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.brand{margin:0 0 18px;color:<?php echo esc_attr(ghb_size_alerts_accent()); ?>;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 h1{margin:0 0 10px;font-size:24px}
 p{margin:0 0 22px;color:#525252;line-height:1.55}
-a,button{display:inline-block;padding:12px 22px;border:0;border-radius:8px;background:#721124;color:#fff;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+a,button{display:inline-block;padding:12px 22px;border:0;border-radius:8px;background:<?php echo esc_attr(ghb_size_alerts_accent()); ?>;color:#fff;font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
 form{margin:0 0 14px}
 form+a{background:none;color:#525252;font-weight:600;text-decoration:underline}
 </style>
@@ -290,11 +290,18 @@ function ghb_size_alerts_mail(string $to, string $subject, string $heading, stri
     return (bool) wp_mail($to, $subject, $body, $headers);
 }
 
+/** The store's accent (Customizer → Golden Hive — Stile), for emails and the confirmation page, which can't read CSS variables. */
+function ghb_size_alerts_accent(): string
+{
+    return function_exists('ghb_design_accent') ? ghb_design_accent() : '#721124';
+}
+
 function ghb_size_alerts_button(string $url, string $label): string
 {
     return sprintf(
-        '<p style="margin:24px 0;"><a href="%s" style="display:inline-block;padding:12px 22px;border-radius:6px;background:#721124;color:#ffffff;font-weight:700;text-decoration:none;">%s</a></p>',
+        '<p style="margin:24px 0;"><a href="%s" style="display:inline-block;padding:12px 22px;border-radius:6px;background:%s;color:#ffffff;font-weight:700;text-decoration:none;">%s</a></p>',
         esc_url($url),
+        esc_attr(ghb_size_alerts_accent()),
         esc_html($label)
     );
 }
@@ -351,7 +358,7 @@ function ghb_size_alerts_send_digest(int $subscriber_id, array $picks): bool
             . ($image ? '<img src="' . esc_url($image) . '" width="96" height="96" alt="" style="display:block;width:96px;height:96px;object-fit:contain;border-radius:8px;background:#f5f5f5;">' : '')
             . '</td><td style="padding:10px 0;vertical-align:middle;">'
             . '<strong style="display:block;color:#171717;font-size:15px;">' . esc_html($product->get_name()) . '</strong>'
-            . '<span style="display:block;margin:4px 0 8px;color:#721124;font-weight:700;">' . esc_html($line) . '</span>'
+            . '<span style="display:block;margin:4px 0 8px;color:' . esc_attr(ghb_size_alerts_accent()) . ';font-weight:700;">' . esc_html($line) . '</span>'
             . '<a href="' . esc_url($product->get_permalink()) . '" style="color:#171717;font-weight:700;">' . esc_html__('Vedi il prodotto', 'golden-hive-blocks') . ' &rarr;</a>'
             . '</td></tr>';
     }
