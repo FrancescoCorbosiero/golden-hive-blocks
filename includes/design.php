@@ -9,6 +9,14 @@
  * and — through theme-bridge.css — Shoptimizer's own product cards, buttons
  * and fields. Code can force it: add_filter('ghb_design_shape', fn() => 'sharp').
  *
+ * Design tokens: the store's colours (principale, scuro, chiaro), fonts
+ * (titoli, testo) and title style (maiuscolo, peso), as the custom
+ * properties every stylesheet reads (design-core.php says which). Nothing
+ * belongs to one store: the defaults are neutral, and stores that ran the
+ * plugin before these were settings get their old look saved once
+ * (ghb_design_migrate_tokens), so updating changes nothing. Code can force
+ * any of them: add_filter('ghb_design_tokens', fn($t) => ['accent' => '#1e40af'] + $t).
+ *
  * "Filtri su desktop": the shop sidebar as the theme lays it out, or a drawer
  * opened from a "Filtri" button in the shop toolbar, with the products using
  * the full width. Phones keep the theme's own filter drawer either way. The
@@ -22,6 +30,65 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+require_once __DIR__ . '/design-core.php';
+
+/** Token key => the option that stores it. */
+const GHB_TOKEN_OPTIONS = array(
+    'accent'       => 'ghb_accent_color',
+    'dark'         => 'ghb_color_dark',
+    'light'        => 'ghb_color_light',
+    'font_display' => 'ghb_font_display',
+    'font_body'    => 'ghb_font_body',
+    'title_case'   => 'ghb_title_case',
+    'title_weight' => 'ghb_title_weight',
+);
+
+/** The store's tokens, cleaned (design-core.php). */
+function ghb_design_tokens(): array
+{
+    $tokens = array();
+    foreach (GHB_TOKEN_OPTIONS as $key => $option) {
+        $tokens[$key] = get_option($option, GHB_TOKEN_DEFAULTS[$key]);
+    }
+    $tokens = (array) apply_filters('ghb_design_tokens', $tokens);
+    foreach (GHB_TOKEN_DEFAULTS as $key => $default) {
+        $tokens[$key] = ghb_token_clean($key, $tokens[$key] ?? $default);
+    }
+    return $tokens;
+}
+
+/** The store's accent colour, #rrggbb (emails and other places CSS can't reach). */
+function ghb_design_accent(): string
+{
+    return ghb_design_tokens()['accent'];
+}
+
+/**
+ * Once: a store that ran the plugin before the tokens were settings gets its
+ * old look saved as settings (the burgundy accent, uppercase heavy titles),
+ * so updating changes nothing, and the Customizer shows what the store looks
+ * like. add_option leaves anything already saved alone. A new install keeps
+ * the neutral defaults.
+ */
+function ghb_design_migrate_tokens()
+{
+    if (get_option('ghb_tokens_version')) {
+        return;
+    }
+    $traces = array('ghb_accent_color', 'ghb_rail_cache_gen', 'ghb_sp_generation', 'ghb_design_shape', 'ghb_filters_layout',
+        'ghb_sold_out_last', 'ghb_size_arrivals', 'ghb_whatsapp_number', 'ghb_pp_sold_count', 'ghb_delivery_cutoff');
+    foreach ($traces as $option) {
+        if (false !== get_option($option, false)) {
+            foreach (GHB_TOKEN_LEGACY as $key => $value) {
+                add_option(GHB_TOKEN_OPTIONS[$key], $value);
+            }
+            break;
+        }
+    }
+    update_option('ghb_tokens_version', 1);
+}
+add_action('init', 'ghb_design_migrate_tokens', 1);
 
 /** 'round' (Creativo) or 'sharp' (Elegante). */
 function ghb_design_shape(): string
@@ -90,6 +157,68 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         ),
     ));
 
+    $token_setting = function (string $key) use ($wp_customize) {
+        $wp_customize->add_setting(GHB_TOKEN_OPTIONS[$key], array(
+            'type'              => 'option',
+            'capability'        => 'edit_theme_options',
+            'default'           => GHB_TOKEN_DEFAULTS[$key],
+            'transport'         => 'refresh',
+            'sanitize_callback' => function ($value) use ($key) {
+                return ghb_token_clean($key, $value);
+            },
+        ));
+    };
+    $colours = array(
+        'accent' => array('Colore principale', 'Pulsanti, prezzi, etichette sopra i titoli, taglie selezionate. Deve leggersi bene su chiaro e su scuro.'),
+        'dark'   => array('Colore scuro', 'Testi e sezioni scure.'),
+        'light'  => array('Colore chiaro', 'Sfondi chiari e testi sulle sezioni scure.'),
+    );
+    foreach ($colours as $key => $copy) {
+        $token_setting($key);
+        $wp_customize->add_control(new WP_Customize_Color_Control($wp_customize, GHB_TOKEN_OPTIONS[$key], array(
+            'section'     => 'ghb_design',
+            'label'       => $copy[0],
+            'description' => $copy[1],
+        )));
+    }
+    $fonts = array(
+        'font_display' => array('Font dei titoli', 'Il nome del font, es. "Bebas Neue", sans-serif. Vuoto: quello del tema. Il font deve essere già caricato sul sito (dal tema o da un plugin).'),
+        'font_body'    => array('Font del testo', 'Come sopra, per i testi dei blocchi. Vuoto: quello del tema.'),
+    );
+    foreach ($fonts as $key => $copy) {
+        $token_setting($key);
+        $wp_customize->add_control(GHB_TOKEN_OPTIONS[$key], array(
+            'section'     => 'ghb_design',
+            'type'        => 'text',
+            'label'       => $copy[0],
+            'description' => $copy[1],
+        ));
+    }
+    $token_setting('title_case');
+    $wp_customize->add_control(GHB_TOKEN_OPTIONS['title_case'], array(
+        'section' => 'ghb_design',
+        'type'    => 'radio',
+        'label'   => 'Titoli delle sezioni',
+        'choices' => array(
+            'none'      => 'Come sono scritti',
+            'uppercase' => 'Tutto maiuscolo',
+        ),
+    ));
+    $token_setting('title_weight');
+    $wp_customize->add_control(GHB_TOKEN_OPTIONS['title_weight'], array(
+        'section' => 'ghb_design',
+        'type'    => 'select',
+        'label'   => 'Spessore dei titoli',
+        'choices' => array(
+            '400' => 'Normale (400)',
+            '500' => 'Medio (500)',
+            '600' => 'Semi-grassetto (600)',
+            '700' => 'Grassetto (700)',
+            '800' => 'Extra-grassetto (800)',
+            '900' => 'Nero (900)',
+        ),
+    ));
+
     $wp_customize->add_setting('ghb_filters_layout', array(
         'type'              => 'option',
         'capability'        => 'edit_theme_options',
@@ -132,14 +261,22 @@ add_action('customize_preview_init', 'ghb_design_customize_preview');
  * -------------------------------------------------------------------- */
 
 /**
- * The shape: one custom property. html:root outranks the stylesheet's :root
- * default whatever the order the two are printed in.
+ * The shape and the design tokens: custom properties. html:root outranks the
+ * stylesheet's :root defaults whatever the order they are printed in.
  */
 function ghb_design_print_shape()
 {
     echo '<style id="ghb-shape">html:root{--gh-round:' . ('sharp' === ghb_design_shape() ? '0' : '1') . "}</style>\n";
+    echo '<style id="ghb-tokens">' . ghb_design_tokens_css(ghb_design_tokens()) . "</style>\n";
 }
 add_action('wp_head', 'ghb_design_print_shape', 2);
+
+/** The same tokens in the block editor, so blocks look there as on the site. */
+function ghb_design_editor_tokens()
+{
+    wp_add_inline_style('golden-hive-blocks-editor', ghb_design_tokens_css(ghb_design_tokens()));
+}
+add_action('enqueue_block_editor_assets', 'ghb_design_editor_tokens', 20);
 
 /**
  * Shoptimizer's own surfaces on the same scale, and the drawer layout.

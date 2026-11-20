@@ -91,7 +91,7 @@ class GHB_Filters
             'show_counts' => true,
             'count_limit' => 4000,
             'cache'       => true,
-            'accent'      => '#111111',
+            'accent'      => '', // '' = the store's Colore principale (--gh-accent)
 
             // When true, facets flagged 'variation' => true match at VARIATION level:
             // selecting a value only returns products with an in-stock variation for

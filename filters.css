@@ -1,14 +1,14 @@
 /**
  * Golden Hive Blocks — AJAX product filters (the "Advanced Filters" panel).
  *
- * Markup: includes/filters.php (.ghb-filter-*). Accent: --gh-filters-accent,
- * set from the config's 'accent' (default #111111).
+ * Markup: includes/filters.php (.ghb-filter-*). Accent: the store's
+ * --gh-accent, unless the config's 'accent' sets --gh-filters-accent.
  */
 
 .ghb-filter-inline,
 .ghb-filter-drawer,
 .ghb-filter-trigger {
-    --ghb-filter-accent: var(--gh-filters-accent, #111111);
+    --ghb-filter-accent: var(--gh-filters-accent, var(--gh-accent));
 }
 .ghb-filter-inline {
     position: relative;

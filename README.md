@@ -83,7 +83,7 @@ All are in the **Golden Hive** inserter category and are server-rendered.
 | Newsletter signup | `newsletter.php` | Stores subscribers as a private post type (admin: Iscritti newsletter). Fires `ghb_newsletter_subscribed` for an email service. |
 | Bank-transfer drawer at checkout | `bank-details.php` | Reads WooCommerce's BACS accounts. |
 | Preload and speculation rules | `preload-speculation.php` | Admin: Strumenti → GH Preload. |
-| Design switches (rounded / sharp corners, desktop filters drawer) | `design.php` | Every radius is `calc(N * var(--gh-round))`. |
+| Design tokens and switches (colours, fonts, title style, corner shape, desktop filters drawer) | `design.php`, `design-core.php` | Printed as `html:root` custom properties on the site and in the editor. Defaults are neutral; stores that ran the plugin before 5.18 got their old look saved as settings once. |
 | Shoptimizer / CommerceKit modules | `theme-compat.php` and the four modules it gates | See THEME-COUPLING.md. |
 | Page-cache purge | `cache.php` | SiteGround, WP Rocket, LiteSpeed, W3TC, WP Super Cache. |
 
@@ -117,7 +117,7 @@ changing them changes what the app previews.
 
 | Place | Settings |
 |---|---|
-| Aspetto → Personalizza → **Golden Hive — Stile** | Corner shape; desktop filters (sidebar or drawer) |
+| Aspetto → Personalizza → **Golden Hive — Stile** | The store's design tokens: Colore principale (buttons, prices, eyebrows, selected sizes, filters), Colore scuro, Colore chiaro, Font dei titoli, Font del testo, Titoli delle sezioni (as typed / uppercase), Spessore dei titoli; corner shape; desktop filters (sidebar or drawer) |
 | Aspetto → Personalizza → **Golden Hive — Pagina prodotto** | WhatsApp number; "Altre colorway"; size band; "Venduto N volte"; "Visti di recente"; delivery estimate (off by default), cut-off time, min/max days |
 | Aspetto → Personalizza → WooCommerce → Catalogo prodotti | "Prodotti esauriti in fondo" |
 | Prodotto → Dati prodotto → Generale | Drop date and "Blocca l'acquisto fino al drop" |
