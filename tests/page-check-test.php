@@ -122,6 +122,8 @@ caught("<!-- wp:html -->\n<h2 data-gh-split=\"line\">X</h2>\n<!-- /wp:html -->",
 caught("<!-- wp:html -->\n<div data-gh-reveal=\"fade\">X</div>\n<!-- /wp:html -->", 'data-gh-reveal="fade"', 'a reveal value motion.js does not know');
 check(array() === issues("<!-- wp:html -->\n<div data-gh-reveal=\"up\"><h2 data-gh-split=\"lines\">X</h2></div>\n<!-- /wp:html -->"),
     'known motion hooks pass');
+caught("<!-- wp:html -->\n<div data-gh-reveal=\"stagger\" data-gh-stagger=\".grid > li\">X</div>\n<!-- /wp:html -->",
+    'holds a ">"', 'a ">" inside an attribute (wptexturize breaks it)');
 
 // Outside any block.
 caught("<p>loose</p>\n\n<!-- wp:golden-hive/cta-banner {\"title\":\"X\"} /-->", 'Classic block', 'HTML outside any block', 'warning');

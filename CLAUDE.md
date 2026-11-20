@@ -72,6 +72,12 @@ scratch file.
   (e.g. `ghb_hub_order_ids()`); changing those rules changes the app's
   previews. Keep REST responses backward-compatible within `wc-gh/v1` and
   advertise new abilities through `/capabilities`.
+- **Never a `>` inside an HTML attribute value** the plugin prints (a CSS
+  selector like `.a > b`, an arrow). WordPress's wptexturize reads it as
+  the end of the tag, curls the closing quote and breaks everything after
+  it: in 5.17.0 that moved the rail arrows out of the rail on every store.
+  `tests/markup-test.php` scans the templates; the page checker flags it in
+  pages.
 - **Archive order** is a `posts_clauses` chain (10 sort, 20 rail pins, 50
   sold-out last). Never `remove_filter()` a callback from inside its own run.
 - **Quick View's and Quick Add's data** come from `includes/product-ajax.php`,

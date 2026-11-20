@@ -200,7 +200,7 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
 
     ob_start();
     ?>
-    <div class="<?php echo esc_attr($rail_classes); ?>" data-gh-reveal="stagger" data-gh-stagger=".gh-rail__track > li">
+    <div class="<?php echo esc_attr($rail_classes); ?>" data-gh-reveal="stagger" data-gh-stagger="li.product">
         <?php if ('' !== $atts['title']) : ?>
             <h2 class="gh-rail__title" data-gh-split="lines"><?php echo esc_html($atts['title']); ?></h2>
         <?php endif; ?>

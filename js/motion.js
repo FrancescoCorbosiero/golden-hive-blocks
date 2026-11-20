@@ -13,7 +13,10 @@
  *                               "down", "left", "right" or "scale"
  *   [data-gh-reveal="stagger"]  its items land in a cascade, with a little
  *                               bounce: the direct children, or the ones
- *                               data-gh-stagger="<selector>" names
+ *                               data-gh-stagger="<selector>" names. Never a
+ *                               ">" in the selector: WordPress's wptexturize
+ *                               reads it as the end of the tag and breaks the
+ *                               markup that follows (5.17.0's rail arrows).
  *   [data-gh-split="lines"]     a heading's lines rise out of their masks
  *   [data-gh-image-reveal]      a photo opens from a clip, its image settling
  *                               from a slight zoom

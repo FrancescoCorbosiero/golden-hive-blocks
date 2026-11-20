@@ -383,6 +383,12 @@ function ghb_pc_check_rail(array $atts, array $known, string $where): array
 function ghb_pc_check_motion(string $html, string $where): array
 {
     $issues = array();
+    // wptexturize reads any ">" as the end of a tag, even inside quotes, and
+    // breaks everything after it.
+    preg_match_all('/\s([a-z][a-z0-9_:-]*)="([^"<]*>[^"]*)"/i', $html, $m, PREG_SET_ORDER);
+    foreach ($m as $attr) {
+        $issues[] = ghb_pc_issue('error', $where, $attr[1] . '="' . $attr[2] . '" holds a ">": WordPress\'s text formatting reads it as the end of the tag and breaks the markup after it. Rewrite the value without ">".');
+    }
     preg_match_all('/data-gh-reveal(?:="([^"]*)")?/', $html, $m);
     foreach ($m[1] as $v) {
         if (!in_array($v, GHB_PC_REVEALS, true)) {
