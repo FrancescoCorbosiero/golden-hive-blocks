@@ -245,16 +245,40 @@ add_shortcode('featured_products', function($atts) {
  * ═══════════════════════════════════════════════════════════════
  */
 
+/**
+ * Whether anyone may see this product through the public AJAX handlers below.
+ *
+ * They answer any product ID without a nonce, so they serve only what the shop
+ * itself shows: a published product with no password. A variation also needs
+ * a published parent, because WooCommerce keeps a draft product's variations
+ * in "publish". The answer never depends on who is asking, so a cached
+ * response is the same for everyone.
+ */
+function ghb_product_is_public($product): bool
+{
+    if (!$product instanceof WC_Product) {
+        return false;
+    }
+    $ids = array_filter(array($product->get_id(), $product->is_type('variation') ? $product->get_parent_id() : 0));
+    foreach ($ids as $id) {
+        if ('publish' !== get_post_status($id) || '' !== (string) get_post_field('post_password', $id)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // AJAX: get variations for variable products
 add_action('wp_ajax_ghb_get_variations', 'ghb_get_variations_handler');
 add_action('wp_ajax_nopriv_ghb_get_variations', 'ghb_get_variations_handler');
 
 function ghb_get_variations_handler() {
-    // Deliberately nonce-less: read-only public catalog data, kept cache-friendly.
+    // Deliberately nonce-less: read-only public catalog data, kept cache-friendly,
+    // so it answers only for products the shop shows (ghb_product_is_public).
     $product_id = intval($_GET['product_id'] ?? 0);
     $product = wc_get_product($product_id);
 
-    if (!$product || !$product->is_type('variable')) {
+    if (!ghb_product_is_public($product) || !$product->is_type('variable')) {
         wp_send_json_error('Prodotto non trovato');
     }
 
@@ -348,11 +372,12 @@ add_action('wp_ajax_ghb_quick_view', 'ghb_quick_view_handler');
 add_action('wp_ajax_nopriv_ghb_quick_view', 'ghb_quick_view_handler');
 
 function ghb_quick_view_handler() {
-    // Deliberately nonce-less: read-only public catalog data, kept cache-friendly.
+    // Deliberately nonce-less: read-only public catalog data, kept cache-friendly,
+    // so it answers only for products the shop shows (ghb_product_is_public).
     $product_id = intval($_GET['product_id'] ?? 0);
     $product = wc_get_product($product_id);
 
-    if (!$product) {
+    if (!ghb_product_is_public($product)) {
         wp_send_json_error('Prodotto non trovato');
     }
 
