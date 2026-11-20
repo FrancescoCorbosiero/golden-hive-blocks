@@ -7,8 +7,9 @@
  * No framework and no WordPress install: the core is plain PHP, and the one
  * WordPress piece it leans on — the block parser and the attribute serializer —
  * is loaded from tests/wp/ (verbatim copies of WordPress core, GPL-2.0+).
- * The fixture is the real homepage markup, so "the rewrite touches only one
- * block" is proven on the page it will actually run against.
+ * The main fixture is a real homepage's markup, with the store's details
+ * (domain, name, phone, socials) swapped for placeholders: "the rewrite
+ * touches only one block" is proven on a page shaped like the real one.
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -491,21 +492,21 @@ same(ghb_hub_arrange_blocks($html, $slots, array(0, 1), 'serialize_block_attribu
 same(ghb_hub_arrange_blocks($doubled, $slots, range(0, 8), 'serialize_block_attributes')['error'], 'ambiguous', 'a rail present twice is not moved');
 
 /* ---------------------------------------------------------------- *
- * The page template, pages/homepage.html.
+ * Rails among other sections (tests/fixtures/homepage-sections.html).
  * ---------------------------------------------------------------- */
 
-// The template adds blocks around the rails ("Nella tua taglia", the drop
-// calendar, the newsletter): the Hub still finds the same nine rails, and a
-// shortcode wrapper holding [gh_size_rail] is not one of them.
-$template = parse_blocks(file_get_contents(dirname(__DIR__) . '/pages/homepage.html'));
-same(array_keys(ghb_hub_page_rails($template)), array_keys(ghb_hub_page_rails($blocks)), 'the page template has the same nine rails');
+// The blocks around the rails (the drop calendar, the newsletter) don't
+// confuse the Hub, and a shortcode wrapper holding [gh_size_rail] is not
+// one of its rails.
+$sections = parse_blocks(file_get_contents(__DIR__ . '/fixtures/homepage-sections.html'));
+same(array_keys(ghb_hub_page_rails($sections)), array('category:featured#0', 'brand:adidas#0'), 'only the product rails are rails');
 $size_wrapper = null;
-foreach (ghb_hub_leaf_blocks($template) as $leaf) {
+foreach (ghb_hub_leaf_blocks($sections) as $leaf) {
     if (false !== strpos((string) ($leaf[1]['attrs']['shortcode'] ?? ''), '[gh_size_rail')) {
         $size_wrapper = $leaf[1];
     }
 }
-check(null !== $size_wrapper, 'the template has a "Nella tua taglia" wrapper');
+check(null !== $size_wrapper, 'the page has a "Nella tua taglia" wrapper');
 same(ghb_hub_rail_from_block($size_wrapper ?? array()), null, 'a wrapper holding [gh_size_rail] is not a Hub rail');
 
 /* ---------------------------------------------------------------- */
