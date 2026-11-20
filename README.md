@@ -75,7 +75,7 @@ All are in the **Golden Hive** inserter category and are server-rendered.
 | Shop grid alignment | `shop-grid.php` | |
 | Archive hero (category image, parallax) | `archive-hero.php` | Pure CSS, no JavaScript. |
 | Live search modal | `live-search.php` | UI only; needs Relevanssi Live Ajax Search. |
-| Product rails | `product-rail.php` | Cards use WooCommerce's own template, so Quick View and add-to-cart appear on them. |
+| Product rails | `product-rail.php`, `js/product-rail.js` | Cards use WooCommerce's own template, so Quick View and add-to-cart appear on them. Arrow clicks are handled once for the whole page, so a rail copied in by another script still works (`tests/rail-test.js`). |
 | Product page: WhatsApp, share, delivery estimate, "Non trovi la tua taglia?" band, "Altre colorway", "Visti di recente" | `product-page.php` | |
 | "Venduto N volte negli ultimi 30 giorni", recent-orders toast | `social-proof.php` | Shows the product and city, never a name, email or total. |
 | Drops: release date, purchase lock, countdown, "Ricordamelo" (.ics / Google Calendar) | `drops.php` | At release: cache purge and size alerts. |
@@ -117,7 +117,7 @@ changing them changes what the app previews.
 
 | Place | Settings |
 |---|---|
-| Aspetto → Personalizza → **Golden Hive — Stile** | The store's design tokens: Colore principale (buttons, prices, eyebrows, selected sizes, filters), Colore scuro, Colore chiaro, Font dei titoli, Font del testo, Titoli delle sezioni (as typed / uppercase), Spessore dei titoli; corner shape; desktop filters (sidebar or drawer) |
+| Aspetto → Personalizza → **Golden Hive — Stile** | The store's design tokens: Colore principale (buttons, prices, eyebrows, selected sizes, filters), Colore scuro, Colore chiaro, Font dei titoli, Font del testo, Titoli delle sezioni (as typed / uppercase), Spessore dei titoli; corner shape; Frecce delle sezioni prodotto (below the row with a progress line, or on the sides over the photos); desktop filters (sidebar or drawer) |
 | Aspetto → Personalizza → **Golden Hive — Pagina prodotto** | WhatsApp number; "Altre colorway"; size band; "Venduto N volte"; "Visti di recente"; delivery estimate (off by default), cut-off time, min/max days |
 | Aspetto → Personalizza → WooCommerce → Catalogo prodotti | "Prodotti esauriti in fondo" |
 | Prodotto → Dati prodotto → Generale | Drop date and "Blocca l'acquisto fino al drop" |

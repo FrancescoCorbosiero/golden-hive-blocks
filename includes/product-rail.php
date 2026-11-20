@@ -64,6 +64,29 @@ function ghb_product_rail_assets()
 }
 
 /**
+ * Where the rails' arrows sit (Customizer → Golden Hive — Stile): 'below' the
+ * row, next to a progress line, or on its 'sides', over the photos.
+ */
+function ghb_rail_nav_style(): string
+{
+    $style = (string) apply_filters('ghb_rail_nav_style', (string) get_option('ghb_rail_nav', 'below'));
+    return in_array($style, array('below', 'sides'), true) ? $style : 'below';
+}
+
+/** One rail arrow: -1 back, 1 forward. js/product-rail.js moves the row. */
+function ghb_rail_nav_button(int $dir): string
+{
+    $back = $dir < 0;
+    return sprintf(
+        '<button type="button" class="gh-rail__nav gh-rail__nav--%s" data-dir="%d" aria-label="%s"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="%s"/></svg></button>',
+        $back ? 'prev' : 'next',
+        $back ? -1 : 1,
+        esc_attr($back ? __('Precedenti', 'golden-hive-blocks') : __('Successivi', 'golden-hive-blocks')),
+        $back ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'
+    );
+}
+
+/**
  * Every attribute [gh_product_rail] accepts, with its default. Shared with the
  * Store Hub bridge (hub-rails.php), which must read a rail exactly the way the
  * shortcode does.
@@ -156,7 +179,8 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
     // Wrapper classes + the CSS custom properties that drive the layout. Only
     // the breakpoints that were explicitly set emit a variable, so the CSS
     // fallbacks (desktop columns / 44vw peek) stay in charge otherwise.
-    $rail_classes = 'woocommerce gh-rail gh-rail--fit-' . $fit;
+    $nav_sides    = 'sides' === ghb_rail_nav_style();
+    $rail_classes = 'woocommerce gh-rail gh-rail--fit-' . $fit . ($nav_sides ? ' gh-rail--nav-sides' : '');
     if ($cols_mobile) {
         $rail_classes .= ' gh-rail--mcols';
     }
@@ -181,6 +205,9 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
             <h2 class="gh-rail__title" data-gh-split="lines"><?php echo esc_html($atts['title']); ?></h2>
         <?php endif; ?>
         <div class="gh-rail__viewport">
+            <?php if ($nav_sides) : ?>
+                <?php echo ghb_rail_nav_button(-1); // Escaped in the builder. ?>
+            <?php endif; ?>
             <ul class="products gh-rail__track" style="<?php echo esc_attr($track_vars); ?>">
                 <?php
                 ghb_rail_in_loop(true);
@@ -192,12 +219,16 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
                 wp_reset_postdata();
                 ?>
             </ul>
+            <?php if ($nav_sides) : ?>
+                <?php echo ghb_rail_nav_button(1); // Escaped in the builder. ?>
+            <?php endif; ?>
         </div>
-        <div class="gh-rail__bar">
-            <div class="gh-rail__progress" aria-hidden="true"><span></span></div>
-            <button type="button" class="gh-rail__nav gh-rail__nav--prev" data-dir="-1" aria-label="<?php esc_attr_e('Precedenti', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
-            <button type="button" class="gh-rail__nav gh-rail__nav--next" data-dir="1" aria-label="<?php esc_attr_e('Successivi', 'golden-hive-blocks'); ?>"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
-        </div>
+        <?php if (!$nav_sides) : ?>
+            <div class="gh-rail__bar">
+                <div class="gh-rail__progress" aria-hidden="true"><span></span></div>
+                <?php echo ghb_rail_nav_button(-1) . ghb_rail_nav_button(1); // Escaped in the builder. ?>
+            </div>
+        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();
