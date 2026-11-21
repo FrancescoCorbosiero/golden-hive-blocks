@@ -10,8 +10,9 @@
  * and fields. Code can force it: add_filter('ghb_design_shape', fn() => 'sharp').
  *
  * Design tokens: the store's colours (principale, scuro, chiaro), fonts
- * (titoli, testo) and title style (maiuscolo, peso), as the custom
- * properties every stylesheet reads (design-core.php says which). Nothing
+ * (titoli, testo), title style (maiuscolo, peso), the opening titles' size
+ * and the space beside product sections, as the custom properties every
+ * stylesheet reads (design-core.php says which). Nothing
  * belongs to one store: the defaults are neutral, and stores that ran the
  * plugin before these were settings get their old look saved once
  * (ghb_design_migrate_tokens), so updating changes nothing. Code can force
@@ -35,13 +36,15 @@ require_once __DIR__ . '/design-core.php';
 
 /** Token key => the option that stores it. */
 const GHB_TOKEN_OPTIONS = array(
-    'accent'       => 'ghb_accent_color',
-    'dark'         => 'ghb_color_dark',
-    'light'        => 'ghb_color_light',
-    'font_display' => 'ghb_font_display',
-    'font_body'    => 'ghb_font_body',
-    'title_case'   => 'ghb_title_case',
-    'title_weight' => 'ghb_title_weight',
+    'accent'         => 'ghb_accent_color',
+    'dark'           => 'ghb_color_dark',
+    'light'          => 'ghb_color_light',
+    'font_display'   => 'ghb_font_display',
+    'font_body'      => 'ghb_font_body',
+    'title_case'     => 'ghb_title_case',
+    'title_weight'   => 'ghb_title_weight',
+    'hero_size'      => 'ghb_hero_title_size',
+    'section_gutter' => 'ghb_section_gutter',
 );
 
 /** The store's tokens, cleaned (design-core.php). */
@@ -212,6 +215,29 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
             '700' => 'Grassetto (700)',
             '800' => 'Extra-grassetto (800)',
             '900' => 'Nero (900)',
+        ),
+    ));
+    $token_setting('hero_size');
+    $wp_customize->add_control(GHB_TOKEN_OPTIONS['hero_size'], array(
+        'section'     => 'ghb_design',
+        'type'        => 'select',
+        'label'       => 'Titoli in apertura',
+        'description' => 'I titoli grandi di Hero Carousel, Hero Split e Hero Video. Più piccoli, i titoli lunghi stanno meglio sul telefono.',
+        'choices'     => array(
+            'large'  => 'Grandi',
+            'medium' => 'Medi',
+            'small'  => 'Compatti',
+        ),
+    ));
+    $token_setting('section_gutter');
+    $wp_customize->add_control(GHB_TOKEN_OPTIONS['section_gutter'], array(
+        'section'     => 'ghb_design',
+        'type'        => 'radio',
+        'label'       => 'Spazio ai lati delle sezioni prodotto',
+        'description' => 'Se le sezioni prodotto toccano i bordi dello schermo (dipende dal modello di pagina del tema), aggiungi un margine.',
+        'choices'     => array(
+            'none'     => 'Nessuno: decide il tema',
+            'standard' => 'Un margine ai lati',
         ),
     ));
 
