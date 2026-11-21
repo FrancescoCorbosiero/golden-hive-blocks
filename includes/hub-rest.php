@@ -114,7 +114,24 @@ function ghb_hub_rest_capabilities()
         'hide_out_of_stock' => ghb_hub_hide_out_of_stock(),
         'front_page_id'     => (int) get_option('page_on_front'),
         'site_url'          => home_url('/'),
+        // 5.20.0: what a rail shows for a layout attribute it leaves out (the
+        // store's settings, Customizer → Golden Hive → Prodotti e filtri).
+        'rail_defaults'     => ghb_hub_rail_defaults(),
     ));
+}
+
+/** The layout and number of products a rail shows when its shortcode leaves them out. */
+function ghb_hub_rail_defaults(): array
+{
+    $defaults = ghb_product_rail_defaults();
+    return array(
+        'limit'          => (int) $defaults['limit'],
+        'columns'        => (string) $defaults['columns'],
+        'columns_tablet' => (string) $defaults['columns_tablet'],
+        'columns_mobile' => (string) $defaults['columns_mobile'],
+        'ratio'          => (string) $defaults['ratio'],
+        'fit'            => (string) $defaults['fit'],
+    );
 }
 
 function ghb_hub_rest_homepage(WP_REST_Request $request)
@@ -471,7 +488,7 @@ function ghb_hub_build_new_rail($rail_input, $field_input, array $neighbour_atts
     if (is_wp_error($values)) {
         return $values;
     }
-    $limit     = $values['limit'] ?? max(1, (int) ($neighbour_atts['limit'] ?? 12));
+    $limit     = $values['limit'] ?? max(1, (int) ($neighbour_atts['limit'] ?? ghb_product_rail_defaults()['limit']));
     $layout    = isset($rail_input['layout']) && is_array($rail_input['layout']) ? $rail_input['layout'] : array();
     $shortcode = ghb_hub_new_rail_shortcode($source, $limit, $neighbour_atts, $layout, $values);
     if (null === $shortcode) {

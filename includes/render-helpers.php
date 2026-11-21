@@ -374,19 +374,28 @@ function gh_hours_data($hours, $holidays, $closed_dates)
         );
     }
 
+    return (string) wp_json_encode(array(
+        'rows'     => $rows,
+        'tz'       => function_exists('wp_timezone_string') ? wp_timezone_string() : 'Europe/Rome',
+        'holidays' => (bool) $holidays,
+        'closed'   => gh_closed_dates((string) $closed_dates),
+    ));
+}
+
+/**
+ * Closed days as typed ("2026-12-24, 31/12/2026", one per line or
+ * comma-separated), as Y-m-d; anything that isn't a date is skipped. Shared
+ * by the opening hours and the delivery estimate (product-page.php).
+ */
+function gh_closed_dates(string $text): array
+{
     $closed = array();
-    foreach (preg_split('/[\s,;]+/', (string) $closed_dates, -1, PREG_SPLIT_NO_EMPTY) as $raw) {
+    foreach (preg_split('/[\s,;]+/', $text, -1, PREG_SPLIT_NO_EMPTY) as $raw) {
         if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $raw, $m) && checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
             $closed[] = $raw;
         } elseif (preg_match('#^(\d{1,2})/(\d{1,2})/(\d{4})$#', $raw, $m) && checkdate((int) $m[2], (int) $m[1], (int) $m[3])) {
             $closed[] = sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
         }
     }
-
-    return (string) wp_json_encode(array(
-        'rows'     => $rows,
-        'tz'       => function_exists('wp_timezone_string') ? wp_timezone_string() : 'Europe/Rome',
-        'holidays' => (bool) $holidays,
-        'closed'   => array_values(array_unique($closed)),
-    ));
+    return array_values(array_unique($closed));
 }

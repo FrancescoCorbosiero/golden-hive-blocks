@@ -24,10 +24,11 @@
     text-align: center;
     cursor: pointer;
     text-decoration: none;
-    transition: filter .15s ease, background .15s ease;
+    transition: background .15s ease;
 }
+/* The accent's hover shade: brightness() would do nothing on a black accent. */
 .ghb-atc-trigger:hover {
-    filter: brightness(1.1);
+    background: var(--gh-accent-dark);
     color: #fff;
 }
 .ghb-atc--disabled .ghb-atc-trigger,

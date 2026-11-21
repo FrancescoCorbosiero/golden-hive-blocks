@@ -11,10 +11,14 @@
  *   [gh_filters mode="inline"]   → the panel inline (sidebar / theme drawer)
  *   [bfl_filters …]              → older name, still placed in the shop sidebar
  *
- * Facets: Prezzo (slider + € inputs), Categoria (pills), Stato → Disponibile,
- * plus product attributes (config below). Options that can't narrow the
- * collection — carried by every product in it, like the category you're in —
- * are left out; sizes are exempt ("is my size here?" is the question).
+ * Facets: Prezzo (slider + price inputs, in the store's currency), Categoria (pills), Disponibile,
+ * plus product attributes: which ones, in what order and under what name is
+ * the store's choice (Customizer → Golden Hive → Prodotti e filtri → Filtri,
+ * filters-core.php); nothing chosen, every attribute the store has. So are
+ * the categories never offered (WooCommerce's default category until the
+ * store picks). Options that can't narrow the collection — carried by every
+ * product in it, like the category you're in — are left out; sizes are
+ * exempt ("is my size here?" is the question).
  *
  * Runs on WooCommerce's own layered-nav params (filter_{attr}, query_type_*,
  * min_price / max_price) plus filter_cat / instock handled below, so every
@@ -32,6 +36,136 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+require_once __DIR__ . '/filters-core.php';
+
+/** The store's product attributes: taxonomy => name, as WooCommerce lists them. */
+function ghb_filters_attributes(): array
+{
+    $out = array();
+    if (function_exists('wc_get_attribute_taxonomies')) {
+        foreach (wc_get_attribute_taxonomies() as $attribute) {
+            $taxonomy = wc_attribute_taxonomy_name($attribute->attribute_name);
+            if (taxonomy_exists($taxonomy)) {
+                $out[$taxonomy] = (string) $attribute->attribute_label;
+            }
+        }
+    }
+    return $out;
+}
+
+/** The facets the store chose, or every facet when it hasn't. */
+function ghb_filters_store_facets(): array
+{
+    $saved = get_option('ghb_filters_facets', null);
+    return ghb_filters_facets(is_array($saved) ? $saved : null, ghb_filters_attributes(), ghb_size_attribute());
+}
+
+/** WooCommerce's default product category ("Senza categoria"), and one called uncategorized if there is. */
+function ghb_filters_default_hidden_cat_ids(): array
+{
+    $ids  = array((int) get_option('default_product_cat', 0));
+    $term = get_term_by('slug', 'uncategorized', 'product_cat');
+    if ($term instanceof WP_Term) {
+        $ids[] = (int) $term->term_id;
+    }
+    return array_values(array_unique(array_filter($ids)));
+}
+
+/** The product categories the panel never offers: the store's choice, or the default ones. */
+function ghb_filters_hidden_cat_ids(): array
+{
+    $saved = get_option('ghb_filters_hidden_cats', null);
+    return is_array($saved) ? array_values(array_filter(array_map('absint', $saved))) : ghb_filters_default_hidden_cat_ids();
+}
+
+function ghb_filters_hidden_cat_slugs(): array
+{
+    $slugs = array();
+    foreach (ghb_filters_hidden_cat_ids() as $id) {
+        $term = get_term($id, 'product_cat');
+        if ($term instanceof WP_Term) {
+            $slugs[] = $term->slug;
+        }
+    }
+    return $slugs;
+}
+
+/* -------------------------------------------------------------------- *
+ * Customizer: Golden Hive → Prodotti e filtri
+ * -------------------------------------------------------------------- */
+
+function ghb_filters_customize_register(WP_Customize_Manager $wp_customize): void
+{
+    if (!class_exists('WooCommerce')) {
+        return;
+    }
+    $attributes = ghb_filters_attributes();
+    $fixed      = array();
+    foreach (GHB_FILTERS_BASE as $key => $name) {
+        $fixed[] = array($key, $name, $name);
+    }
+    foreach ($attributes as $taxonomy => $name) {
+        $fixed[] = array($taxonomy, $name . ' (' . $taxonomy . ')', $name);
+    }
+    ghb_customize_setting($wp_customize, 'ghb_filters_facets', ghb_filters_default_rows($attributes), static function ($value) use ($attributes) {
+        return ghb_filters_clean_rows(is_array($value) || is_string($value) ? $value : array(), $attributes);
+    });
+    $wp_customize->add_control(new GHB_Customize_List_Control($wp_customize, 'ghb_filters_facets', array(
+        'section'     => 'ghb_catalog',
+        'label'       => 'Filtri',
+        'description' => 'I filtri del negozio, nell\'ordine in cui compaiono. Spunta quelli da mostrare e dai a ciascuno il titolo che vuoi (vuoto: il suo nome). Le taglie si scelgono sempre a bottoni.',
+        'fields'      => array(
+            array('key' => 'on', 'label' => 'Mostra', 'type' => 'checkbox'),
+            array('key' => 'label', 'label' => 'Titolo', 'type' => 'text'),
+        ),
+        'fixed'       => $fixed,
+        'priority'    => 100,
+    )));
+
+    $terms = get_terms(array('taxonomy' => 'product_cat', 'hide_empty' => false, 'number' => 500, 'orderby' => 'name'));
+    $by_parent = array();
+    foreach (is_array($terms) ? $terms : array() as $term) {
+        $by_parent[(int) $term->parent][] = $term;
+    }
+    $options = array();
+    $walk    = static function (int $parent, int $depth) use (&$walk, &$options, $by_parent) {
+        foreach ($by_parent[$parent] ?? array() as $term) {
+            $options[] = array((string) $term->term_id, str_repeat('— ', $depth) . $term->name);
+            $walk((int) $term->term_id, $depth + 1);
+        }
+    };
+    $walk(0, 0);
+    ghb_customize_setting($wp_customize, 'ghb_filters_hidden_cats', array_map('strval', ghb_filters_default_hidden_cat_ids()), static function ($value) {
+        return array_values(array_unique(array_filter(array_map('absint', is_array($value) ? $value : array()))));
+    });
+    $wp_customize->add_control(new GHB_Customize_Checklist_Control($wp_customize, 'ghb_filters_hidden_cats', array(
+        'section'     => 'ghb_catalog',
+        'label'       => 'Categorie da non mostrare nei filtri',
+        'description' => 'Per esempio «Senza categoria» o le categorie che servono solo alle sezioni della homepage.',
+        'options'     => $options,
+        'priority'    => 110,
+    )));
+}
+add_action('customize_register', 'ghb_filters_customize_register');
+
+/**
+ * Once: a store that ran the plugin before 5.20 keeps the filters it had
+ * (the pre-5.20 list, limited to the attributes it has). A new store shows
+ * every facet until it chooses.
+ */
+function ghb_filters_migrate(): void
+{
+    if (get_option('ghb_filters_version')) {
+        return;
+    }
+    update_option('ghb_filters_version', 1);
+    if (!class_exists('WooCommerce') || !ghb_plugin_ran_before() || false !== get_option('ghb_filters_facets', false)) {
+        return;
+    }
+    add_option('ghb_filters_facets', ghb_filters_rows_before_520(ghb_filters_attributes()));
+}
+add_action('init', 'ghb_filters_migrate', 20);
 
 add_action('init', 'ghb_filters_boot');
 function ghb_filters_boot()
@@ -72,17 +206,9 @@ class GHB_Filters
              * An attribute facet's 'taxonomy' may be a single pa_* taxonomy OR an
              * array of them (rendered merged under one heading). Each taxonomy's
              * URL param is filter_{slug-without-pa} — WooCommerce-core compatible.
+             * The store's choice (filters-core.php).
              */
-            'facets' => array(
-                'price'    => array('type' => 'price', 'label' => 'Prezzo', 'chip' => 'Prezzo'),
-                'cat'      => array('type' => 'category', 'label' => 'Categoria', 'chip' => 'Categoria'),
-                'stock'    => array('type' => 'stock', 'label' => 'Stato', 'chip' => '', 'text' => 'Disponibile'),
-                'modello'  => array('type' => 'attribute', 'taxonomy' => 'pa_modello', 'label' => 'Filtra per Modello', 'chip' => 'Modello', 'collapsible' => true),
-                'taglia'   => array('type' => 'attribute', 'taxonomy' => 'pa_taglia', 'label' => 'Filtra per Taglia', 'chip' => 'Taglia', 'collapsible' => true, 'variation' => true, 'ui' => 'chips'),
-                'anno'     => array('type' => 'attribute', 'taxonomy' => 'pa_anno', 'label' => 'Filtra per Anno', 'chip' => 'Anno', 'collapsible' => true),
-                'marca'    => array('type' => 'attribute', 'taxonomy' => 'pa_marca', 'label' => 'Filtra per Marca', 'chip' => 'Marca', 'collapsible' => true),
-                'colorway' => array('type' => 'attribute', 'taxonomy' => 'pa_colorway', 'label' => 'Filtra per Colorway', 'chip' => 'Colorway', 'collapsible' => true),
-            ),
+            'facets' => ghb_filters_store_facets(),
 
             'grid_selector'       => 'ul.products',
             'count_selector'      => '.woocommerce-result-count',
@@ -105,7 +231,7 @@ class GHB_Filters
             'search_min' => 12,
 
             'button_label' => 'Filtri',
-            'exclude_cats' => array('uncategorized'),
+            'exclude_cats' => ghb_filters_hidden_cat_slugs(),
         ));
 
         return $this->config;
@@ -832,6 +958,7 @@ class GHB_Filters
                 }
                 $cmin = null !== $current['min_price'] ? (int) $current['min_price'] : $price[0];
                 $cmax = null !== $current['max_price'] ? (int) $current['max_price'] : $price[1]; ?>
+                <?php $currency = html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8'); ?>
                 <div class="ghb-filter-facet">
                     <div class="ghb-filter-flabel"><?php echo esc_html($f['label']); ?></div>
                     <div class="ghb-filter-slider" data-ghb-filter-slider data-floor="<?php echo esc_attr($price[0]); ?>" data-ceil="<?php echo esc_attr($price[1]); ?>">
@@ -840,8 +967,8 @@ class GHB_Filters
                         <input type="range" data-range="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>">
                     </div>
                     <div class="ghb-filter-nums">
-                        <div class="ghb-filter-num"><input type="number" data-price-input="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
-                        <div class="ghb-filter-num"><input type="number" data-price-input="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
+                        <div class="ghb-filter-num"><input type="number" data-price-input="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>"><span><?php echo esc_html($currency); ?></span></div>
+                        <div class="ghb-filter-num"><input type="number" data-price-input="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>"><span><?php echo esc_html($currency); ?></span></div>
                     </div>
                 </div>
 

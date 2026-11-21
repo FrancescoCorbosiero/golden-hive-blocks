@@ -2,13 +2,18 @@
 /**
  * Map Embed block – front-end render.
  *
+ * The map left out of the block is the store's (Customizer → Golden Hive →
+ * Negozio), and then so is the address on its cover; a map written in the
+ * block shows only the address written with it.
+ *
  * @var array    $attributes Block attributes.
  * @var string   $content    Block inner content (empty for dynamic blocks).
  * @var WP_Block $block      Block instance.
  */
 
-$embed_code   = $attributes['embedCode'] ?? '';
-$height       = $attributes['height'] ?? 450;
+$ghb_from_store = !array_key_exists( 'embedCode', $attributes );
+$embed_code     = (string) ghb_store_attr( $attributes, 'golden-hive/map-embed', 'embedCode' );
+$height         = $attributes['height'] ?? 450;
 $border_radius = $attributes['borderRadius'] ?? 12;
 
 if ( empty( trim( $embed_code ) ) ) {
@@ -44,7 +49,9 @@ $container_style = sprintf(
  */
 $facade = '';
 if ( $attributes['clickToLoad'] ?? true ) {
-    $address  = trim( (string) ( $attributes['address'] ?? '' ) );
+    $address  = array_key_exists( 'address', $attributes )
+        ? trim( (string) $attributes['address'] )
+        : ( $ghb_from_store ? trim( (string) ghb_store_attr( $attributes, 'golden-hive/map-embed', 'address' ) ) : '' );
     $open_url = '';
     if ( '' === $address && preg_match( '/\ssrc="([^"]+)"/i', $safe_embed, $m ) ) {
         $open_url = html_entity_decode( $m[1] );

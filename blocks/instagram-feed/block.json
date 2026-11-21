@@ -22,15 +22,13 @@
         },
         "subtitle": {
             "type": "string",
-            "default": "Le ultime dal nostro feed @resellpiacenza"
+            "default": ""
         },
         "instagramUrl": {
-            "type": "string",
-            "default": "https://www.instagram.com/resellpiacenza/"
+            "type": "string"
         },
         "buttonText": {
-            "type": "string",
-            "default": "@resellpiacenza"
+            "type": "string"
         },
         "images": {
             "type": "array",

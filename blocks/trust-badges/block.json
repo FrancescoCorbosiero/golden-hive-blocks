@@ -11,14 +11,7 @@
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "badges": {
-            "type": "array",
-            "default": [
-                { "icon": "authentic", "title": "100% Autentico" },
-                { "icon": "shipping", "title": "Spedizione Gratuita" },
-                { "icon": "returns", "title": "Reso Facile" },
-                { "icon": "secure", "title": "Pagamento Sicuro" },
-                { "icon": "support", "title": "Supporto 24/7" }
-            ]
+            "type": "array"
         },
         "variant": {
             "type": "string",

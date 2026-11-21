@@ -32,7 +32,7 @@ function ghb_hub_rail_terms(array $atts): array
         $taxonomies      = array('product_cat');
     } elseif (!empty($atts['brand'])) {
         $slugs      = array_map('trim', explode(',', $atts['brand']));
-        $taxonomies = array('product_brand', 'pwb-brand', 'pa_brand');
+        $taxonomies = ghb_brand_taxonomies();
     } else {
         return $out;
     }
@@ -227,13 +227,20 @@ function ghb_hub_editable_fields(): array
     return (array) apply_filters('ghb_hub_editable_fields', ghb_hub_field_specs());
 }
 
-/** The block type's own defaults (block.json) for the given fields. */
+/**
+ * What each field shows when the block leaves it out: the store's value for
+ * a field that follows the store (the WhatsApp message: includes/store.php),
+ * otherwise the block type's own default (block.json).
+ */
 function ghb_hub_field_defaults(string $block_name, array $spec): array
 {
     $type     = WP_Block_Type_Registry::get_instance()->get_registered($block_name);
     $defaults = array();
     foreach (array_keys($spec) as $field) {
-        $default          = $type && isset($type->attributes[$field]['default']) ? $type->attributes[$field]['default'] : '';
+        $default = function_exists('ghb_store_block_default') ? ghb_store_block_default($block_name, $field) : null;
+        if (null === $default) {
+            $default = $type && isset($type->attributes[$field]['default']) ? $type->attributes[$field]['default'] : '';
+        }
         $defaults[$field] = is_scalar($default) ? (string) $default : '';
     }
     return $defaults;
@@ -293,7 +300,7 @@ function ghb_hub_field_error(array $applied, array $spec): WP_Error
 /**
  * The term a section's new source names, looked up the way the rail query
  * reads it: a category in product_cat; a brand in whichever brand taxonomy
- * holds that slug (product_brand, pwb-brand, pa_brand); a tag in product_tag.
+ * holds that slug (ghb_brand_taxonomies()); a tag in product_tag.
  *
  * @return WP_Term|WP_Error
  */
@@ -301,7 +308,7 @@ function ghb_hub_source_term(array $source)
 {
     $taxonomies = array(
         'category' => array('product_cat'),
-        'brand'    => array('product_brand', 'pwb-brand', 'pa_brand'),
+        'brand'    => ghb_brand_taxonomies(),
         'tag'      => array('product_tag'),
     );
     foreach ($taxonomies[$source['taxonomy']] as $taxonomy) {
@@ -428,5 +435,8 @@ function ghb_hub_features(): array
         'rail-pin', 'rail-exclude', 'rail-fallback', 'rail-limit', 'block-fields', 'archive-follow',
         // 5.15.0: what a section shows, its switch, and the page's sections themselves.
         'rail-source', 'rail-hidden', 'layout-insert', 'layout-remove', 'layout-arrange',
+        // 5.20.0: rails' layout defaults are the store's (capabilities: rail_defaults),
+        // and block fields left out read as the store's details.
+        'rail-defaults', 'store-defaults',
     );
 }

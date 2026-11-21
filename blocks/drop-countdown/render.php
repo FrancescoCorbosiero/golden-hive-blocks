@@ -16,7 +16,7 @@ $release_date  = $attributes['releaseDate'] ?? '';
 $button_text   = $attributes['buttonText'] ?? 'Imposta Promemoria';
 $button_url    = $attributes['buttonUrl'] ?? '#';
 $eyebrow       = $attributes['eyebrow'] ?? 'Prossimo Drop';
-$bg_color      = $attributes['backgroundColor'] ?? '#0a0a0a';
+$bg_color      = (string) ($attributes['backgroundColor'] ?? ''); // '' = the store's dark colour (--gh-black)
 
 $product_id = (int) ($attributes['productId'] ?? 0);
 $product    = ($product_id && function_exists('wc_get_product')) ? wc_get_product($product_id) : null;
@@ -55,7 +55,7 @@ if ($ts) {
 <section <?php echo get_block_wrapper_attributes(array(
     'class' => 'gh-block gh-drop-countdown' . ($released ? ' is-live' : ''),
     'id'    => $block_id,
-    'style' => 'background-color: ' . $bg_color,
+    'style' => '' !== $bg_color ? 'background-color: ' . $bg_color : '',
 )); ?><?php echo $ts ? ' data-ghb-drop="' . (int) $ts . '"' : ''; ?>>
 
     <div class="gh-drop-countdown__inner">

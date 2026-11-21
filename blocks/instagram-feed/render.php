@@ -1,19 +1,24 @@
 <?php
 /**
- * Instagram Feed Block - Render lato server
+ * Instagram Feed block — server render.
  *
- * "Shop the look": un'immagine può avere dei punti (hotspots: productId, x,
- * y in %) sui prodotti che si vedono nella foto. Ogni punto mostra nome e
- * prezzo e apre l'anteprima rapida del prodotto (js/quick-view.js,
- * data-ghb-quick-view); senza anteprima porta alla pagina prodotto.
- * Un'immagine con punti non è più un link unico: il post Instagram resta
- * raggiungibile dall'icona nell'angolo.
+ * "Shop the look": a picture can carry points (hotspots: productId, x, y in
+ * %) on the products it shows. Each point shows the name and price and opens
+ * the product's Quick View (js/quick-view.js, data-ghb-quick-view), or its
+ * page without Quick View. A picture with points is no longer one big link:
+ * the Instagram post stays one tap away, from the icon in the corner.
+ *
+ * The profile link and the button's "@name" left out of the block are the
+ * store's Instagram (Customizer → Golden Hive → Negozio).
  */
 
 $title = $attributes['title'] ?? 'Seguici su Instagram';
 $subtitle = $attributes['subtitle'] ?? '';
-$instagram_url = $attributes['instagramUrl'] ?? 'https://www.instagram.com/resellpiacenza/';
-$button_text = $attributes['buttonText'] ?? '@resellpiacenza';
+$instagram_url = (string) ghb_store_attr($attributes, 'golden-hive/instagram-feed', 'instagramUrl');
+$button_text = (string) ghb_store_attr($attributes, 'golden-hive/instagram-feed', 'buttonText');
+if ('' === $button_text && !array_key_exists('buttonText', $attributes)) {
+    $button_text = __('Seguici su Instagram', 'golden-hive-blocks');
+}
 $images = $attributes['images'] ?? [];
 $columns = $attributes['columns'] ?? 3;
 

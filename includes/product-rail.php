@@ -21,13 +21,14 @@
  * Usage: [gh_product_rail title="Novità" type="recent" limit="12"]
  *        [gh_product_rail brand="supreme" limit="10"]
  *
- * Layout controls (all optional):
+ * Layout controls (all optional; left out, they take the store's rail settings,
+ * Customizer → Golden Hive → Prodotti e filtri, product-rail-core.php):
  *   columns        cards per view on desktop (1–8, default 4)
  *   columns_tablet cards per view 768–1024px (default: inherits `columns`)
  *   columns_mobile cards per view ≤767px (default: a 44vw peek of the next card)
  *   ratio          image aspect-ratio — alias (square|portrait|tall|landscape|
  *                  wide) or a raw "N/N" value like 3/4 (default square)
- *   fit            cover (crop to fill, default) | contain (show whole image)
+ *   fit            contain (whole image, default) | cover (crop to fill)
  *
  *   e.g. [gh_product_rail brand="nike" columns="5" columns_mobile="2"
  *                         ratio="3/4" fit="contain"]
@@ -38,6 +39,15 @@
 
 if (!defined('ABSPATH')) {
     exit;
+}
+
+require_once __DIR__ . '/product-rail-core.php';
+
+/** The store's rail settings (Customizer → Golden Hive → Prodotti e filtri), cleaned. */
+function ghb_rail_store_settings(): array
+{
+    $saved = get_option('ghb_rail', array());
+    return ghb_rail_settings(is_array($saved) ? $saved : array());
 }
 
 /**
@@ -87,12 +97,14 @@ function ghb_rail_nav_button(int $dir): string
 }
 
 /**
- * Every attribute [gh_product_rail] accepts, with its default. Shared with the
+ * Every attribute [gh_product_rail] accepts, with its default: the layout and
+ * the number of products from the store's rail settings. Shared with the
  * Store Hub bridge (hub-rails.php), which must read a rail exactly the way the
  * shortcode does.
  */
 function ghb_product_rail_defaults()
 {
+    $rail = ghb_rail_store_settings();
     return array(
         'title'          => '',
         'type'           => 'recent',   // recent | featured | best_selling | sale | top_rated
@@ -106,17 +118,15 @@ function ghb_product_rail_defaults()
         'pin'            => '',
         'exclude'        => '',
         'fallback'       => '',
-        'limit'          => 12,
-        'columns'        => 4,          // cards visible per view on desktop (1–8)
-        'columns_tablet' => '',         // optional; blank ⇒ inherit desktop columns
-        'columns_mobile' => '',         // optional; blank ⇒ peek the next card (44vw)
-        'ratio'          => '1/1',      // card image ratio: alias or "N/N" (e.g. 3/4)
-        // cover (crop) | contain (whole image). Default contain: le foto
-        // prodotto in stile StockX hanno inquadrature diverse e il crop
-        // le tagliava in modo incoerente tra le card. Il vecchio default
-        // si ripristina per-rail con fit="cover" o globalmente via
-        // add_filter('ghb_rail_default_fit', fn() => 'cover').
-        'fit'            => apply_filters('ghb_rail_default_fit', 'contain'),
+        'limit'          => $rail['limit'],
+        'columns'        => $rail['columns'],        // cards visible per view on desktop (1–8)
+        'columns_tablet' => $rail['columns_tablet'], // blank ⇒ inherit desktop columns
+        'columns_mobile' => $rail['columns_mobile'], // blank ⇒ peek the next card (44vw)
+        'ratio'          => $rail['ratio'],          // card image ratio: alias or "N/N" (e.g. 3/4)
+        // contain (whole image) | cover (crop). Contain by default: product
+        // photos are framed differently, and a crop cut them unevenly from
+        // card to card. Code can still force it: add_filter('ghb_rail_default_fit', …).
+        'fit'            => apply_filters('ghb_rail_default_fit', $rail['fit']),
     );
 }
 
@@ -154,23 +164,8 @@ function ghb_product_rail_render(WP_Query $query, array $atts): string
     $cols_tablet = ('' !== $atts['columns_tablet']) ? max(1, min(8, (int) $atts['columns_tablet'])) : 0;
     $cols_mobile = ('' !== $atts['columns_mobile']) ? max(1, min(8, (int) $atts['columns_mobile'])) : 0;
 
-    // Card image aspect-ratio: accept a friendly alias or a raw "N/N" value.
-    // Anything unrecognised falls back to a square, matching prior behaviour.
-    $ratio_aliases = array(
-        'square'    => '1 / 1',
-        'portrait'  => '3 / 4',
-        'tall'      => '4 / 5',
-        'landscape' => '4 / 3',
-        'wide'      => '16 / 9',
-    );
-    $ratio_raw = strtolower(trim((string) $atts['ratio']));
-    if (isset($ratio_aliases[$ratio_raw])) {
-        $ratio = $ratio_aliases[$ratio_raw];
-    } elseif (preg_match('#^(\d{1,2})\s*/\s*(\d{1,2})$#', $ratio_raw, $m) && (int) $m[2] > 0) {
-        $ratio = $m[1] . ' / ' . $m[2];
-    } else {
-        $ratio = '1 / 1';
-    }
+    // Card image aspect-ratio: an alias or a raw "N/N" value; a square otherwise.
+    $ratio = ghb_rail_ratio_css((string) $atts['ratio']);
 
     // How the image fills its box. `cover` crops to fill (uniform cards);
     // `contain` shows the whole image, letterboxed against a neutral backdrop.
@@ -252,13 +247,13 @@ function ghb_rail_in_loop(?bool $enter = null): bool
 /**
  * The product's second photo (its first gallery image) on rail cards, shown
  * on hover by product-rail.css. Devices without hover never load it: the
- * image is lazy and stays display:none there. Off with
- * add_filter('ghb_rail_hover_image', '__return_false').
+ * image is lazy and stays display:none there. Off in the Customizer (Golden
+ * Hive → Prodotti e filtri) or with add_filter('ghb_rail_hover_image', '__return_false').
  */
 add_action('woocommerce_before_shop_loop_item_title', 'ghb_rail_hover_image', 12);
 function ghb_rail_hover_image()
 {
-    if (!ghb_rail_in_loop() || !apply_filters('ghb_rail_hover_image', true)) {
+    if (!ghb_rail_in_loop() || !apply_filters('ghb_rail_hover_image', 'no' !== ghb_rail_store_settings()['hover'])) {
         return;
     }
     global $product;
@@ -277,3 +272,100 @@ function ghb_rail_hover_image()
         'decoding'    => 'async',
     ));
 }
+
+/* -------------------------------------------------------------------- *
+ * Customizer: Golden Hive → Prodotti e filtri
+ * -------------------------------------------------------------------- */
+
+function ghb_rail_customize_register(WP_Customize_Manager $wp_customize): void
+{
+    $setting = static function (string $key) use ($wp_customize) {
+        ghb_customize_setting($wp_customize, 'ghb_rail[' . $key . ']', GHB_RAIL_DEFAULTS[$key], static function ($value) use ($key) {
+            return ghb_rail_setting_clean($key, $value);
+        });
+    };
+    $count = static function (int $from, int $to): array {
+        $choices = array();
+        for ($n = $from; $n <= $to; $n++) {
+            $choices[(string) $n] = (string) $n;
+        }
+        return $choices;
+    };
+
+    $setting('columns');
+    $wp_customize->add_control('ghb_rail[columns]', array(
+        'section'     => 'ghb_catalog',
+        'type'        => 'number',
+        'label'       => 'Prodotti per riga su desktop',
+        'description' => 'Ogni sezione prodotto ne mostra tanti affiancati; le frecce scorrono una riga intera.',
+        'input_attrs' => array('min' => 1, 'max' => 8, 'step' => 1),
+        'priority'    => 10,
+    ));
+    $setting('columns_tablet');
+    $wp_customize->add_control('ghb_rail[columns_tablet]', array(
+        'section'  => 'ghb_catalog',
+        'type'     => 'select',
+        'label'    => 'Prodotti per riga su tablet',
+        'choices'  => array('' => 'Come su desktop') + $count(1, 8),
+        'priority' => 20,
+    ));
+    $setting('columns_mobile');
+    $wp_customize->add_control('ghb_rail[columns_mobile]', array(
+        'section'  => 'ghb_catalog',
+        'type'     => 'select',
+        'label'    => 'Prodotti per riga su telefono',
+        'choices'  => array('' => 'Due e un pezzo del successivo') + $count(1, 4),
+        'priority' => 30,
+    ));
+    $setting('limit');
+    $wp_customize->add_control('ghb_rail[limit]', array(
+        'section'     => 'ghb_catalog',
+        'type'        => 'number',
+        'label'       => 'Prodotti in ogni sezione',
+        'input_attrs' => array('min' => 1, 'max' => GHB_RAIL_MAX_LIMIT, 'step' => 1),
+        'priority'    => 40,
+    ));
+    $setting('ratio');
+    $wp_customize->add_control('ghb_rail[ratio]', array(
+        'section'  => 'ghb_catalog',
+        'type'     => 'select',
+        'label'    => 'Formato delle foto',
+        'choices'  => array(
+            'square'    => 'Quadrato (1:1)',
+            'portrait'  => 'Verticale (3:4)',
+            'tall'      => 'Verticale (4:5)',
+            'landscape' => 'Orizzontale (4:3)',
+            'wide'      => 'Panoramico (16:9)',
+        ),
+        'priority' => 50,
+    ));
+    $setting('fit');
+    $wp_customize->add_control('ghb_rail[fit]', array(
+        'section'  => 'ghb_catalog',
+        'type'     => 'radio',
+        'label'    => 'Foto',
+        'choices'  => array(
+            'contain' => 'Intera, su fondo neutro',
+            'cover'   => 'Ritagliata a tutto riquadro',
+        ),
+        'priority' => 60,
+    ));
+    ghb_customize_checkbox($wp_customize, 'ghb_catalog', 'ghb_rail[hover]', GHB_RAIL_DEFAULTS['hover'], 'Seconda foto al passaggio del mouse', 'Sui computer, la seconda foto del prodotto quando il mouse passa sulla scheda.');
+    $wp_customize->get_control('ghb_rail[hover]')->priority = 70;
+
+    ghb_customize_setting($wp_customize, 'ghb_rail_nav', 'below', static function ($value) {
+        return in_array($value, array('below', 'sides'), true) ? $value : 'below';
+    }, array('capability' => 'edit_theme_options'));
+    $wp_customize->add_control('ghb_rail_nav', array(
+        'section'     => 'ghb_catalog',
+        'type'        => 'radio',
+        'label'       => 'Frecce delle sezioni prodotto',
+        'description' => 'Su telefono le sezioni si scorrono col dito in entrambi i casi.',
+        'choices'     => array(
+            'below' => 'Sotto la fila, con la linea di avanzamento',
+            'sides' => 'Ai lati, sopra le foto',
+        ),
+        'priority'    => 80,
+    ));
+}
+add_action('customize_register', 'ghb_rail_customize_register');

@@ -21,32 +21,26 @@
             "default": "Vieni a Trovarci"
         },
         "subtitle": {
-            "type": "string",
-            "default": "La nostra boutique nel cuore di Piacenza"
+            "type": "string"
         },
         "address": {
-            "type": "string",
-            "default": "Stradone Farnese 3 - 29121 - Piacenza (PC)"
+            "type": "string"
         },
         "vat": {
-            "type": "string",
-            "default": "P.IVA: 01875650333"
+            "type": "string"
         },
         "phone": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "email": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "mapUrl": {
             "type": "string",
             "default": ""
         },
         "mapEmbed": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "clickToLoad": {
             "type": "boolean",

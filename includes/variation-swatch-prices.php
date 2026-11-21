@@ -10,9 +10,11 @@
  *
  *   • .cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"]
  *   • .cgkit-swatch  with  data-attribute-value / data-attribute-text
- *   • the size attribute being the `pa_taglia` taxonomy
+ *   • the size attribute being ghb_size_attribute() (pa_taglia unless filtered;
+ *     the stylesheet's selectors follow it)
  *
- * It also formats prices for it-IT (e.g. "120 €"). It loads with Shoptimizer
+ * It formats prices in the store's currency and language (e.g. "120 €"),
+ * passed to the script with the size attribute. It loads with Shoptimizer
  * as the theme only (theme module 'swatch-prices', theme-compat.php; force it
  * on there if CommerceKit is kept on another theme). If you rename the size
  * attribute or change locale it stops applying — silently (no errors;
@@ -40,12 +42,23 @@ function ghb_variation_swatch_prices_assets()
         return;
     }
 
-    wp_enqueue_style(
-        'golden-hive-variation-swatch-prices',
-        gh_asset_url('variation-swatch-prices.css'),
-        array(),
-        GOLDEN_HIVE_BLOCKS_VERSION
-    );
+    // The stylesheet's selectors name CommerceKit's pa_taglia swatches. With
+    // another size attribute (ghb_atc_size_attribute) the same rules are
+    // printed with its name instead.
+    $attribute = ghb_size_attribute();
+    if ('pa_taglia' === $attribute) {
+        wp_enqueue_style(
+            'golden-hive-variation-swatch-prices',
+            gh_asset_url('variation-swatch-prices.css'),
+            array(),
+            GOLDEN_HIVE_BLOCKS_VERSION
+        );
+    } else {
+        $file = GOLDEN_HIVE_BLOCKS_PATH . (file_exists(GOLDEN_HIVE_BLOCKS_PATH . 'variation-swatch-prices.min.css') ? 'variation-swatch-prices.min.css' : 'variation-swatch-prices.css');
+        wp_register_style('golden-hive-variation-swatch-prices', false, array(), GOLDEN_HIVE_BLOCKS_VERSION);
+        wp_enqueue_style('golden-hive-variation-swatch-prices');
+        wp_add_inline_style('golden-hive-variation-swatch-prices', str_replace('attribute_pa_taglia', 'attribute_' . $attribute, (string) file_get_contents($file)));
+    }
 
     wp_enqueue_script(
         'golden-hive-variation-swatch-prices',
@@ -60,6 +73,11 @@ function ghb_variation_swatch_prices_assets()
     wp_localize_script(
         'golden-hive-variation-swatch-prices',
         'ghbSwatchPrices',
-        array('oosLabel' => (string) apply_filters('ghb_swatch_oos_label', __('Esaurito', 'golden-hive-blocks')))
+        array(
+            'oosLabel'  => (string) apply_filters('ghb_swatch_oos_label', __('Esaurito', 'golden-hive-blocks')),
+            'attribute' => ghb_size_attribute(),
+            'currency'  => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'EUR',
+            'locale'    => str_replace('_', '-', get_locale()),
+        )
     );
 }

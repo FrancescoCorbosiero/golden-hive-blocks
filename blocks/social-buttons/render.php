@@ -1,13 +1,16 @@
 <?php
 /**
- * Social Buttons Block - Render lato server
+ * Social Buttons block — server render.
+ *
+ * Each profile left out of the block is the store's (Customizer → Golden
+ * Hive → Negozio); written empty, that button is hidden on this page.
  */
 
-$instagram = $attributes['instagram'] ?? '';
-$facebook = $attributes['facebook'] ?? '';
-$tiktok = $attributes['tiktok'] ?? '';
-$youtube = $attributes['youtube'] ?? '';
-$twitter = $attributes['twitter'] ?? '';
+$instagram = (string) ghb_store_attr($attributes, 'golden-hive/social-buttons', 'instagram');
+$facebook = (string) ghb_store_attr($attributes, 'golden-hive/social-buttons', 'facebook');
+$tiktok = (string) ghb_store_attr($attributes, 'golden-hive/social-buttons', 'tiktok');
+$youtube = (string) ghb_store_attr($attributes, 'golden-hive/social-buttons', 'youtube');
+$twitter = (string) ghb_store_attr($attributes, 'golden-hive/social-buttons', 'twitter');
 
 $socials = [
     'instagram' => [

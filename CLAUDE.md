@@ -1,8 +1,8 @@
 # Golden Hive Blocks
 
-WordPress plugin for the ResellPiacenza WooCommerce store (sneakers,
-streetwear): 29 Gutenberg blocks plus the store's WooCommerce interface and
-the Store Hub REST bridge. **Read `README.md` first:** it maps every file,
+WordPress plugin for several WooCommerce stores (sneakers, streetwear): 29
+Gutenberg blocks plus the stores' WooCommerce interface and the Store Hub
+REST bridge. **Read `README.md` first:** it maps every file,
 feature, setting and endpoint. Read `THEME-COUPLING.md` before touching
 anything theme-facing.
 
@@ -50,6 +50,10 @@ scratch file.
   and a plain-JS `editor.js` (no JSX, no build) that uses
   `window.ghEditorUtils` and depends on `gh-editor-utils`. Blocks register
   automatically from their folder.
+- **Settings:** in the Customizer's Golden Hive panel, in the section of the
+  feature (`includes/customizer.php` lists them: Negozio, Stile, Prodotti e
+  filtri, Pagina prodotto), registered from the feature's own file with
+  `ghb_customize_setting()`. Cleaning and defaults go in its `-core.php`.
 - **Shoptimizer / CommerceKit markup:** only behind `ghb_theme_module()`,
   following the rules at the end of `THEME-COUPLING.md`.
 - **Motion:** use the hooks in README's Motion section (`data-gh-reveal`,
@@ -59,6 +63,16 @@ scratch file.
   move per section. Change motion? Run `tests/motion-test.js`.
 
 ## Rules that aren't obvious
+
+- **Nothing about any one store in the code**: no address, number, handle,
+  policy, price or claim, not as a default, not in a migration. A store's
+  details are settings (Golden Hive → Negozio, `includes/store.php`); every
+  default is neutral or empty. A block attribute that follows the store has
+  **no `default` in `block.json`**: left out, `ghb_store_attr()` gives the
+  store's value; written, even empty, it's the page's. List it in
+  `GHB_STORE_BLOCK_FIELDS` (`tests/store-test.php` checks). A one-time
+  migration may only move what a store already has in its own database,
+  and tells the owner what to fill in (`ghb_upgrade_notice_add()`).
 
 - **Pages are page-cached.** Never render anything visitor- or time-dependent
   into HTML. Ship a frame and fill it in the browser (`js/live-blocks.js`,

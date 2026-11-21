@@ -70,7 +70,7 @@ $block_id = 'gh-hero-video-' . wp_unique_id();
         $heading = ($attributes['headingLevel'] ?? 'h1') === 'h2' ? 'h2' : 'h1';
 
         // titleAccent: the part of the title shown in the brand colour
-        // ("BORN in PIACENZA"). Matched ignoring ASCII case, rendered with the
+        // ("NATI in CITTÀ"). Matched ignoring ASCII case, rendered with the
         // title's own spelling; data-gh-split-inline lets the split-text
         // entrance run through the accent span.
         $accent_at  = '' !== $title_accent ? stripos($title, $title_accent) : false;

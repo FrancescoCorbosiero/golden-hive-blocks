@@ -13,6 +13,7 @@ if (PHP_SAPI !== 'cli') {
 }
 
 require __DIR__ . '/page-check-core.php';
+require dirname(__DIR__) . '/includes/store-core.php';
 
 $root  = dirname(__DIR__);
 $specs = ghb_pc_load_specs($root);
@@ -55,6 +56,10 @@ $out[] = '';
 $out[] = 'Every block also accepts WordPress\'s own `className`, `anchor`, `align`';
 $out[] = 'and `style`.';
 $out[] = '';
+$out[] = 'A default reading **Negozio → …** is the store\'s own detail (Customizer →';
+$out[] = 'Golden Hive → Negozio): leave the attribute out to show it, write it to show';
+$out[] = 'something else on that page, write it empty (`""`) to hide it there.';
+$out[] = '';
 
 foreach ($specs['blocks'] as $name => $block) {
     $out[] = '## `' . $name . '` — ' . $block['title'];
@@ -83,7 +88,9 @@ foreach ($specs['blocks'] as $name => $block) {
                 return '`' . $v . '`';
             }, $spec['items']));
         }
-        $out[] = '| `' . $key . '` | ' . $type . ' | ' . ghb_ref_value($block['defaults'][$key] ?? null) . ' | ' . implode('; ', $notes) . ' |';
+        $field   = GHB_STORE_BLOCK_FIELDS[$name][$key] ?? null;
+        $default = null !== $field ? '**Negozio → ' . GHB_STORE_LABELS[$field] . '**' : ghb_ref_value($block['defaults'][$key] ?? null);
+        $out[]   = '| `' . $key . '` | ' . $type . ' | ' . $default . ' | ' . implode('; ', $notes) . ' |';
     }
     $out[] = '';
 }

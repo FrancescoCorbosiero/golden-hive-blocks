@@ -15,9 +15,13 @@
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Impostazioni Trustpilot', initialOpen: true },
+                        el('p', { style: { marginTop: 0 } },
+                            'Scrivi la valutazione e il numero di recensioni come sono sulla tua pagina Trustpilot: senza valutazione il blocco non si vede. Il widget ufficiale TrustBox (in un blocco HTML) resta sempre aggiornato da solo.'
+                        ),
                         el(RangeControl, {
                             label: 'Valutazione',
                             value: rating,
+                            allowReset: true,
                             onChange: function(val) { setAttributes({ rating: val }); },
                             min: 1,
                             max: 5,
@@ -26,17 +30,18 @@
                         el(TextControl, {
                             label: 'Numero Recensioni',
                             type: 'number',
-                            value: reviewCount,
+                            value: reviewCount === undefined ? '' : reviewCount,
                             onChange: function(val) { setAttributes({ reviewCount: parseInt(val) || 0 }); }
                         }),
                         el(TextControl, {
                             label: 'Etichetta',
-                            value: label,
+                            help: 'Il giudizio di Trustpilot, es. «Eccezionale». Facoltativa.',
+                            value: label || '',
                             onChange: function(val) { setAttributes({ label: val }); }
                         }),
                         el(TextControl, {
                             label: 'URL Trustpilot',
-                            value: trustpilotUrl,
+                            value: trustpilotUrl || '',
                             onChange: function(val) { setAttributes({ trustpilotUrl: val }); }
                         })
                     )
@@ -47,7 +52,7 @@
                             el('path', { d: 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z' })
                         ),
                         title: 'Trustpilot Widget',
-                        text: 'Configura questo blocco nel pannello laterale.'
+                        text: rating ? rating + ' / 5' : 'Nessuna valutazione: il blocco non si vede finché non la scrivi.'
                     })
                 )
             );

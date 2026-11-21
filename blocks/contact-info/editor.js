@@ -1,64 +1,60 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
     const { InspectorControls, useBlockProps } = wp.blockEditor;
-    const { PanelBody, TextControl, TextareaControl, ToggleControl } = wp.components;
+    const { PanelBody, TextControl, ToggleControl } = wp.components;
     const utils = window.ghEditorUtils;
     const el = utils.el;
     const Fragment = utils.Fragment;
     const Placeholder = utils.Placeholder;
+    const StoreText = utils.StoreText;
+    const StoreReset = utils.StoreReset;
+    const store = utils.store;
+
+    // Left out, these follow the store (Personalizza → Golden Hive → Negozio).
+    const STORE_ATTRS = ['subtitle', 'address', 'vat', 'phone', 'email', 'mapEmbed'];
 
     registerBlockType('golden-hive/contact-info', {
         edit: function({ attributes, setAttributes }) {
-            const { title, subtitle, address, vat, phone, email, mapUrl, mapEmbed, clickToLoad } = attributes;
+            const { title, mapUrl, clickToLoad } = attributes;
             const blockProps = useBlockProps();
+
+            function storeText(attr, label, storeValue, extra) {
+                return el(StoreText, Object.assign({
+                    attributes: attributes,
+                    setAttributes: setAttributes,
+                    attr: attr,
+                    label: label,
+                    storeValue: storeValue
+                }, extra || {}));
+            }
+
+            const address = attributes.address !== undefined ? attributes.address : (store.address || '');
 
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Contenuti', initialOpen: true },
                         el(TextControl, {
                             label: 'Titolo',
-                            value: title,
+                            value: title || '',
                             onChange: function(val) { setAttributes({ title: val }); }
                         }),
-                        el(TextControl, {
-                            label: 'Sottotitolo',
-                            value: subtitle,
-                            onChange: function(val) { setAttributes({ subtitle: val }); }
-                        }),
-                        el(TextControl, {
-                            label: 'Indirizzo',
-                            value: address,
-                            onChange: function(val) { setAttributes({ address: val }); }
-                        }),
-                        el(TextControl, {
-                            label: 'P.IVA',
-                            value: vat,
-                            onChange: function(val) { setAttributes({ vat: val }); }
-                        })
+                        storeText('subtitle', 'Sottotitolo', store.intro),
+                        storeText('address', 'Indirizzo', store.address),
+                        storeText('vat', 'P.IVA', store.vat)
                     ),
                     el(PanelBody, { title: 'Contatti', initialOpen: false },
-                        el(TextControl, {
-                            label: 'Telefono',
-                            value: phone,
-                            onChange: function(val) { setAttributes({ phone: val }); }
-                        }),
-                        el(TextControl, {
-                            label: 'Email',
-                            value: email,
-                            onChange: function(val) { setAttributes({ email: val }); }
-                        })
+                        storeText('phone', 'Telefono', store.phone),
+                        storeText('email', 'Email', store.email)
                     ),
                     el(PanelBody, { title: 'Mappa', initialOpen: false },
                         el(TextControl, {
                             label: 'URL Mappa (link esterno)',
-                            value: mapUrl,
+                            value: mapUrl || '',
                             onChange: function(val) { setAttributes({ mapUrl: val }); }
                         }),
-                        el(TextareaControl, {
-                            label: 'Codice Embed Mappa',
-                            help: 'Incolla il codice iframe di Google Maps.',
-                            value: mapEmbed,
-                            onChange: function(val) { setAttributes({ mapEmbed: val }); }
+                        storeText('mapEmbed', 'Codice Embed Mappa', store.hasMap ? '(la mappa del negozio)' : '', {
+                            textarea: true,
+                            help: 'Incolla il codice iframe di Google Maps.'
                         }),
                         el(ToggleControl, {
                             label: 'Carica la mappa al clic',
@@ -66,6 +62,12 @@
                             checked: clickToLoad !== false,
                             onChange: function(val) { setAttributes({ clickToLoad: val }); }
                         })
+                    ),
+                    el(PanelBody, { title: 'Dati del negozio', initialOpen: false },
+                        el('p', { style: { marginTop: 0 } },
+                            'I campi lasciati vuoti mostrano i dati del negozio, da Personalizza → Golden Hive → Negozio.'
+                        ),
+                        el(StoreReset, { attributes: attributes, setAttributes: setAttributes, attrs: STORE_ATTRS })
                     )
                 ),
                 el('div', blockProps,

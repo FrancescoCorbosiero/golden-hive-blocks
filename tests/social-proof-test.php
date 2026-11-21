@@ -39,7 +39,7 @@ function same($actual, $expected, string $what): void
 /* ---------------------------------------------------------------- */
 
 same(ghb_sp_city('MILANO'), 'Milano', 'shouted city is title-cased');
-same(ghb_sp_city('  piacenza '), 'Piacenza', 'spaces trimmed');
+same(ghb_sp_city('  bologna '), 'Bologna', 'spaces trimmed');
 same(ghb_sp_city("sant'angelo lodigiano"), "Sant'Angelo Lodigiano", 'apostrophe starts a new capital');
 same(ghb_sp_city('san giovanni in persiceto'), 'San Giovanni in Persiceto', 'particles stay lowercase inside');
 same(ghb_sp_city("REGGIO NELL'EMILIA"), "Reggio nell'Emilia", "nell' stays lowercase, the name after it is capitalized");

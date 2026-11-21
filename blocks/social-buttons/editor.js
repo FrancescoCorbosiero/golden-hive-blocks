@@ -1,46 +1,28 @@
 (function(wp) {
     const { registerBlockType } = wp.blocks;
     const { InspectorControls, useBlockProps } = wp.blockEditor;
-    const { PanelBody, TextControl } = wp.components;
-    const { el, Fragment, Placeholder } = window.ghEditorUtils;
+    const { PanelBody } = wp.components;
+    const { el, Fragment, Placeholder, StoreText, StoreReset, store } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/social-buttons', {
         edit: function({ attributes, setAttributes }) {
-            var instagram = attributes.instagram;
-            var facebook = attributes.facebook;
-            var tiktok = attributes.tiktok;
-            var youtube = attributes.youtube;
-            var twitter = attributes.twitter;
             const blockProps = useBlockProps();
 
             return el(Fragment, {},
                 el(InspectorControls, {},
                     el(PanelBody, { title: 'Link Social', initialOpen: true },
-                        el(TextControl, {
-                            label: 'Instagram URL',
-                            value: instagram,
-                            onChange: function(val) { setAttributes({ instagram: val }); }
+                        [['instagram', 'Instagram URL', 'instagram'], ['facebook', 'Facebook URL', 'facebook'], ['tiktok', 'TikTok URL', 'tiktok'],
+                            ['youtube', 'YouTube URL', 'youtube'], ['twitter', 'X (Twitter) URL', 'x']].map(function(f) {
+                            return el(StoreText, {
+                                key: f[0],
+                                attributes: attributes,
+                                setAttributes: setAttributes,
+                                attr: f[0],
+                                label: f[1],
+                                storeValue: store[f[2]]
+                            });
                         }),
-                        el(TextControl, {
-                            label: 'Facebook URL',
-                            value: facebook,
-                            onChange: function(val) { setAttributes({ facebook: val }); }
-                        }),
-                        el(TextControl, {
-                            label: 'TikTok URL',
-                            value: tiktok,
-                            onChange: function(val) { setAttributes({ tiktok: val }); }
-                        }),
-                        el(TextControl, {
-                            label: 'YouTube URL',
-                            value: youtube,
-                            onChange: function(val) { setAttributes({ youtube: val }); }
-                        }),
-                        el(TextControl, {
-                            label: 'Twitter URL',
-                            value: twitter,
-                            onChange: function(val) { setAttributes({ twitter: val }); }
-                        })
+                        el(StoreReset, { attributes: attributes, setAttributes: setAttributes, attrs: ['instagram', 'facebook', 'tiktok', 'youtube', 'twitter'] })
                     )
                 ),
                 el('div', blockProps,

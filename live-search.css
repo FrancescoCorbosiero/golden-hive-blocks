@@ -139,9 +139,9 @@ body.rlv-open { overflow: hidden; }
     width: 100%; padding: 14px; border: none; border-radius: calc(8px * var(--gh-round, 1)); cursor: pointer;
     background: var(--rlv-brand); color: #fff;
     font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
-    transition: filter .15s ease;
+    transition: background .15s ease;
 }
-.rlv-seeall:hover { filter: brightness(1.12); }
+.rlv-seeall:hover { background: var(--gh-accent-dark); }
 .rlv-seeall:focus-visible {
     outline: 2px solid var(--gh-accent);
     outline-offset: 2px;

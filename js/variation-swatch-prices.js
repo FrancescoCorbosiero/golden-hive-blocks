@@ -13,18 +13,29 @@
  * ghb_swatch_oos_label).
  */
 (function () {
-  // Same taxonomy the swatch selector below targets. Read it explicitly —
-  // the size is not guaranteed to be the FIRST variation attribute.
-  var SIZE_ATTR = 'attribute_pa_taglia';
-  var OOS_LABEL = (window.ghbSwatchPrices && window.ghbSwatchPrices.oosLabel) || '';
+  var cfg = window.ghbSwatchPrices || {};
 
-  // Never round prices: 99,90 € must display as 99,90 €, not 100 €.
-  // Decimals are dropped only when they are ,00 (clean integer look).
-  var fmtFull = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
-  var fmtInt  = new Intl.NumberFormat('it-IT', {
-    style: 'currency', currency: 'EUR',
-    minimumFractionDigits: 0, maximumFractionDigits: 0
-  });
+  // The size attribute (includes/size-match.php ghb_size_attribute()), read
+  // explicitly: the size is not guaranteed to be the FIRST variation attribute.
+  var SIZE_ATTR = 'attribute_' + (cfg.attribute || 'pa_taglia');
+  var SWATCHES = '.cgkit-attribute-swatches[data-attribute="' + SIZE_ATTR + '"]';
+  var OOS_LABEL = cfg.oosLabel || '';
+
+  // The store's currency and language. Never round prices: 99,90 € must
+  // display as 99,90 €, not 100 €; decimals are dropped only when ,00.
+  var LOCALE = cfg.locale || 'it-IT';
+  var CURRENCY = cfg.currency || 'EUR';
+  var fmtFull, fmtInt;
+  try {
+    fmtFull = new Intl.NumberFormat(LOCALE, { style: 'currency', currency: CURRENCY });
+    fmtInt  = new Intl.NumberFormat(LOCALE, {
+      style: 'currency', currency: CURRENCY,
+      minimumFractionDigits: 0, maximumFractionDigits: 0
+    });
+  } catch (e) {
+    fmtFull = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+    fmtInt  = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
 
   function formatPrice(a) {
     var n = Number(a);
@@ -69,9 +80,7 @@
     var map = getMap(form);
     if (!map) return false;
 
-    var swatches = document.querySelectorAll(
-      '.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"] .cgkit-swatch'
-    );
+    var swatches = document.querySelectorAll(SWATCHES + ' .cgkit-swatch');
     if (!swatches.length) return false;
 
     swatches.forEach(function (btn) {
@@ -110,7 +119,7 @@
   else document.addEventListener('DOMContentLoaded', boot);
 
   document.addEventListener('click', function (e) {
-    if (e.target.closest('.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"]')) {
+    if (e.target.closest(SWATCHES)) {
       setTimeout(injectPrices, 50);
     }
   });

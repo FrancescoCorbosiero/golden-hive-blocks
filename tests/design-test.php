@@ -37,7 +37,9 @@ function has(string $css, string $needle, string $what): void
 // The legacy accent reproduces the stylesheet's original tokens exactly, so
 // a store migrated to it looks as it always did.
 same(ghb_accent_tokens(GHB_TOKEN_LEGACY['accent']), array('accent' => '#721124', 'dark' => '#520c1a', 'rgb' => '114, 17, 36'), 'the legacy accent and its hover shade');
-same(ghb_accent_tokens('#000000'), array('accent' => '#000000', 'dark' => '#000000', 'rgb' => '0, 0, 0'), 'black stays black');
+same(ghb_accent_tokens('#000000'), array('accent' => '#000000', 'dark' => '#2b2b2b', 'rgb' => '0, 0, 0'), 'black: the hover shade lightens, or it would stay black');
+same(ghb_accent_tokens('#111111')['dark'], '#393939', 'the neutral near-black too');
+same(ghb_accent_tokens('#0b1f3a')['dark'], '#08162a', 'a dark navy still darkens: it shows');
 same(ghb_accent_tokens('#FFFFFF')['dark'], '#b8b8b8', 'white darkens to a grey, uppercase input accepted');
 same(ghb_accent_tokens('#1e40af')['rgb'], '30, 64, 175', 'the RGB triplet');
 same(ghb_accent_tokens('#0af')['accent'], '#00aaff', 'short hex is expanded');
@@ -81,6 +83,12 @@ has($store, '--gh-white:#fbf8f3', 'the light colour');
 has($store, "--gh-font-display:'Bebas Neue', sans-serif", 'the titles\' font');
 has($store, '--gh-font-body:inherit', 'an unset font stays the theme\'s');
 has($store, '--gh-title-transform:uppercase;--gh-title-tracking:0.02em;--gh-title-weight:900', 'the title style');
+
+has($neutral, '--gh-hero-scale:1', 'opening titles as large as they always were');
+has($neutral, '--gh-section-gutter:0', 'no space beside product sections by default');
+has(ghb_design_tokens_css(array('hero_size' => 'small', 'section_gutter' => 'standard')), '--gh-hero-scale:0.68;--gh-section-gutter:clamp(16px, 3vw, 40px)', 'small titles, a gutter');
+same(ghb_token_clean('hero_size', 'huge'), 'large', 'an unknown size falls back');
+same(ghb_token_clean('section_gutter', 'wide'), 'none', 'an unknown gutter falls back');
 
 $legacy = ghb_design_tokens_css(GHB_TOKEN_LEGACY);
 has($legacy, '--gh-accent:#721124;--gh-accent-dark:#520c1a', 'the legacy settings give the old accent');

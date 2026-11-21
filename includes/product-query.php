@@ -23,6 +23,19 @@ if (!defined('ABSPATH')) {
 /* -------------------------------------------------------------------- *
  * The query
  * -------------------------------------------------------------------- */
+
+/**
+ * The brand taxonomies a store may use, of which it has whichever exist:
+ * WooCommerce's own (product_brand), Perfect Brands (pwb-brand), a brand
+ * attribute (pa_brand). The rails, the Store Hub, size alerts and the live
+ * search all start from this list; add_filter('ghb_brand_taxonomies', …)
+ * changes it for all of them.
+ */
+function ghb_brand_taxonomies(): array
+{
+    return array_values(array_unique(array_map('strval', (array) apply_filters('ghb_brand_taxonomies', array('product_brand', 'pwb-brand', 'pa_brand')))));
+}
+
 function ghb_get_carousel_products($atts) {
     // A rail edited from the Store Hub's Vetrina carries pin / exclude /
     // fallback (see hub-rails.php); an explicit ids list keeps its own order.
@@ -127,7 +140,7 @@ function ghb_carousel_query_args($atts) {
         // registered one. Match across all of them with OR + include_children,
         // so nested/child brand terms (e.g. nike-travis-scott) work too.
         $brand_slugs = array_filter(array_map('trim', explode(',', $atts['brand'])));
-        $brand_taxonomies = array('product_brand', 'pwb-brand', 'pa_brand');
+        $brand_taxonomies = ghb_brand_taxonomies();
 
         $brand_clauses = array();
         foreach ($brand_taxonomies as $tax) {

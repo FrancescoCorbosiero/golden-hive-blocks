@@ -86,18 +86,32 @@ otherwise:
   → `brand-marquee` (no title: `"title":""`) → a 1600px group of brand rails
   → one or two `cta-image` (alternate `"reverse":true`) → the authenticity
   banner → `faq-schema` → `social-buttons` + `whatsapp-button`.
-- **Rails:** `columns='4' columns_tablet='3' columns_mobile='2'`,
-  `limit='12'`, inside `{"layout":{"type":"constrained","contentSize":"1600px"}}`
-  groups. Category rails carry an eyebrow; brand rails don't, and their
+- **Rails:** inside `{"layout":{"type":"constrained","contentSize":"1600px"}}`
+  groups. Leave `columns`, `columns_tablet`, `columns_mobile`, `limit`,
+  `ratio` and `fit` out: they follow the store's rail settings (Customizer →
+  Golden Hive → Prodotti e filtri). Write one only for a rail that must
+  differ. Category rails carry an eyebrow; brand rails don't, and their
   button reads "Esplora <Brand>".
-- **Design comes from the store, not the page.** Colours, fonts and title
-  style are the store's design tokens (Customizer → Golden Hive — Stile).
-  Never put a colour, a font or a `<style>` in a page.
-- **Blocks whose defaults belong to another store.** Contact Info (address,
-  P.IVA), About Hero (title, text) and Trustpilot Widget (a fixed rating)
-  have defaults written for the first store. Set every field you use and
-  blank the rest (`"address":""`), and use the store's official TrustBox
-  embed in an `html` block rather than the Trustpilot block.
+- **Design comes from the store, not the page.** Colours, fonts, title
+  style, the opening titles' size and the space beside product sections are
+  the store's (Customizer → Golden Hive → Stile). Never put a colour, a font
+  or a `<style>` in a page.
+- **The store's details come from the store.** Contact Info, Vieni in
+  negozio, Orari, Map Embed, WhatsApp Button, Social Buttons, Instagram Feed
+  and Trust Badges take what you leave out from Customizer → Golden Hive →
+  Negozio (address, P.IVA, phone, WhatsApp, email, socials, hours, map,
+  badges: [blocks.md](blocks.md) marks them "Negozio → …"). Leave those
+  attributes out. Write one only to show something else on that page (a
+  customer-service phone, say), and write it empty (`"vat":""`) to hide it
+  there. Never copy an address, a number or a handle into a page.
+- **The same FAQ on several pages:** make it a synced pattern (in the
+  editor: select the FAQ block → ⋮ → *Crea pattern*, synced) and place the
+  pattern, `<!-- wp:block {"ref":123} /-->`, on each page. One edit updates
+  every page. (The Store Hub edits a FAQ's title only when the block sits
+  on the homepage itself.)
+- **Trustpilot:** use the store's official TrustBox embed in an `html`
+  block. The Trustpilot block shows only a rating the page writes, which
+  goes stale.
 
 The authenticity banner has no block yet; it's this `html` block (the
 styles are the plugin's):
@@ -137,10 +151,10 @@ A rail is a `shortcode-wrapper` block holding `[gh_product_rail]`:
 | `type` | `recent` (default), `featured`, `best_selling`, `sale`, `top_rated` |
 | `ids` | Product IDs, comma-separated, in their own order |
 | `pin`, `exclude`, `fallback` | Written by the Store Hub: products first, products never shown, order of the rest (`menu_order`, `date`, `popularity`, `price`, `price-desc`, `rating`) |
-| `limit` | How many products (default 12) |
-| `columns`, `columns_tablet`, `columns_mobile` | Cards per view, 1–8 |
-| `ratio` | `square`, `portrait`, `tall`, `landscape`, `wide`, or `N/N` |
-| `fit` | `contain` (default, whole photo) or `cover` (cropped) |
+| `limit` | How many products (left out: the store's, 12 to start with) |
+| `columns`, `columns_tablet`, `columns_mobile` | Cards per view, 1–8 (left out: the store's) |
+| `ratio` | `square`, `portrait`, `tall`, `landscape`, `wide`, or `N/N` (left out: the store's) |
+| `fit` | `contain` (whole photo) or `cover` (cropped) (left out: the store's, `contain` to start with) |
 
 **For the Store Hub** (its *Vetrina* edits the homepage's rails from a phone):
 
@@ -188,7 +202,9 @@ motion on the first screen.
 ## Page skeletons
 
 Placeholders in capitals. Each skeleton passes the checker
-(`tests/page-check-test.php` checks every `html` block in this file).
+(`tests/page-check-test.php` checks every `html` block in this file). The
+store's details, rail layout and badges come from the store: none is
+written here.
 
 ### Homepage
 
@@ -202,15 +218,15 @@ Placeholders in capitals. Each skeleton passes the checker
 <!-- wp:golden-hive/trust-badges {"variant":"carousel"} /-->
 
 <!-- wp:group {"layout":{"type":"constrained","contentSize":"1600px"}} -->
-<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Selezionati da noi","title":"SELEZIONE","shortcode":"[gh_product_rail category='selezione' limit='12' columns='4' columns_tablet='3' columns_mobile='2']","buttonText":"Vedi tutti","buttonUrl":"/categoria/selezione/"} /-->
+<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Selezionati da noi","title":"SELEZIONE","shortcode":"[gh_product_rail category='selezione']","buttonText":"Vedi tutti","buttonUrl":"/categoria/selezione/"} /-->
 
-<!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Release aggiornate","title":"NUOVI ARRIVI","shortcode":"[gh_product_rail type='recent' limit='12' columns='4' columns_tablet='3' columns_mobile='2']","buttonText":"Vedi tutti","buttonUrl":"/negozio/"} /--></div>
+<!-- wp:golden-hive/shortcode-wrapper {"eyebrow":"Release aggiornate","title":"NUOVI ARRIVI","shortcode":"[gh_product_rail type='recent']","buttonText":"Vedi tutti","buttonUrl":"/negozio/"} /--></div>
 <!-- /wp:group -->
 
 <!-- wp:golden-hive/brand-marquee {"title":"","brands":[{"name":"BRAND","logo":"https://example.com/logo.png","url":"/marchio/brand/"}],"speed":40} /-->
 
 <!-- wp:group {"layout":{"type":"constrained","contentSize":"1600px"}} -->
-<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"title":"BRAND","shortcode":"[gh_product_rail brand='brand' type='best_selling' limit='12' columns='4' columns_tablet='3' columns_mobile='2']","buttonText":"Esplora Brand","buttonUrl":"/marchio/brand/"} /--></div>
+<div class="wp-block-group"><!-- wp:golden-hive/shortcode-wrapper {"title":"BRAND","shortcode":"[gh_product_rail brand='brand' type='best_selling']","buttonText":"Esplora Brand","buttonUrl":"/marchio/brand/"} /--></div>
 <!-- /wp:group -->
 
 <!-- wp:golden-hive/cta-image {"imageUrl":"https://example.com/cta-1.jpg","eyebrow":"Selezionati da noi","title":"TITOLO","text":"Una frase.","buttonText":"Esplora","buttonUrl":"/categoria/slug/"} /-->
@@ -219,9 +235,9 @@ Placeholders in capitals. Each skeleton passes the checker
 
 <!-- wp:golden-hive/faq-schema {"subtitle":"Trova le risposte alle domande più comuni","items":[{"question":"DOMANDA?","answer":"<p>RISPOSTA.</p>"}]} /-->
 
-<!-- wp:golden-hive/social-buttons {"instagram":"https://www.instagram.com/example"} /-->
+<!-- wp:golden-hive/social-buttons /-->
 
-<!-- wp:golden-hive/whatsapp-button {"phoneNumber":"390000000000","iconOnly":true} /-->
+<!-- wp:golden-hive/whatsapp-button {"iconOnly":true} /-->
 ```
 
 ### About
@@ -245,11 +261,11 @@ Placeholders in capitals. Each skeleton passes the checker
 ```html
 <!-- wp:golden-hive/hero-video {"mediaType":"image","imageUrl":"https://example.com/contatti.jpg","title":"CONTATTI"} /-->
 
-<!-- wp:golden-hive/contact-info {"title":"Scrivici","subtitle":"","address":"VIA, CITTÀ","vat":"P.IVA 00000000000","phone":"+39 000 000 0000","email":"info@example.com","mapEmbed":""} /-->
+<!-- wp:golden-hive/contact-info {"title":"Scrivici"} /-->
 
 <!-- wp:golden-hive/store-hours /-->
 
-<!-- wp:golden-hive/social-buttons {"instagram":"https://www.instagram.com/example"} /-->
+<!-- wp:golden-hive/social-buttons /-->
 ```
 
 ### A guide page (WordPress blocks only)

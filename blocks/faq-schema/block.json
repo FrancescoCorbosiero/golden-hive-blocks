@@ -20,20 +20,7 @@
         },
         "items": {
             "type": "array",
-            "default": [
-                {
-                    "question": "I prodotti sono autentici?",
-                    "answer": "S\u00ec, ogni articolo viene verificato dal nostro team di esperti prima della spedizione. Garantiamo il 100% di autenticit\u00e0 su tutti i prodotti."
-                },
-                {
-                    "question": "Quali sono i tempi di spedizione?",
-                    "answer": "Le spedizioni standard vengono elaborate in 1-2 giorni lavorativi. La consegna avviene in 3-5 giorni lavorativi in tutta Italia."
-                },
-                {
-                    "question": "Posso effettuare un reso?",
-                    "answer": "Certamente! Offriamo il reso gratuito entro 14 giorni dalla ricezione dell'ordine. Il prodotto deve essere nelle condizioni originali."
-                }
-            ]
+            "default": []
         },
         "allowMultiple": {
             "type": "boolean",

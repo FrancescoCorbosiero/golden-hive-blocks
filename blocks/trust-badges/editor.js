@@ -2,11 +2,13 @@
     const { registerBlockType } = wp.blocks;
     const { InspectorControls, useBlockProps } = wp.blockEditor;
     const { PanelBody, TextControl, SelectControl, Button } = wp.components;
-    const { el, Fragment, listOps, ItemControls, Placeholder } = window.ghEditorUtils;
+    const { el, Fragment, listOps, ItemControls, Placeholder, store } = window.ghEditorUtils;
 
     registerBlockType('golden-hive/trust-badges', {
         edit: function({ attributes, setAttributes }) {
-            const { badges, variant } = attributes;
+            const { variant } = attributes;
+            const own = Array.isArray(attributes.badges);
+            const badges = own ? attributes.badges : (store.badges || []);
             const blockProps = useBlockProps();
 
             var ops = listOps(badges, function(next) {
@@ -26,8 +28,22 @@
                             onChange: function(val) { setAttributes({ variant: val }); }
                         })
                     ),
-                    el(PanelBody, { title: 'Badge (' + badges.length + ')', initialOpen: false },
-                        badges.map(function(item, index) {
+                    el(PanelBody, { title: 'Badge (' + badges.length + ')', initialOpen: !own },
+                        el('p', { style: { marginTop: 0 } },
+                            own
+                                ? 'Badge solo di questa pagina.'
+                                : (badges.length
+                                    ? 'I badge del negozio (Personalizza → Golden Hive → Negozio).'
+                                    : 'Il negozio non ha badge: impostali in Personalizza → Golden Hive → Negozio, o scrivili qui.')
+                        ),
+                        own ? null : badges.map(function(item, index) {
+                            return el('p', { key: index, style: { margin: '0 0 4px' } }, '• ' + (item.title || ''));
+                        }),
+                        own ? null : el(Button, {
+                            variant: 'secondary',
+                            onClick: function() { setAttributes({ badges: badges.map(function(b) { return { icon: b.icon, title: b.title }; }) }); }
+                        }, 'Scrivi badge solo per questa pagina'),
+                        !own ? null : badges.map(function(item, index) {
                             return el('div', { key: index, style: { marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid #ddd' } },
                                 el(ItemControls, {
                                     ops: ops,
@@ -55,11 +71,16 @@
                                 })
                             );
                         }),
-                        el(Button, {
+                        !own ? null : el(Button, {
                             variant: 'primary',
                             onClick: function() { ops.add({ icon: 'authentic', title: '' }); },
                             style: { marginTop: '8px' }
-                        }, 'Aggiungi badge')
+                        }, 'Aggiungi badge'),
+                        !own ? null : el(Button, {
+                            variant: 'tertiary',
+                            onClick: function() { setAttributes({ badges: undefined }); },
+                            style: { marginTop: '8px' }
+                        }, 'Usa i badge del negozio')
                     )
                 ),
                 el('div', blockProps,
@@ -69,7 +90,7 @@
                         ),
                         title: 'Trust Badges',
                         text: badges.length > 0
-                            ? badges.length + ' badge configurati'
+                            ? badges.length + (own ? ' badge di questa pagina' : ' badge del negozio')
                             : 'Configura questo blocco nel pannello laterale.'
                     })
                 )

@@ -1,14 +1,22 @@
 <?php
 /**
- * Trustpilot Widget Block - Render lato server
+ * Trustpilot Widget block — server render.
+ *
+ * Shows the rating the page writes, as it stands on the store's Trustpilot
+ * page; without one, nothing (the plugin never invents a rating). The
+ * official TrustBox embed stays the better choice: it's always current.
  */
 
-$rating = $attributes['rating'] ?? 4.8;
-$review_count = $attributes['reviewCount'] ?? 250;
-$label = $attributes['label'] ?? 'Eccezionale';
+$rating = (float) ($attributes['rating'] ?? 0);
+$review_count = (int) ($attributes['reviewCount'] ?? 0);
+$label = (string) ($attributes['label'] ?? '');
 $trustpilot_url = $attributes['trustpilotUrl'] ?? '';
 
-$rating = max(0, min(5, (float) $rating));
+if ($rating <= 0) {
+    return;
+}
+
+$rating = max(0, min(5, $rating));
 
 $full_stars = (int) floor($rating);
 $has_half = ($rating - $full_stars) >= 0.5;
@@ -21,7 +29,9 @@ $empty_stars = 5 - $full_stars - ($has_half ? 1 : 0);
         <?php endif; ?>
 
         <div class="gh-trustpilot__header">
-            <span class="gh-trustpilot__label"><?php echo esc_html($label); ?></span>
+            <?php if ('' !== $label) : ?>
+                <span class="gh-trustpilot__label"><?php echo esc_html($label); ?></span>
+            <?php endif; ?>
 
             <div class="gh-trustpilot__stars">
                 <?php for ($i = 0; $i < $full_stars; $i++) : ?>
@@ -36,16 +46,18 @@ $empty_stars = 5 - $full_stars - ($has_half ? 1 : 0);
                     <span class="gh-trustpilot__star gh-tp-star gh-tp-star--empty" aria-hidden="true"><?php echo gh_icon('star', 20); ?></span>
                 <?php endfor; ?>
 
-                <span class="gh-sr-only"><?php echo esc_html(number_format($rating, 1)); ?> su 5</span>
+                <span class="gh-sr-only"><?php echo esc_html(number_format_i18n($rating, 1)); ?> su 5</span>
             </div>
 
             <div class="gh-trustpilot__rating">
-                <?php echo number_format($rating, 1); ?> / 5
+                <?php echo esc_html(number_format_i18n($rating, 1)); ?> / 5
             </div>
 
-            <p class="gh-trustpilot__count">
-                Basato su <strong><?php echo number_format($review_count); ?></strong> recensioni
-            </p>
+            <?php if ($review_count > 0) : ?>
+                <p class="gh-trustpilot__count">
+                    Basato su <strong><?php echo esc_html(number_format_i18n($review_count)); ?></strong> recensioni
+                </p>
+            <?php endif; ?>
 
             <div class="gh-trustpilot__logo">
                 <?php echo gh_icon('star', 16); ?>

@@ -3,7 +3,7 @@
  * Plugin Name: Golden Hive Blocks
  * Plugin URI: https://goldenhive.it
  * Description: Blocchi Gutenberg premium per e-commerce streetwear e sneakers. Stile moderno e professionale per il tuo store.
- * Version: 5.19.1
+ * Version: 5.20.0
  * Author: Golden Hive
  * Author URI: https://goldenhive.it
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('GOLDEN_HIVE_BLOCKS_VERSION', '5.19.1');
+define('GOLDEN_HIVE_BLOCKS_VERSION', '5.20.0');
 define('GOLDEN_HIVE_BLOCKS_PATH', plugin_dir_path(__FILE__));
 define('GOLDEN_HIVE_BLOCKS_URL', plugin_dir_url(__FILE__));
 
@@ -42,10 +42,21 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/cache.php';
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/theme-compat.php';
 
 /**
- * Design switches (Customizer → Golden Hive — Stile): the shape of every
- * element (rounded / sharp) and the shop filters' desktop layout.
+ * The Customizer's Golden Hive panel (Negozio, Stile, Prodotti e filtri,
+ * Pagina prodotto), its list and checklist controls, the cache purge on save.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/customizer.php';
+
+/**
+ * Design tokens and switches (Customizer → Golden Hive → Stile).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/design.php';
+
+/**
+ * The store's details (Customizer → Golden Hive → Negozio), which blocks use
+ * for any attribute a page leaves out.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/store.php';
 
 /**
  * Frontend assets.
@@ -333,7 +344,7 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/drops.php';
 
 /**
  * Include the product page additions: WhatsApp + share, delivery estimate,
- * "Altre colorway" and "Visti di recente" rails (Customizer → Golden Hive —
+ * "Altre colorway" and "Visti di recente" rails (Customizer → Golden Hive →
  * Pagina prodotto).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/product-page.php';

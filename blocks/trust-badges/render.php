@@ -1,10 +1,13 @@
 <?php
 /**
- * Trust Badges Block - Render lato server
- * Supports: default (inline strip) and carousel (marquee scroll)
+ * Trust Badges block — server render.
+ * Supports: default (inline strip) and carousel (marquee scroll).
+ *
+ * Badges left out of the block are the store's (Customizer → Golden Hive →
+ * Negozio → Badge di fiducia); none anywhere, no block.
  */
 
-$badges = $attributes['badges'] ?? [];
+$badges = (array) ghb_store_attr($attributes, 'golden-hive/trust-badges', 'badges');
 $variant = $attributes['variant'] ?? 'default';
 
 $icons = [

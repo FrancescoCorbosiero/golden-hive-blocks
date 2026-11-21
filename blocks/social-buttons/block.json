@@ -11,24 +11,19 @@
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "instagram": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "facebook": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "tiktok": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "youtube": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "twitter": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         }
     },
     "supports": {

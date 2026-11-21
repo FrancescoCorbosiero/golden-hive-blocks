@@ -29,11 +29,6 @@ if (!defined('ABSPATH')) {
  * Size options
  * -------------------------------------------------------------------- */
 
-function ghb_size_attribute(): string
-{
-    return (string) apply_filters('ghb_atc_size_attribute', 'pa_taglia');
-}
-
 /**
  * Every size the catalogue uses (terms carried by at least one product),
  * grouped and sorted: key, label, slugs, count. Cached; any change to the

@@ -11,12 +11,10 @@
     "textdomain": "golden-hive-blocks",
     "attributes": {
         "phoneNumber": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "message": {
-            "type": "string",
-            "default": "Ciao! Vorrei avere informazioni su..."
+            "type": "string"
         },
         "buttonText": {
             "type": "string",

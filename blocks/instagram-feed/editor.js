@@ -10,6 +10,9 @@
     const MediaField = utils.MediaField;
     const Placeholder = utils.Placeholder;
     const ProductPicker = utils.ProductPicker;
+    const StoreText = utils.StoreText;
+    const StoreReset = utils.StoreReset;
+    const store = utils.store;
 
     // "Shop the look": click on the picture to tag a product at that spot.
     function HotspotEditor(props) {
@@ -77,7 +80,7 @@
 
     registerBlockType('golden-hive/instagram-feed', {
         edit: function({ attributes, setAttributes }) {
-            const { title, subtitle, instagramUrl, buttonText, images, columns } = attributes;
+            const { title, subtitle, images, columns } = attributes;
             const blockProps = useBlockProps();
 
             var ops = listOps(images, function(next) { setAttributes({ images: next }); });
@@ -92,19 +95,24 @@
                         }),
                         el(TextControl, {
                             label: 'Sottotitolo',
-                            value: subtitle,
+                            value: subtitle || '',
                             onChange: function(val) { setAttributes({ subtitle: val }); }
                         }),
-                        el(TextControl, {
+                        el(StoreText, {
+                            attributes: attributes,
+                            setAttributes: setAttributes,
+                            attr: 'instagramUrl',
                             label: 'URL Instagram',
-                            value: instagramUrl,
-                            onChange: function(val) { setAttributes({ instagramUrl: val }); }
+                            storeValue: store.instagram
                         }),
-                        el(TextControl, {
+                        el(StoreText, {
+                            attributes: attributes,
+                            setAttributes: setAttributes,
+                            attr: 'buttonText',
                             label: 'Testo pulsante',
-                            value: buttonText,
-                            onChange: function(val) { setAttributes({ buttonText: val }); }
+                            storeValue: store.instagramHandle
                         }),
+                        el(StoreReset, { attributes: attributes, setAttributes: setAttributes, attrs: ['instagramUrl', 'buttonText'] }),
                         el(RangeControl, {
                             label: 'Colonne',
                             value: columns,

@@ -39,10 +39,10 @@ function same($actual, $expected, string $what): void
 /* ---------------------------------------------------------------- */
 
 $event = array(
-    'uid'   => 'drop-42@resellpiacenza.shop',
+    'uid'   => 'drop-42@example.com',
     'ts'    => 1792828800, // 2026-10-24 08:00:00 UTC (10:00 in Italy)
     'title' => 'Drop: Jordan 4 "Bred", Reimagined; 2026',
-    'url'   => 'https://resellpiacenza.shop/prodotto/jordan-4/',
+    'url'   => 'https://example.com/prodotto/jordan-4/',
 );
 $ics = ghb_drop_ics($event, 1792000000);
 

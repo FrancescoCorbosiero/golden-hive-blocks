@@ -581,7 +581,7 @@ function ghb_size_alerts_product_brands(int $product_id): array
 function ghb_size_alerts_brand_taxonomies(): array
 {
     return array_values(array_filter(
-        (array) apply_filters('ghb_size_alerts_brand_taxonomies', array('product_brand', 'pwb-brand', 'pa_brand', 'pa_marca')),
+        (array) apply_filters('ghb_size_alerts_brand_taxonomies', array_merge(ghb_brand_taxonomies(), array('pa_marca'))),
         'taxonomy_exists'
     ));
 }

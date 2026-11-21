@@ -15,6 +15,10 @@
  *   font_body     --gh-font-body: the blocks' text ('' = the theme's)
  *   title_case    --gh-title-transform (+ --gh-title-tracking): 'uppercase' | 'none'
  *   title_weight  --gh-title-weight: 400–900
+ *   hero_size     --gh-hero-scale: the opening titles (Hero Carousel, Split,
+ *                 Video) 'large' (as they always were) | 'medium' | 'small'
+ *   section_gutter --gh-section-gutter: space beside product sections,
+ *                 'none' (the theme's container decides) | 'standard'
  *
  * @package Golden_Hive_Blocks
  */
@@ -25,14 +29,22 @@ if (!defined('ABSPATH')) {
 
 /** Neutral defaults: what a store gets before it chooses. */
 const GHB_TOKEN_DEFAULTS = array(
-    'accent'       => '#111111',
-    'dark'         => '#0a0a0a',
-    'light'        => '#ffffff',
-    'font_display' => '',
-    'font_body'    => '',
-    'title_case'   => 'none',
-    'title_weight' => '700',
+    'accent'         => '#111111',
+    'dark'           => '#0a0a0a',
+    'light'          => '#ffffff',
+    'font_display'   => '',
+    'font_body'      => '',
+    'title_case'     => 'none',
+    'title_weight'   => '700',
+    'hero_size'      => 'large',
+    'section_gutter' => 'none',
 );
+
+/** The opening titles' scale, by size. */
+const GHB_HERO_SCALES = array('large' => '1', 'medium' => '0.82', 'small' => '0.68');
+
+/** Space beside product sections, by choice. */
+const GHB_SECTION_GUTTERS = array('none' => '0', 'standard' => 'clamp(16px, 3vw, 40px)');
 
 /**
  * The plugin's look before the tokens were settings. Stores that already ran
@@ -46,6 +58,14 @@ const GHB_TOKEN_LEGACY = array(
 
 /** How much darker the accent's hover shade is: each channel × this. */
 const GHB_ACCENT_DARKEN = 0.72;
+
+/**
+ * Darkening a near-black accent changes nothing you can see (black × 0.72 is
+ * black), so below this luminance (0–1) the hover shade lightens instead:
+ * each channel this far toward white (black becomes #2b2b2b).
+ */
+const GHB_ACCENT_DARK_LUMINANCE = 0.08;
+const GHB_ACCENT_LIGHTEN        = 0.17;
 
 const GHB_TITLE_WEIGHTS = array('400', '500', '600', '700', '800', '900');
 
@@ -87,17 +107,27 @@ function ghb_token_clean(string $key, $value): string
             return in_array($value, array('uppercase', 'none'), true) ? $value : GHB_TOKEN_DEFAULTS[$key];
         case 'title_weight':
             return in_array($value, GHB_TITLE_WEIGHTS, true) ? $value : GHB_TOKEN_DEFAULTS[$key];
+        case 'hero_size':
+            return isset(GHB_HERO_SCALES[$value]) ? $value : GHB_TOKEN_DEFAULTS[$key];
+        case 'section_gutter':
+            return isset(GHB_SECTION_GUTTERS[$value]) ? $value : GHB_TOKEN_DEFAULTS[$key];
     }
     return '';
 }
 
-/** The accent's derived tokens: the colour, its hover shade, its RGB triplet. */
+/**
+ * The accent's derived tokens: the colour, its hover shade, its RGB triplet.
+ * The hover shade is darker, or lighter for an accent too dark to darken.
+ */
 function ghb_accent_tokens(string $hex): array
 {
-    $hex = ghb_hex_normalize($hex) ?? GHB_TOKEN_DEFAULTS['accent'];
-    $rgb = array_map('hexdec', str_split(substr($hex, 1), 2));
-    $dark = '#' . implode('', array_map(function ($c) {
-        return str_pad(dechex((int) round($c * GHB_ACCENT_DARKEN)), 2, '0', STR_PAD_LEFT);
+    $hex       = ghb_hex_normalize($hex) ?? GHB_TOKEN_DEFAULTS['accent'];
+    $rgb       = array_map('hexdec', str_split(substr($hex, 1), 2));
+    $luminance = (0.2126 * $rgb[0] + 0.7152 * $rgb[1] + 0.0722 * $rgb[2]) / 255;
+    $lighten   = $luminance < GHB_ACCENT_DARK_LUMINANCE;
+    $dark      = '#' . implode('', array_map(function ($c) use ($lighten) {
+        $shade = $lighten ? $c + (255 - $c) * GHB_ACCENT_LIGHTEN : $c * GHB_ACCENT_DARKEN;
+        return str_pad(dechex((int) round($shade)), 2, '0', STR_PAD_LEFT);
     }, $rgb));
     return array('accent' => $hex, 'dark' => $dark, 'rgb' => implode(', ', $rgb));
 }
@@ -127,6 +157,8 @@ function ghb_design_tokens_css(array $settings): string
         '--gh-title-transform' => $upper ? 'uppercase' : 'none',
         '--gh-title-tracking'  => $upper ? '0.02em' : '0',
         '--gh-title-weight'    => $t['title_weight'],
+        '--gh-hero-scale'      => GHB_HERO_SCALES[$t['hero_size']],
+        '--gh-section-gutter'  => GHB_SECTION_GUTTERS[$t['section_gutter']],
     );
     $css = '';
     foreach ($vars as $name => $value) {
