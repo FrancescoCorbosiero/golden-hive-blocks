@@ -32,7 +32,7 @@ function ghb_hub_rail_terms(array $atts): array
         $taxonomies      = array('product_cat');
     } elseif (!empty($atts['brand'])) {
         $slugs      = array_map('trim', explode(',', $atts['brand']));
-        $taxonomies = array('product_brand', 'pwb-brand', 'pa_brand');
+        $taxonomies = ghb_brand_taxonomies();
     } else {
         return $out;
     }
@@ -300,7 +300,7 @@ function ghb_hub_field_error(array $applied, array $spec): WP_Error
 /**
  * The term a section's new source names, looked up the way the rail query
  * reads it: a category in product_cat; a brand in whichever brand taxonomy
- * holds that slug (product_brand, pwb-brand, pa_brand); a tag in product_tag.
+ * holds that slug (ghb_brand_taxonomies()); a tag in product_tag.
  *
  * @return WP_Term|WP_Error
  */
@@ -308,7 +308,7 @@ function ghb_hub_source_term(array $source)
 {
     $taxonomies = array(
         'category' => array('product_cat'),
-        'brand'    => array('product_brand', 'pwb-brand', 'pa_brand'),
+        'brand'    => ghb_brand_taxonomies(),
         'tag'      => array('product_tag'),
     );
     foreach ($taxonomies[$source['taxonomy']] as $taxonomy) {

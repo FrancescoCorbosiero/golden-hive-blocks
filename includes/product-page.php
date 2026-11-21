@@ -232,7 +232,7 @@ function ghb_product_actions()
     $url    = $product->get_permalink();
     ?>
     <div class="ghb-pp-actions" data-name="<?php echo esc_attr($name); ?>" data-url="<?php echo esc_url($url); ?>"
-         data-size-field="<?php echo esc_attr('attribute_' . apply_filters('ghb_atc_size_attribute', 'pa_taglia')); ?>">
+         data-size-field="<?php echo esc_attr('attribute_' . ghb_size_attribute()); ?>">
         <?php if ('' !== $number) : ?>
             <a class="ghb-pp-action ghb-pp-action--whatsapp" data-ghb-whatsapp="<?php echo esc_attr($number); ?>"
                href="<?php echo esc_url(ghb_whatsapp_product_url($number, $name, $url)); ?>" target="_blank" rel="noopener noreferrer">

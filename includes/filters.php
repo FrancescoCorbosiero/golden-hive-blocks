@@ -58,7 +58,7 @@ function ghb_filters_attributes(): array
 function ghb_filters_store_facets(): array
 {
     $saved = get_option('ghb_filters_facets', null);
-    return ghb_filters_facets(is_array($saved) ? $saved : null, ghb_filters_attributes(), (string) apply_filters('ghb_atc_size_attribute', 'pa_taglia'));
+    return ghb_filters_facets(is_array($saved) ? $saved : null, ghb_filters_attributes(), ghb_size_attribute());
 }
 
 /** WooCommerce's default product category ("Senza categoria"), and one called uncategorized if there is. */

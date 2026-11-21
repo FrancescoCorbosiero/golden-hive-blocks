@@ -62,7 +62,7 @@ add_action('save_post_product', 'ghb_hub_bump_cache_gen');
 add_action('woocommerce_product_set_stock_status', 'ghb_hub_bump_cache_gen');
 add_action('woocommerce_variation_set_stock_status', 'ghb_hub_bump_cache_gen');
 add_action('set_object_terms', function ($object_id, $terms, $tt_ids, $taxonomy) {
-    if (in_array($taxonomy, array('product_cat', 'product_brand', 'pwb-brand', 'pa_brand', 'product_visibility', 'product_tag'), true)) {
+    if (in_array($taxonomy, array_merge(array('product_cat', 'product_visibility', 'product_tag'), ghb_brand_taxonomies()), true)) {
         ghb_hub_bump_cache_gen();
     }
 }, 10, 4);

@@ -33,6 +33,25 @@ if (!defined('ABSPATH')) {
 const GHB_SIZE_MATCH_MAX = 20;
 
 /**
+ * The size attribute's taxonomy: pa_taglia, the stores' convention, unless
+ * add_filter('ghb_atc_size_attribute', …) names another. Every size feature
+ * asks here, and passes it to the scripts (ghbSize, ghbSwatchPrices) and the
+ * swatch styles, so one filter moves them all.
+ */
+function ghb_size_attribute(): string
+{
+    $attribute = sanitize_key((string) apply_filters('ghb_atc_size_attribute', 'pa_taglia'));
+    return '' !== $attribute ? $attribute : 'pa_taglia';
+}
+
+/** The size attribute for js/animations.js (the size this browser remembers). */
+function ghb_size_script_data(): void
+{
+    wp_localize_script('golden-hive-animations', 'ghbSize', array('attribute' => ghb_size_attribute()));
+}
+add_action('wp_enqueue_scripts', 'ghb_size_script_data', 20);
+
+/**
  * Slugs of the active size filter, read once from the page's query string.
  * The filters' AJAX refresh renders cards outside the page request, so it
  * passes its own query string: that replaces what the page URL said.
@@ -47,7 +66,7 @@ function ghb_size_match_slugs(?string $query_string = null): array
         return $slugs;
     }
 
-    $attr  = (string) apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $attr  = ghb_size_attribute();
     $param = 'filter_' . (0 === strpos($attr, 'pa_') ? substr($attr, 3) : $attr);
 
     if (null !== $query_string) {
@@ -83,7 +102,7 @@ function ghb_size_match_keys(): array
         return $memo[$id];
     }
 
-    $attr = (string) apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $attr = ghb_size_attribute();
     $keys = array();
     foreach ($slugs as $slug) {
         $term   = get_term_by('slug', $slug, $attr);
@@ -138,7 +157,7 @@ function ghb_size_match_button_attrs(WC_Product $product): string
     return sprintf(
         ' data-size-variation="%d" data-size-attr="%s" data-size-value="%s"',
         (int) $matches[0]['variation_id'],
-        esc_attr((string) apply_filters('ghb_atc_size_attribute', 'pa_taglia')),
+        esc_attr(ghb_size_attribute()),
         esc_attr((string) $matches[0]['value'])
     );
 }

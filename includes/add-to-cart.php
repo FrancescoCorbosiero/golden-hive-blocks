@@ -227,7 +227,7 @@ function ghb_atc_render_button()
  */
 function ghb_atc_unique_size_options($product, $attribute = null, $only_ids = null)
 {
-    $attribute = $attribute ?: apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $attribute = $attribute ?: ghb_size_attribute();
     $allow = is_array($only_ids) ? array_map('intval', $only_ids) : null;
     $groups = array(); // normalized key => winning entry (first-seen position preserved)
 

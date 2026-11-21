@@ -24,7 +24,7 @@ $query = (isset($relevanssi_query) && $relevanssi_query instanceof WP_Query)
 if ($query->have_posts()) :
     // Resolve the site's brand taxonomies ONCE per response, not per result.
     $brand_taxonomies = array_filter(
-        array('yith_product_brand', 'product_brand', 'pwb-brand', 'pa_brand'),
+        array_merge(array('yith_product_brand'), function_exists('ghb_brand_taxonomies') ? ghb_brand_taxonomies() : array('product_brand', 'pwb-brand', 'pa_brand')),
         'taxonomy_exists'
     );
     ?>

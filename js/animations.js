@@ -1291,7 +1291,8 @@
      */
     var SizeMemory = {
         STORE_KEY: 'ghb_my_size',
-        FIELD: 'attribute_pa_taglia', // ghb_atc_size_attribute
+        // The size attribute's field (includes/size-match.php ghb_size_attribute()).
+        FIELD: 'attribute_' + ((window.ghbSize && window.ghbSize.attribute) || 'pa_taglia'),
         started: false,
 
         key: function (label) {

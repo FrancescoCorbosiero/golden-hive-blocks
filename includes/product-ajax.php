@@ -66,7 +66,7 @@ function ghb_get_variations_handler() {
     // de-duplicated; any other variation attribute passes through untouched.
     // Winners are chosen from the available set so the kept option always maps
     // to a selectable variation.
-    $size_attribute = apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $size_attribute = ghb_size_attribute();
     $available_ids  = array();
     foreach ($available as $v) {
         $available_ids[] = (int) $v['variation_id'];
@@ -160,7 +160,7 @@ function ghb_quick_view_handler() {
     $sizes = ($product->is_type('variable') && function_exists('ghb_atc_size_rows'))
         ? ghb_atc_size_rows($product)
         : array();
-    $size_attribute = apply_filters('ghb_atc_size_attribute', 'pa_taglia');
+    $size_attribute = ghb_size_attribute();
 
     // Attributes
     $attributes = [];
