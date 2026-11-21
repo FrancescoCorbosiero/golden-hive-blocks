@@ -11,7 +11,7 @@
  *   [gh_filters mode="inline"]   → the panel inline (sidebar / theme drawer)
  *   [bfl_filters …]              → older name, still placed in the shop sidebar
  *
- * Facets: Prezzo (slider + price inputs), Categoria (pills), Disponibile,
+ * Facets: Prezzo (slider + price inputs, in the store's currency), Categoria (pills), Disponibile,
  * plus product attributes: which ones, in what order and under what name is
  * the store's choice (Customizer → Golden Hive → Prodotti e filtri → Filtri,
  * filters-core.php); nothing chosen, every attribute the store has. So are
@@ -958,6 +958,7 @@ class GHB_Filters
                 }
                 $cmin = null !== $current['min_price'] ? (int) $current['min_price'] : $price[0];
                 $cmax = null !== $current['max_price'] ? (int) $current['max_price'] : $price[1]; ?>
+                <?php $currency = html_entity_decode(get_woocommerce_currency_symbol(), ENT_QUOTES, 'UTF-8'); ?>
                 <div class="ghb-filter-facet">
                     <div class="ghb-filter-flabel"><?php echo esc_html($f['label']); ?></div>
                     <div class="ghb-filter-slider" data-ghb-filter-slider data-floor="<?php echo esc_attr($price[0]); ?>" data-ceil="<?php echo esc_attr($price[1]); ?>">
@@ -966,8 +967,8 @@ class GHB_Filters
                         <input type="range" data-range="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>">
                     </div>
                     <div class="ghb-filter-nums">
-                        <div class="ghb-filter-num"><input type="number" data-price-input="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
-                        <div class="ghb-filter-num"><input type="number" data-price-input="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>"><span>&euro;</span></div>
+                        <div class="ghb-filter-num"><input type="number" data-price-input="min" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmin); ?>" aria-label="<?php esc_attr_e('Prezzo minimo', 'golden-hive-blocks'); ?>"><span><?php echo esc_html($currency); ?></span></div>
+                        <div class="ghb-filter-num"><input type="number" data-price-input="max" min="<?php echo esc_attr($price[0]); ?>" max="<?php echo esc_attr($price[1]); ?>" value="<?php echo esc_attr($cmax); ?>" aria-label="<?php esc_attr_e('Prezzo massimo', 'golden-hive-blocks'); ?>"><span><?php echo esc_html($currency); ?></span></div>
                     </div>
                 </div>
 
