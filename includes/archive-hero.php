@@ -12,8 +12,10 @@
  * image. No JavaScript is loaded for this feature.
  *
  * Customization:
- * - add_filter('ghb_archive_hero_enabled', '__return_false') kills the whole
- *   feature (default title/description come back automatically).
+ * - Customizer → Golden Hive → Prodotti e filtri → "Intestazione con foto
+ *   nelle pagine categoria" switches it off (on by default), and so does
+ *   add_filter('ghb_archive_hero_enabled', '__return_false'): the theme's
+ *   own title and description come back by themselves.
  * - 'ghb_archive_hero_image_id' filters the attachment used (e.g. to give
  *   product tags or the shop page a curated image).
  * - 'ghb_archive_hero_eyebrow' filters the small label above the title.
@@ -29,11 +31,19 @@ if (!defined('ABSPATH')) {
 function ghb_archive_hero_enabled()
 {
     $enabled = function_exists('is_woocommerce')
+        && 'no' !== get_option('ghb_archive_hero', 'yes')
         && !is_search()
         && (is_shop() || is_product_taxonomy());
 
     return (bool) apply_filters('ghb_archive_hero_enabled', $enabled);
 }
+
+function ghb_archive_hero_customize_register(WP_Customize_Manager $wp_customize): void
+{
+    ghb_customize_checkbox($wp_customize, 'ghb_catalog', 'ghb_archive_hero', 'yes', 'Intestazione con foto nelle pagine categoria', 'Sopra i prodotti del negozio e di ogni categoria: la foto della categoria, il nome e la descrizione. Spenta, torna l\'intestazione del tema.');
+    $wp_customize->get_control('ghb_archive_hero')->priority = 130;
+}
+add_action('customize_register', 'ghb_archive_hero_customize_register');
 
 /**
  * Conditional stylesheet.

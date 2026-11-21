@@ -435,5 +435,8 @@ function ghb_hub_features(): array
         'rail-pin', 'rail-exclude', 'rail-fallback', 'rail-limit', 'block-fields', 'archive-follow',
         // 5.15.0: what a section shows, its switch, and the page's sections themselves.
         'rail-source', 'rail-hidden', 'layout-insert', 'layout-remove', 'layout-arrange',
+        // 5.20.0: rails' layout defaults are the store's (capabilities: rail_defaults),
+        // and block fields left out read as the store's details.
+        'rail-defaults', 'store-defaults',
     );
 }
