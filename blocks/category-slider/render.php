@@ -1,11 +1,12 @@
 <?php
 /**
- * Category Slider Block — Render lato server.
+ * Category Slider block — server render.
  *
  * Shopify-style horizontal category showcase. Uses native CSS scroll-snap
  * (no slider library) — the Swiper dependency was removed for performance.
- * Reuses the existing .gh-category-slider__item/__image-wrapper/__image/__name
- * styles; the scroll-snap layout + arrow behaviour are printed once per page.
+ * Reuses the .gh-category-slider__item/__image-wrapper/__image/__name
+ * styles; the scroll-snap layout (.gh-cs) is in style.css too, and each
+ * picture keeps the block's ratio (imageRatio).
  *
  * Note: the legacy autoplay/loop/dots options no longer apply (they were
  * Swiper features); the rail scrolls/snaps natively with optional arrows.
@@ -29,29 +30,10 @@ $section_style = sprintf(
     absint($padding_bottom)
 );
 
-// Scroll-snap layout + arrow behaviour — printed once per page (any number of
-// category sliders share it).
-if (empty($GLOBALS['gh_cs_assets_done'])) {
-    $GLOBALS['gh_cs_assets_done'] = true;
-    ?>
-    <style>
-    .gh-cs{position:relative}
-    .gh-cs__track{display:flex;gap:16px;margin:0;padding:0 2px 8px;list-style:none;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-    .gh-cs__track::-webkit-scrollbar{display:none}
-    .gh-cs__slide{flex:0 0 auto;width:clamp(140px,42vw,220px);margin:0;scroll-snap-align:start}
-    .gh-cs__nav{position:absolute;top:42%;transform:translateY(-50%);z-index:5;width:40px;height:40px;border-radius:calc(50% * var(--gh-round,1));border:1px solid #e2e2e6;background:#fff;color:#1f2532;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.1);transition:border-color .15s,color .15s,opacity .15s}
-    .gh-cs__nav:hover{border-color:var(--gh-accent);color:var(--gh-accent)}
-    .gh-cs__nav[disabled]{opacity:.35;cursor:default}
-    .gh-cs__nav--prev{left:6px}.gh-cs__nav--next{right:6px}
-    .gh-cs:not(.is-scrollable) .gh-cs__nav{display:none}
-    @media(max-width:767px){.gh-cs__nav{display:none}}
-    </style>
-    <?php
-    // Behaviour (arrows + scroll) is handled by js/product-rail.js, which drives
-    // both .gh-rail and .gh-cs. Using the shared, readyState-safe external script
-    // (instead of an inline DOMContentLoaded handler) ensures the arrows work
-    // even when an optimizer defers inline scripts.
-}
+// The scroll-snap layout and the arrows' look are in style.css (.gh-cs); the
+// behaviour is js/product-rail.js, which drives both .gh-rail and .gh-cs.
+// That shared, readyState-safe script (instead of an inline DOMContentLoaded
+// handler) keeps the arrows working when an optimizer defers inline scripts.
 ?>
 <section <?php echo get_block_wrapper_attributes(array(
     'class' => 'gh-block gh-category-slider',

@@ -146,7 +146,7 @@ Countdown per una release: collegato a un prodotto prende data, immagine, prezzo
 | `buttonText` | string | `Imposta Promemoria` |  |
 | `buttonUrl` | string | `#` |  |
 | `eyebrow` | string | `Prossimo Drop` |  |
-| `backgroundColor` | string | `#0a0a0a` |  |
+| `backgroundColor` | string | `""` |  |
 
 ## `golden-hive/faq-schema` — FAQ Schema
 
