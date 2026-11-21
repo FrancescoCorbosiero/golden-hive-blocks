@@ -28,19 +28,19 @@
         },
         "title": {
             "type": "string",
-            "default": "10% di Sconto"
+            "default": "Iscriviti alla newsletter"
         },
         "text": {
             "type": "string",
-            "default": "Iscriviti alla newsletter e ricevi subito il 10% di sconto sul tuo primo ordine!"
+            "default": "Novità e nuove uscite, prima di tutti."
         },
         "couponCode": {
             "type": "string",
-            "default": "WELCOME10"
+            "default": ""
         },
         "buttonText": {
             "type": "string",
-            "default": "Ottieni lo Sconto"
+            "default": "Iscriviti"
         },
         "buttonUrl": {
             "type": "string",
@@ -48,7 +48,7 @@
         },
         "disclaimer": {
             "type": "string",
-            "default": "Valido solo per nuovi clienti. Non cumulabile."
+            "default": ""
         },
         "autoShow": {
             "type": "boolean",

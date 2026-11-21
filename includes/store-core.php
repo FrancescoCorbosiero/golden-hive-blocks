@@ -120,6 +120,12 @@ const GHB_STORE_FORMER_DEFAULTS = array(
     'golden-hive/about-hero'        => array('title', 'text'),
     'golden-hive/trust-badges'      => array('badges'),
     'golden-hive/trustpilot-widget' => array('rating', 'reviewCount', 'label'),
+    // Sample texts that promised what a store may not do (free shipping over
+    // an amount, a coupon, delivery days, a price): neutral now.
+    'golden-hive/cta-banner'        => array('title', 'text'),
+    'golden-hive/promo-modal'       => array('title', 'text', 'couponCode', 'buttonText', 'disclaimer'),
+    'golden-hive/faq-schema'        => array('items'),
+    'golden-hive/product-spotlight' => array('currentPrice'),
 );
 
 /** How the update notice names an attribute. */
@@ -128,6 +134,7 @@ const GHB_STORE_ATTR_NAMES = array(
     'mapEmbed' => 'mappa', 'embedCode' => 'mappa', 'instagramUrl' => 'link a Instagram', 'buttonText' => 'testo del pulsante',
     'title' => 'titolo', 'text' => 'testo', 'badges' => 'badge', 'rating' => 'valutazione', 'reviewCount' => 'numero di recensioni',
     'label' => 'giudizio', 'items' => 'domande', 'couponCode' => 'codice sconto', 'currentPrice' => 'prezzo',
+    'disclaimer' => 'condizioni',
 );
 
 function ghb_store_truncate(string $value, int $max): string

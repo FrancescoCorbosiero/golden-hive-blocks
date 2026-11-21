@@ -96,8 +96,8 @@ Banner call-to-action premium full-bleed con gradienti drammatici e glow effects
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
 | `eyebrow` | string | `Offerta Speciale` |  |
-| `title` | string | `Spedizione Gratuita su Tutti gli Ordini` |  |
-| `text` | string | `Approfitta della spedizione gratuita su tutti …` |  |
+| `title` | string | `Scopri le novità` |  |
+| `text` | string | `Gli ultimi arrivi del negozio, scelti per te.` |  |
 | `buttonText` | string | `Shop Now` |  |
 | `buttonUrl` | string | `""` |  |
 | `backgroundImage` | string | `""` |  |
@@ -156,7 +156,7 @@ Accordion FAQ ottimizzato SEO con structured data schema per rich snippets.
 |---|---|---|---|
 | `title` | string | `Domande Frequenti` |  |
 | `subtitle` | string | `""` |  |
-| `items` | array | 3 sample items | items: `question`, `answer`, `mainEntity` |
+| `items` | array | `[]` | items: `question`, `answer`, `mainEntity` |
 | `allowMultiple` | boolean | `false` |  |
 
 ## `golden-hive/hero-carousel` — Hero Carousel
@@ -296,7 +296,7 @@ Vetrina prodotto in evidenza con presentazione premium e dettagli eleganti.
 | `condition` | string | `Nuovo` |  |
 | `size` | string | `""` |  |
 | `authenticity` | string | `Verified` |  |
-| `currentPrice` | string | `€189,00` |  |
+| `currentPrice` | string | `""` |  |
 | `originalPrice` | string | `""` |  |
 | `buttonText` | string | `Acquista Ora` |  |
 | `buttonUrl` | string | `""` |  |
@@ -311,12 +311,12 @@ Modal promozionale per sconti primo acquisto, offerte speciali e lead capture.
 | `imageUrl` | string | `""` |  |
 | `imageUrlId` | number | `0` |  |
 | `badge` | string | `Offerta Esclusiva` |  |
-| `title` | string | `10% di Sconto` |  |
-| `text` | string | `Iscriviti alla newsletter e ricevi subito il 1…` |  |
-| `couponCode` | string | `WELCOME10` |  |
-| `buttonText` | string | `Ottieni lo Sconto` |  |
+| `title` | string | `Iscriviti alla newsletter` |  |
+| `text` | string | `Novità e nuove uscite, prima di tutti.` |  |
+| `couponCode` | string | `""` |  |
+| `buttonText` | string | `Iscriviti` |  |
 | `buttonUrl` | string | `""` |  |
-| `disclaimer` | string | `Valido solo per nuovi clienti. Non cumulabile.` |  |
+| `disclaimer` | string | `""` |  |
 | `autoShow` | boolean | `true` |  |
 | `showDelay` | number | `5000` |  |
 | `showOnce` | boolean | `true` |  |

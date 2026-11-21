@@ -44,7 +44,7 @@
         },
         "currentPrice": {
             "type": "string",
-            "default": "\u20ac189,00"
+            "default": ""
         },
         "originalPrice": {
             "type": "string",

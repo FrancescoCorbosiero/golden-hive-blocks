@@ -62,7 +62,7 @@
                         }),
                         el(TextControl, {
                             label: 'Parte del titolo in evidenza',
-                            help: 'Facoltativa: una parola o frase del titolo da mostrare nel colore del brand, es. PIACENZA.',
+                            help: 'Facoltativa: una parola o frase del titolo da mostrare nel colore del brand, es. il nome della città.',
                             value: attributes.titleAccent || '',
                             onChange: function(val) { setAttributes({ titleAccent: val }); }
                         }),

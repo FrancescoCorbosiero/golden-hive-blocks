@@ -16,11 +16,11 @@
         },
         "title": {
             "type": "string",
-            "default": "Spedizione Gratuita su Tutti gli Ordini"
+            "default": "Scopri le novità"
         },
         "text": {
             "type": "string",
-            "default": "Approfitta della spedizione gratuita su tutti gli ordini superiori a \u20ac99. Solo per tempo limitato."
+            "default": "Gli ultimi arrivi del negozio, scelti per te."
         },
         "buttonText": {
             "type": "string",
