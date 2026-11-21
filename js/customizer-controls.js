@@ -34,7 +34,9 @@
     /**
      * The rows a list shows for a setting value. Free lists: the saved rows,
      * at most max. Fixed lists: each saved key still offered, in its saved
-     * order, then every offered key not saved yet, switched off ("on": false).
+     * order, then every offered key not saved yet, switched off ("on": false)
+     * and labelled with the row's default label ([key, title, label]; the
+     * title when there is none).
      */
     function rowsFor(value, params) {
         var fields = params.fields || [];
@@ -46,7 +48,11 @@
             return params.max ? rows.slice(0, params.max) : rows;
         }
         var titles = {};
-        fixed.forEach(function (f) { titles[String(f[0])] = String(f[1]); });
+        var labels = {};
+        fixed.forEach(function (f) {
+            titles[String(f[0])] = String(f[1]);
+            labels[String(f[0])] = String(f[2] !== undefined ? f[2] : f[1]);
+        });
         var out = [];
         var seen = {};
         saved.forEach(function (r) {
@@ -60,7 +66,7 @@
         fixed.forEach(function (f) {
             var key = String(f[0]);
             if (seen[key]) return;
-            var row = rowFrom({ label: titles[key], on: false }, fields);
+            var row = rowFrom({ label: labels[key], on: false }, fields);
             row.key = key;
             out.push(row);
         });

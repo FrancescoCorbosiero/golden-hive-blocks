@@ -103,10 +103,10 @@ function ghb_filters_customize_register(WP_Customize_Manager $wp_customize): voi
     $attributes = ghb_filters_attributes();
     $fixed      = array();
     foreach (GHB_FILTERS_BASE as $key => $name) {
-        $fixed[] = array($key, $name);
+        $fixed[] = array($key, $name, $name);
     }
     foreach ($attributes as $taxonomy => $name) {
-        $fixed[] = array($taxonomy, $name . ' (' . $taxonomy . ')');
+        $fixed[] = array($taxonomy, $name . ' (' . $taxonomy . ')', $name);
     }
     ghb_customize_setting($wp_customize, 'ghb_filters_facets', ghb_filters_default_rows($attributes), static function ($value) use ($attributes) {
         return ghb_filters_clean_rows(is_array($value) || is_string($value) ? $value : array(), $attributes);

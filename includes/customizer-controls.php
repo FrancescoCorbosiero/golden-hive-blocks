@@ -36,7 +36,10 @@ class GHB_Customize_List_Control extends WP_Customize_Control
      */
     public $fields = array();
 
-    /** Fixed rows, [[key, title], …]: shown always, never added or removed. */
+    /**
+     * Fixed rows, [[key, title, label], …]: shown always, never added or
+     * removed; a row the setting doesn't have yet starts off, with label.
+     */
     public $fixed = array();
 
     /** Most rows; 0 for no limit. */

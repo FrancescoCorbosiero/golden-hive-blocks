@@ -47,7 +47,7 @@ same(cc.rowsFor([{ title: 'a' }, null, 'x', { title: 'b' }, { title: 'c' }, { ti
 
 const facets = {
     fields: [{ key: 'on', type: 'checkbox' }, { key: 'label', type: 'text' }],
-    fixed: [['price', 'Prezzo'], ['cat', 'Categoria'], ['pa_taglia', 'Taglia'], ['pa_marca', 'Marca']],
+    fixed: [['price', 'Prezzo'], ['cat', 'Categoria'], ['pa_taglia', 'Taglia (pa_taglia)', 'Taglia'], ['pa_marca', 'Marca (pa_marca)', 'Marca']],
 };
 
 same(
@@ -58,7 +58,7 @@ same(
         { on: false, label: 'Categoria', key: 'cat' },
         { on: false, label: 'Marca', key: 'pa_marca' },
     ],
-    'saved rows keep their order; the rest follow, off, with their own name'
+    'saved rows keep their order; the rest follow, off, with their own name (not the row\'s title)'
 );
 same(
     cc.rowsFor([{ key: 'pa_anno', on: true, label: 'Anno' }, { key: 'cat', on: true, label: 'Cat' }, { key: 'cat', on: false, label: 'again' }], facets).map((r) => r.key),
