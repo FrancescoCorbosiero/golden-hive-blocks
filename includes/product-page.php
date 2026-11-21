@@ -17,11 +17,14 @@
  *     page-cached, and off until switched on: it is a promise to customers.
  *   • A band under the product description (after_single_product_summary
  *     15): "Non trovi la tua taglia?", the sold-out sizes as chips that open
- *     WhatsApp with the request written, next to "Acquista con fiducia"
- *     tiles (authenticity, shipping, returns, payments) that open on a tap.
- *   • "Altre colorway": the other products of the same model (pa_modello),
- *     as a product rail (woocommerce_after_single_product_summary 19, right
- *     before WooCommerce's related products).
+ *     WhatsApp with the request written, next to "Acquista con fiducia":
+ *     the tiles the store writes (authenticity, shipping, returns, payments),
+ *     each opening on a tap. Each half has its own switch; there is no tile
+ *     until the store writes one.
+ *   • "Altre colorway": the other products of the same model, as a product
+ *     rail (woocommerce_after_single_product_summary 19, right before
+ *     WooCommerce's related products). The store picks the attribute that
+ *     names the model; none picked, no rail.
  *   • "Visti di recente": the products this shopper looked at, kept in their
  *     browser (localStorage) and rendered over AJAX into a product rail
  *     (after_single_product_summary 25, after related products).
@@ -30,7 +33,9 @@
  * as the theme's content container, so they line up with the rest of the
  * page instead of running from edge to edge (see ghb_pp_theme_container()).
  *
- * Settings: Customizer → "Golden Hive — Pagina prodotto".
+ * Settings: Customizer → Golden Hive → Pagina prodotto; the WhatsApp number
+ * and the closures are the store's (Golden Hive → Negozio, store.php). The
+ * rules are in product-page-core.php (tests/product-page-test.php).
  *
  * @package Golden_Hive_Blocks
  * @since   5.13.0
@@ -39,6 +44,8 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+require_once __DIR__ . '/product-page-core.php';
 
 /** Most products the "Visti di recente" rail shows. Mirrored in js/product-page.js. */
 const GHB_RECENT_MAX = 12;
@@ -52,10 +59,16 @@ function ghb_pp_flag(string $option, string $default): bool
     return 'no' !== get_option($option, $default);
 }
 
-/** "Altre colorway" rail on/off (default on). */
+/** The attribute "Altre colorway" groups by: the store's choice, '' for none (no rail). */
+function ghb_pp_colorways_taxonomy(): string
+{
+    return (string) apply_filters('ghb_colorways_taxonomy', (string) get_option('ghb_colorways_taxonomy', ''));
+}
+
+/** "Altre colorway" rail on/off: on once the store picks an attribute. */
 function ghb_pp_colorways_enabled(): bool
 {
-    return (bool) apply_filters('ghb_colorways_rail', ghb_pp_flag('ghb_pp_colorways', 'yes'));
+    return (bool) apply_filters('ghb_colorways_rail', '' !== ghb_pp_colorways_taxonomy());
 }
 
 /** "Visti di recente" rail on/off (default on). */
@@ -64,10 +77,22 @@ function ghb_pp_recent_enabled(): bool
     return (bool) apply_filters('ghb_recent_rail', ghb_pp_flag('ghb_pp_recent', 'yes'));
 }
 
-/** "Non trovi la tua taglia?" + "Acquista con fiducia" band on/off (default on). */
+/** The band under the description, both halves (default on; the ghb_pp_band filter can turn it off). */
 function ghb_pp_band_enabled(): bool
 {
-    return (bool) apply_filters('ghb_pp_band', ghb_pp_flag('ghb_pp_band', 'yes'));
+    return (bool) apply_filters('ghb_pp_band', true);
+}
+
+/** "Non trovi la tua taglia?" on/off (default on). */
+function ghb_pp_size_request_enabled(): bool
+{
+    return ghb_pp_band_enabled() && ghb_pp_flag('ghb_pp_size_request', 'yes');
+}
+
+/** "Acquista con fiducia" on/off (default on; shows only tiles the store wrote). */
+function ghb_pp_trust_enabled(): bool
+{
+    return ghb_pp_band_enabled() && ghb_pp_flag('ghb_pp_trust', 'yes');
 }
 
 /**
@@ -120,14 +145,16 @@ function ghb_delivery_config(): ?array
     $min = max(0, min(30, (int) get_option('ghb_delivery_days_min', 2)));
     $max = max($min, min(30, (int) get_option('ghb_delivery_days_max', 5)));
 
-    // Days the store doesn't ship (holiday closures), as Y-m-d. Weekends and
+    // Days the store doesn't ship, as Y-m-d: its closures (Golden Hive →
+    // Negozio → Giorni di chiusura), plus any a filter adds. Weekends and
     // Italian national holidays are already skipped by the script.
-    $closed = array_values(array_filter(
-        (array) apply_filters('ghb_delivery_closed_dates', array()),
+    $store  = function_exists('ghb_store') ? ghb_store() : array();
+    $closed = array_values(array_unique(array_filter(
+        (array) apply_filters('ghb_delivery_closed_dates', gh_closed_dates((string) ($store['closed'] ?? ''))),
         static function ($d) {
             return is_string($d) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $d);
         }
-    ));
+    )));
 
     return array(
         'cutoff' => $cutoff,
@@ -248,37 +275,12 @@ function ghb_delivery_estimate()
 
 /**
  * The "Acquista con fiducia" tiles: icon, title, line under it, and the text
- * a tap opens. The defaults restate the store's own FAQ (homepage) — change
- * them with this filter when the policies change.
+ * a tap opens. Written by the store (Customizer → Golden Hive → Pagina
+ * prodotto); none until it does. A filter can still supply them.
  */
 function ghb_pp_trust_items(): array
 {
-    return (array) apply_filters('ghb_pp_trust_items', array(
-        array(
-            'icon'  => 'authentic',
-            'title' => 'Originali al 100%',
-            'sub'   => 'Verificati uno per uno',
-            'text'  => 'Ogni articolo passa il controllo di autenticità del nostro team prima della spedizione: materiali, cuciture, etichette e ogni dettaglio che distingue un originale da un falso.',
-        ),
-        array(
-            'icon'  => 'shipping',
-            'title' => 'Spedizione assicurata',
-            'sub'   => 'DHL o UPS, 2–5 giorni lavorativi',
-            'text'  => 'Spediamo in tutta Italia con DHL o UPS. Gli ordini vengono preparati entro 24–48 ore dal pagamento e ricevi il codice di tracking via email.',
-        ),
-        array(
-            'icon'  => 'returns',
-            'title' => 'Reso entro 14 giorni',
-            'sub'   => 'Dalla consegna',
-            'text'  => 'Hai 14 giorni dalla consegna per il reso: il prodotto deve essere nelle condizioni originali, non indossato e con tutti i tag. Scrivici via email o WhatsApp per avviarlo.',
-        ),
-        array(
-            'icon'  => 'secure',
-            'title' => 'Paga come vuoi',
-            'sub'   => 'Anche in 3 rate senza interessi',
-            'text'  => 'Carte di credito (Visa, Mastercard, American Express), PayPal, Apple Pay, Google Pay e bonifico bancario. Oppure in 3 rate senza interessi con Klarna o Scalapay.',
-        ),
-    ));
+    return ghb_pp_clean_trust_items(apply_filters('ghb_pp_trust_items', ghb_pp_clean_trust_items(get_option('ghb_pp_trust_items', array()))));
 }
 
 function ghb_pp_icon(string $name): string
@@ -353,8 +355,8 @@ function ghb_pp_band()
         return;
     }
 
-    $card  = ghb_pp_size_request_card($product, ghb_whatsapp_number());
-    $items = ghb_pp_trust_items();
+    $card  = ghb_pp_size_request_enabled() ? ghb_pp_size_request_card($product, ghb_whatsapp_number()) : '';
+    $items = ghb_pp_trust_enabled() ? ghb_pp_trust_items() : array();
     if ('' === $card && !$items) {
         return;
     }
@@ -417,8 +419,8 @@ function ghb_colorways_rail()
         return;
     }
 
-    $taxonomy = (string) apply_filters('ghb_colorways_taxonomy', 'pa_modello');
-    if (!taxonomy_exists($taxonomy)) {
+    $taxonomy = ghb_pp_colorways_taxonomy();
+    if ('' === $taxonomy || !taxonomy_exists($taxonomy)) {
         return;
     }
     $terms = wc_get_product_terms($product->get_id(), $taxonomy, array('fields' => 'ids'));
@@ -546,12 +548,62 @@ function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
         ));
     };
 
-    $checkbox('ghb_pp_colorways', 'yes', 'Mostra "Altre colorway"', 'Sotto il prodotto, gli altri prodotti dello stesso modello (attributo Modello).');
-    $checkbox('ghb_pp_band', 'yes', 'Mostra "Non trovi la tua taglia?" e "Acquista con fiducia"', 'Sotto la descrizione del prodotto: le taglie esaurite diventano richieste su WhatsApp, accanto ad autenticità, spedizione, reso e pagamenti. I testi riprendono le FAQ della homepage.');
+    $checkbox('ghb_pp_size_request', 'yes', 'Mostra "Non trovi la tua taglia?"', 'Sotto la descrizione del prodotto: le taglie esaurite diventano richieste su WhatsApp, al numero del negozio (Golden Hive → Negozio).');
+    $checkbox('ghb_pp_trust', 'yes', 'Mostra "Acquista con fiducia"', 'Accanto, i riquadri qui sotto: ognuno si apre con un tocco.');
+
+    ghb_customize_setting($wp_customize, 'ghb_pp_trust_items', array(), static function ($value) {
+        $rows = array();
+        foreach ((is_array($value) ? $value : (array) json_decode((string) $value, true)) as $row) {
+            if (is_array($row)) {
+                $rows[] = array(
+                    'icon'  => sanitize_key((string) ($row['icon'] ?? '')),
+                    'title' => sanitize_text_field((string) ($row['title'] ?? '')),
+                    'sub'   => sanitize_text_field((string) ($row['sub'] ?? '')),
+                    'text'  => sanitize_textarea_field((string) ($row['text'] ?? '')),
+                );
+            }
+        }
+        return ghb_pp_clean_trust_items($rows);
+    }, array('sanitize_js_callback' => 'ghb_pp_clean_trust_items'));
+    $icons = array();
+    foreach (GHB_PP_TRUST_ICONS as $value => $label) {
+        $icons[] = array($value, $label);
+    }
+    $wp_customize->add_control(new GHB_Customize_List_Control($wp_customize, 'ghb_pp_trust_items', array(
+        'section'     => 'ghb_product_page',
+        'label'       => 'Riquadri di "Acquista con fiducia"',
+        'description' => 'Le garanzie del negozio: autenticità, spedizione, reso, pagamenti. Scrivi solo quello che il negozio fa davvero; senza riquadri la sezione non si vede.',
+        'fields'      => array(
+            array('key' => 'icon', 'label' => 'Icona', 'type' => 'select', 'choices' => $icons),
+            array('key' => 'title', 'label' => 'Titolo', 'type' => 'text'),
+            array('key' => 'sub', 'label' => 'Riga sotto il titolo', 'type' => 'text'),
+            array('key' => 'text', 'label' => 'Testo che si apre', 'type' => 'textarea'),
+        ),
+        'max'         => GHB_PP_MAX_TILES,
+        'add_label'   => 'Aggiungi un riquadro',
+    )));
+
+    $attributes = array('' => 'Nessuno: sezione nascosta');
+    if (function_exists('ghb_filters_attributes')) {
+        foreach (ghb_filters_attributes() as $taxonomy => $name) {
+            $attributes[$taxonomy] = $name . ' (' . $taxonomy . ')';
+        }
+    }
+    ghb_customize_setting($wp_customize, 'ghb_colorways_taxonomy', '', static function ($value) use ($attributes) {
+        $value = sanitize_key((string) $value);
+        return isset($attributes[$value]) ? $value : '';
+    });
+    $wp_customize->add_control('ghb_colorways_taxonomy', array(
+        'section'     => 'ghb_product_page',
+        'type'        => 'select',
+        'label'       => '"Altre colorway": attributo del modello',
+        'description' => 'Sotto il prodotto, gli altri prodotti con lo stesso valore di questo attributo (lo stesso modello in altri colori).',
+        'choices'     => $attributes,
+    ));
     $checkbox('ghb_pp_sold_count', 'yes', 'Mostra "Venduto N volte negli ultimi 30 giorni"', 'Sotto il prezzo, da 2 vendite in su: conta gli ordini pagati di quel prodotto (qualsiasi taglia).');
     $checkbox('ghb_pp_recent', 'yes', 'Mostra "Visti di recente"', 'In fondo alla pagina, i prodotti che il cliente ha guardato. Restano nel suo browser: nessun dato personale sul sito.');
 
-    $checkbox('ghb_delivery_estimate', 'no', 'Mostra la stima di consegna', 'Sotto "Aggiungi al carrello": entro che ora ordinare per la spedizione in giornata e tra quali giorni arriva. Weekend e festività nazionali sono esclusi da soli.');
+    $checkbox('ghb_delivery_estimate', 'no', 'Mostra la stima di consegna', 'Sotto "Aggiungi al carrello": entro che ora ordinare per la spedizione in giornata e tra quali giorni arriva. Weekend, festività nazionali e i giorni di chiusura del negozio (Golden Hive → Negozio) sono esclusi da soli.');
 
     $wp_customize->add_setting('ghb_delivery_cutoff', array(
         'type'              => 'option',
@@ -569,6 +621,47 @@ function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
         'label'       => 'Orario limite per la spedizione in giornata',
         'description' => 'Formato HH:MM, ora del negozio (es. 13:00). Dopo quest\'ora l\'ordine parte il giorno lavorativo successivo.',
     ));
-    $number('ghb_delivery_days_min', 2, 'Consegna: giorni lavorativi minimi', 'Dalla spedizione alla consegna, nel caso migliore. Le FAQ dicono 2–5 giorni lavorativi.');
+    $number('ghb_delivery_days_min', 2, 'Consegna: giorni lavorativi minimi', 'Dalla spedizione alla consegna, nel caso migliore.');
     $number('ghb_delivery_days_max', 5, 'Consegna: giorni lavorativi massimi', 'Dalla spedizione alla consegna, nel caso peggiore.');
 }
+
+/* -------------------------------------------------------------------- *
+ * Updating from an earlier version: once
+ * -------------------------------------------------------------------- */
+
+/**
+ * Once, for a store that ran the plugin before 5.20: the band's one switch
+ * becomes two with its value, and "Altre colorway" keeps grouping by
+ * pa_modello where it did. "Acquista con fiducia" had texts written in the
+ * code; it now shows only the store's own, so the update notice says so.
+ */
+function ghb_pp_migrate(): void
+{
+    if (get_option('ghb_pp_version')) {
+        return;
+    }
+    update_option('ghb_pp_version', 1);
+    if (!ghb_plugin_ran_before()) {
+        return;
+    }
+    $band = get_option('ghb_pp_band', false);
+    if (false !== $band) {
+        add_option('ghb_pp_size_request', 'no' === $band ? 'no' : 'yes');
+        add_option('ghb_pp_trust', 'no' === $band ? 'no' : 'yes');
+    }
+    if (false === get_option('ghb_colorways_taxonomy', false)) {
+        $taxonomy = ghb_pp_colorways_before_520(ghb_pp_flag('ghb_pp_colorways', 'yes'), taxonomy_exists('pa_modello') ? array('pa_modello') : array());
+        if ('' !== $taxonomy) {
+            add_option('ghb_colorways_taxonomy', $taxonomy);
+        }
+    }
+    if ('no' !== $band && !ghb_pp_clean_trust_items(get_option('ghb_pp_trust_items', array()))) {
+        ghb_upgrade_notice_add(
+            'pp_trust',
+            __('"Acquista con fiducia" sulla pagina prodotto aveva testi scritti nel plugin, uguali per ogni negozio: ora mostra solo i riquadri che scrivi tu, in Pagina prodotto. Finché non ne scrivi, la sezione non si vede.', 'golden-hive-blocks'),
+            array(),
+            'ghb_product_page'
+        );
+    }
+}
+add_action('init', 'ghb_pp_migrate', 20);
