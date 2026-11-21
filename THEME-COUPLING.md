@@ -22,7 +22,7 @@ Customizer option.
 
 | Key | Files | What it targets | On another theme |
 |---|---|---|---|
-| `theme-bridge` | `theme-bridge.css`, `includes/design.php`, `ghb_pp_theme_container()` in `includes/product-page.php` + `js/product-page.js` | Shoptimizer's product cards, sale badges, buttons, fields, pagination; its `#secondary` sidebar (turned into the desktop filters drawer) and `#primary` / `.content-area`; its `.col-full` container | Off. The corner-shape switch still reshapes everything the plugin draws, but not the theme's own surfaces. The "Filtri su desktop" option disappears, because the drawer *is* this stylesheet. Product page sections fall back to the plugin's own max-width. |
+| `theme-bridge` | `theme-bridge.css`, `includes/design.php`, `ghb_pp_theme_container()` in `includes/product-page.php` + `js/product-page.js` | Shoptimizer's product cards, sale badges, buttons, fields, pagination; its `#secondary` sidebar (turned into the desktop filters drawer) and `#primary` / `.content-area`; its `.col-full` container | Off. The corner-shape switch still reshapes everything the plugin draws, but not the theme's own surfaces. The "Filtri su desktop" option (Golden Hive → Prodotti e filtri) disappears, because the drawer *is* this stylesheet. Product page sections fall back to the plugin's own max-width. |
 | `mobile-nav` | `includes/mobile-nav.php`, `mobile-nav.css`, `js/mobile-nav.js` | Shoptimizer's menu: `.main-navigation`, `.menu-item-has-children`, `.caret`, `.sub-menu-wrapper`, `.cg-open` | Off |
 | `swatch-prices` | `includes/variation-swatch-prices.php`, `variation-swatch-prices.css`, `js/variation-swatch-prices.js` | CommerceKit swatches: `.cgkit-attribute-swatches[data-attribute="attribute_pa_taglia"]`, `.cgkit-swatch` | Off |
 | `swatch-sale-badges` | `includes/swatch-sale-badges.php` | CommerceKit swatch buttons: `[data-attribute] button[data-attribute-value]` | Off |
@@ -137,9 +137,9 @@ These survive a theme change.
 
 | Dependency | Used by |
 |---|---|
-| **`pa_taglia`** (size attribute) | Card size picker, Quick View, filters, the "Taglia 42" line, swatch prices, size rail, size alerts. Filter: `ghb_atc_size_attribute`. Duplicate spellings ("36 2/3" / "36-2-3") are merged by `ghb_size_options()`. |
-| **`pa_modello`, `pa_anno`, `pa_marca`, `pa_colorway`** | Filters (`ghb_filters_config`). "Altre colorway" groups by `pa_modello` (`ghb_colorways_taxonomy`). |
-| **Brand taxonomies:** `product_brand`, `pwb-brand`, `pa_brand`, whichever exist | Rails, Store Hub. Size alerts add `pa_marca` (`ghb_size_alerts_brand_taxonomies`); the live-search card also checks `yith_product_brand`. |
+| **`pa_taglia`** (size attribute) | Card size picker, Quick View, filters, the "Taglia 42" line, swatch prices, size rail, size alerts, the remembered size. `ghb_size_attribute()` (filter `ghb_atc_size_attribute`) is the one answer: the scripts get it from the page and the swatch styles follow it. Duplicate spellings ("36 2/3" / "36-2-3") are merged by `ghb_size_options()`. |
+| **Product attributes** (any `pa_*`) | Filters: the store picks which, in what order and under what title (Customizer → Golden Hive → Prodotti e filtri); every attribute it has until it does. "Altre colorway" groups by the attribute the store picks (Pagina prodotto; filter `ghb_colorways_taxonomy`). |
+| **Brand taxonomies:** `ghb_brand_taxonomies()`: `product_brand`, `pwb-brand`, `pa_brand`, whichever exist | Rails, Store Hub. Size alerts add `pa_marca` (`ghb_size_alerts_brand_taxonomies`); the live-search card also checks `yith_product_brand`. |
 | **Orders** | Social proof reads Processing / Completed orders with `wc_get_orders` (HPOS-safe). "Venduto N volte" counts them in WooCommerce's analytics tables (`wc_order_product_lookup`, `wc_order_stats`) and shows nothing if they're missing. |
 | **Action Scheduler** (bundled with WooCommerce) | Drop release (cache purge, size alerts) and batched size-alert sends. Falls back to WP-Cron. |
 | **WooCommerce mailer** | Size-alert emails use its template (Impostazioni → Email); plain `wp_mail` without it. |
