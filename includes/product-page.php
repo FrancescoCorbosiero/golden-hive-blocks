@@ -102,13 +102,6 @@ function ghb_pp_container_class(): string
     return (string) apply_filters('ghb_pp_container_class', $class);
 }
 
-/** WhatsApp number, digits only with the country code ('' hides the button). */
-function ghb_whatsapp_number(): string
-{
-    $number = (string) apply_filters('ghb_whatsapp_number', (string) get_option('ghb_whatsapp_number', '393517603869'));
-    return preg_replace('/\D+/', '', $number);
-}
-
 /**
  * Delivery estimate settings, or null while the estimate is off.
  *
@@ -508,11 +501,7 @@ function ghb_recent_rail_ajax()
 add_action('customize_register', 'ghb_product_page_customize_register');
 function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
 {
-    $wp_customize->add_section('ghb_product_page', array(
-        'title'    => 'Golden Hive — Pagina prodotto',
-        'priority' => 31,
-    ));
-
+    // The section is the panel's (includes/customizer.php).
     $to_bool = static function ($value): bool {
         if (is_bool($value)) {
             return $value;
@@ -561,22 +550,6 @@ function ghb_product_page_customize_register(WP_Customize_Manager $wp_customize)
     $checkbox('ghb_pp_band', 'yes', 'Mostra "Non trovi la tua taglia?" e "Acquista con fiducia"', 'Sotto la descrizione del prodotto: le taglie esaurite diventano richieste su WhatsApp, accanto ad autenticità, spedizione, reso e pagamenti. I testi riprendono le FAQ della homepage.');
     $checkbox('ghb_pp_sold_count', 'yes', 'Mostra "Venduto N volte negli ultimi 30 giorni"', 'Sotto il prezzo, da 2 vendite in su: conta gli ordini pagati di quel prodotto (qualsiasi taglia).');
     $checkbox('ghb_pp_recent', 'yes', 'Mostra "Visti di recente"', 'In fondo alla pagina, i prodotti che il cliente ha guardato. Restano nel suo browser: nessun dato personale sul sito.');
-
-    $wp_customize->add_setting('ghb_whatsapp_number', array(
-        'type'              => 'option',
-        'capability'        => 'manage_woocommerce',
-        'default'           => '393517603869',
-        'transport'         => 'refresh',
-        'sanitize_callback' => static function ($value) {
-            return preg_replace('/\D+/', '', (string) $value);
-        },
-    ));
-    $wp_customize->add_control('ghb_whatsapp_number', array(
-        'section'     => 'ghb_product_page',
-        'type'        => 'text',
-        'label'       => 'Numero WhatsApp',
-        'description' => 'Con il prefisso internazionale, senza + né spazi (es. 393331234567). Vuoto nasconde il bottone "Chiedi su WhatsApp", anche nell\'anteprima rapida.',
-    ));
 
     $checkbox('ghb_delivery_estimate', 'no', 'Mostra la stima di consegna', 'Sotto "Aggiungi al carrello": entro che ora ordinare per la spedizione in giornata e tra quali giorni arriva. Weekend e festività nazionali sono esclusi da soli.');
 

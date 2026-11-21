@@ -227,13 +227,20 @@ function ghb_hub_editable_fields(): array
     return (array) apply_filters('ghb_hub_editable_fields', ghb_hub_field_specs());
 }
 
-/** The block type's own defaults (block.json) for the given fields. */
+/**
+ * What each field shows when the block leaves it out: the store's value for
+ * a field that follows the store (the WhatsApp message: includes/store.php),
+ * otherwise the block type's own default (block.json).
+ */
 function ghb_hub_field_defaults(string $block_name, array $spec): array
 {
     $type     = WP_Block_Type_Registry::get_instance()->get_registered($block_name);
     $defaults = array();
     foreach (array_keys($spec) as $field) {
-        $default          = $type && isset($type->attributes[$field]['default']) ? $type->attributes[$field]['default'] : '';
+        $default = function_exists('ghb_store_block_default') ? ghb_store_block_default($block_name, $field) : null;
+        if (null === $default) {
+            $default = $type && isset($type->attributes[$field]['default']) ? $type->attributes[$field]['default'] : '';
+        }
         $defaults[$field] = is_scalar($default) ? (string) $default : '';
     }
     return $defaults;

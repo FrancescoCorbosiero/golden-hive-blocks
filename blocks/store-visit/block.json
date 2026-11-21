@@ -26,20 +26,16 @@
             "default": "Vieni in negozio"
         },
         "subtitle": {
-            "type": "string",
-            "default": "La nostra boutique nel cuore di Piacenza: passa a trovarci e prova la tua taglia."
+            "type": "string"
         },
         "address": {
-            "type": "string",
-            "default": "Stradone Farnese 3 - 29121 - Piacenza (PC)"
+            "type": "string"
         },
         "vat": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "phone": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "showWhatsApp": {
             "type": "boolean",
@@ -50,53 +46,19 @@
             "default": "Ciao! Vorrei passare in negozio."
         },
         "hours": {
-            "type": "array",
-            "default": [
-                {
-                    "day": "Lunedì",
-                    "time": "10.30 - 13.00 | 15.30 - 19.30"
-                },
-                {
-                    "day": "Martedì",
-                    "time": "10.30 - 13.00 | 15.30 - 19.30"
-                },
-                {
-                    "day": "Mercoledì",
-                    "time": "10.30 - 13.00 | 15.30 - 19.30"
-                },
-                {
-                    "day": "Giovedì",
-                    "time": "10.30 - 13.00 | 15.30 - 19.30"
-                },
-                {
-                    "day": "Venerdì",
-                    "time": "10.30 - 13.00 | 15.30 - 19.30"
-                },
-                {
-                    "day": "Sabato",
-                    "time": "10.30 - 13.00 | 15.30 - 19.30"
-                },
-                {
-                    "day": "Domenica",
-                    "time": "Chiuso"
-                }
-            ]
+            "type": "array"
         },
         "note": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "closedOnHolidays": {
-            "type": "boolean",
-            "default": true
+            "type": "boolean"
         },
         "closedDates": {
-            "type": "string",
-            "default": ""
+            "type": "string"
         },
         "mapEmbed": {
-            "type": "string",
-            "default": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2819.1!2d9.6884327!3d45.0482437!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4780dd3b7d8a913b%3A0x26e569f7b44a6448!2sResellpiacenza!5e0!3m2!1sit!2sit!4v1\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>"
+            "type": "string"
         },
         "mapImage": {
             "type": "string",

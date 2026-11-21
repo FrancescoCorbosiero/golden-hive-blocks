@@ -1,10 +1,13 @@
 <?php
 /**
- * WhatsApp Button Block - Render lato server
+ * WhatsApp Button block — server render.
+ *
+ * Number and message left out of the block are the store's (Customizer →
+ * Golden Hive → Negozio); without a number, no button.
  */
 
-$phone_number = $attributes['phoneNumber'] ?? '';
-$message = $attributes['message'] ?? 'Ciao! Vorrei avere informazioni su...';
+$phone_number = (string) ghb_store_attr($attributes, 'golden-hive/whatsapp-button', 'phoneNumber');
+$message = (string) ghb_store_attr($attributes, 'golden-hive/whatsapp-button', 'message');
 $button_text = $attributes['buttonText'] ?? 'Chatta con noi';
 $icon_only = $attributes['iconOnly'] ?? false;
 

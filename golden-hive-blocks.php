@@ -42,10 +42,21 @@ require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/cache.php';
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/theme-compat.php';
 
 /**
- * Design switches (Customizer → Golden Hive — Stile): the shape of every
- * element (rounded / sharp) and the shop filters' desktop layout.
+ * The Customizer's Golden Hive panel (Negozio, Stile, Prodotti e filtri,
+ * Pagina prodotto), its list and checklist controls, the cache purge on save.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/customizer.php';
+
+/**
+ * Design tokens and switches (Customizer → Golden Hive → Stile).
  */
 require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/design.php';
+
+/**
+ * The store's details (Customizer → Golden Hive → Negozio), which blocks use
+ * for any attribute a page leaves out.
+ */
+require_once GOLDEN_HIVE_BLOCKS_PATH . 'includes/store.php';
 
 /**
  * Frontend assets.

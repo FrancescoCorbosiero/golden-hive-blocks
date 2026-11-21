@@ -10,6 +10,9 @@
     var el = window.ghEditorUtils.el;
     var Fragment = window.ghEditorUtils.Fragment;
     var Placeholder = window.ghEditorUtils.Placeholder;
+    var StoreText = window.ghEditorUtils.StoreText;
+    var StoreReset = window.ghEditorUtils.StoreReset;
+    var store = window.ghEditorUtils.store;
 
     registerBlockType('golden-hive/map-embed', {
         edit: function (props) {
@@ -17,7 +20,8 @@
             var setAttributes = props.setAttributes;
             var blockProps = useBlockProps();
 
-            var hasEmbed = attributes.embedCode && attributes.embedCode.trim().length > 0;
+            var fromStore = attributes.embedCode === undefined;
+            var hasEmbed = fromStore ? !!store.hasMap : attributes.embedCode.trim().length > 0;
 
             return el(
                 Fragment,
@@ -28,13 +32,14 @@
                     el(
                         PanelBody,
                         { title: 'Mappa', initialOpen: true },
-                        el(TextareaControl, {
+                        el(StoreText, {
+                            attributes: attributes,
+                            setAttributes: setAttributes,
+                            attr: 'embedCode',
                             label: 'Codice Embed',
+                            storeValue: store.hasMap ? '(la mappa del negozio)' : '',
                             help: 'Incolla il codice embed iframe di Google Maps.',
-                            value: attributes.embedCode,
-                            onChange: function (value) {
-                                setAttributes({ embedCode: value });
-                            },
+                            textarea: true,
                             rows: 6,
                         }),
                         el(RangeControl, {
@@ -64,14 +69,15 @@
                                 setAttributes({ clickToLoad: value });
                             },
                         }),
-                        attributes.clickToLoad !== false ? el(TextControl, {
+                        attributes.clickToLoad !== false ? el(StoreText, {
+                            attributes: attributes,
+                            setAttributes: setAttributes,
+                            attr: 'address',
                             label: 'Indirizzo (facoltativo)',
+                            storeValue: fromStore ? store.address : '',
                             help: 'Mostrato sulla copertina della mappa; "Apri in Google Maps" lo cerca.',
-                            value: attributes.address || '',
-                            onChange: function (value) {
-                                setAttributes({ address: value });
-                            },
-                        }) : null
+                        }) : null,
+                        el(StoreReset, { attributes: attributes, setAttributes: setAttributes, attrs: ['embedCode', 'address'] })
                     )
                 ),
                 el(
@@ -81,8 +87,8 @@
                         icon: el('span', { className: 'dashicons dashicons-location' }),
                         title: 'Map Embed',
                         text: hasEmbed
-                            ? 'Mappa configurata'
-                            : 'Incolla il codice embed di Google Maps',
+                            ? (fromStore ? 'La mappa del negozio' : 'Mappa configurata')
+                            : 'Incolla il codice embed di Google Maps, o impostala in Personalizza → Golden Hive → Negozio',
                     })
                 )
             );

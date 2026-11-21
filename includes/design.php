@@ -132,11 +132,7 @@ function ghb_filters_drawer_active(): bool
 
 function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
 {
-    $wp_customize->add_section('ghb_design', array(
-        'title'    => 'Golden Hive — Stile',
-        'priority' => 30,
-    ));
-
+    // The section is the panel's (includes/customizer.php).
     $wp_customize->add_setting('ghb_design_shape', array(
         'type'              => 'option',
         'capability'        => 'edit_theme_options',
@@ -229,7 +225,7 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         },
     ));
     $wp_customize->add_control('ghb_rail_nav', array(
-        'section'     => 'ghb_design',
+        'section'     => 'ghb_catalog',
         'type'        => 'radio',
         'label'       => 'Frecce delle sezioni prodotto',
         'description' => 'Su telefono le sezioni si scorrono col dito in entrambi i casi.',
@@ -249,7 +245,7 @@ function ghb_design_customize_register(WP_Customize_Manager $wp_customize)
         },
     ));
     $wp_customize->add_control('ghb_filters_layout', array(
-        'section'         => 'ghb_design',
+        'section'         => 'ghb_catalog',
         'type'            => 'radio',
         'label'           => 'Filtri del negozio su desktop',
         'description'     => 'Con il pannello, i prodotti occupano tutta la larghezza e i filtri si aprono dal pulsante «Filtri». Su telefono non cambia nulla.',

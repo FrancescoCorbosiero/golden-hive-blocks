@@ -13,6 +13,68 @@
     var MediaUpload = wp.blockEditor.MediaUpload;
     var MediaUploadCheck = wp.blockEditor.MediaUploadCheck;
     var Button = wp.components.Button;
+    var TextControl = wp.components.TextControl;
+    var TextareaControl = wp.components.TextareaControl;
+
+    /**
+     * The store's details (Personalizza → Golden Hive → Negozio), printed by
+     * includes/store.php. A block attribute the page leaves out shows the
+     * store's value; written, even empty, it is the page's own.
+     */
+    var store = window.ghStore || {};
+
+    /**
+     * A text field for an attribute that follows the store. Left out, the
+     * store's value is its placeholder; typing writes this page's own value;
+     * emptied, the detail is hidden on this page. StoreReset brings the
+     * store's value back.
+     *
+     * props: { attributes, setAttributes, attr, label, storeValue, help, textarea, rows }
+     */
+    function StoreText(props) {
+        var value = props.attributes[props.attr];
+        var left = value === undefined || value === null;
+        var help = props.help;
+        if (left) {
+            help = props.storeValue
+                ? 'Dal negozio (Personalizza → Golden Hive → Negozio). Scrivi qui per cambiarlo solo su questa pagina.'
+                : 'Il negozio non l\'ha impostato: Personalizza → Golden Hive → Negozio.';
+        } else if (value === '') {
+            help = 'Nascosto su questa pagina.';
+        }
+        return el(props.textarea ? TextareaControl : TextControl, {
+            label: props.label,
+            value: left ? '' : String(value),
+            placeholder: left ? (props.storeValue || '') : '',
+            help: help,
+            rows: props.rows,
+            onChange: function (next) {
+                var patch = {};
+                patch[props.attr] = next;
+                props.setAttributes(patch);
+            }
+        });
+    }
+
+    /**
+     * "Usa i dati del negozio": forgets this page's own values of the given
+     * attributes, so they follow the store again. Shown only when the page
+     * wrote one of them.
+     *
+     * props: { attributes, setAttributes, attrs, label }
+     */
+    function StoreReset(props) {
+        var written = props.attrs.some(function (a) { return props.attributes[a] !== undefined; });
+        if (!written) return null;
+        return el(Button, {
+            variant: 'secondary',
+            onClick: function () {
+                var patch = {};
+                props.attrs.forEach(function (a) { patch[a] = undefined; });
+                props.setAttributes(patch);
+            }
+        }, props.label || 'Usa i dati del negozio');
+    }
 
     /**
      * Immutable list operations for repeatable-item blocks (slides, badge
@@ -231,6 +293,9 @@
         ItemControls: ItemControls,
         MediaField: MediaField,
         Placeholder: Placeholder,
-        ProductPicker: ProductPicker
+        ProductPicker: ProductPicker,
+        store: store,
+        StoreText: StoreText,
+        StoreReset: StoreReset
     };
 })(window.wp);

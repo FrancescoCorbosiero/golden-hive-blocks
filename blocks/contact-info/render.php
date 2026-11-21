@@ -1,16 +1,21 @@
 <?php
 /**
- * Contact Info Block - Render lato server
+ * Contact Info block — server render.
+ *
+ * Subtitle, address, P.IVA, phone, email and map left out of the block come
+ * from the store (Customizer → Golden Hive → Negozio, includes/store.php);
+ * written, even empty, they are this page's.
  */
 
-$title    = $attributes['title'] ?? '';
-$subtitle = $attributes['subtitle'] ?? '';
-$address  = $attributes['address'] ?? '';
-$vat      = $attributes['vat'] ?? '';
-$phone    = $attributes['phone'] ?? '';
-$email    = $attributes['email'] ?? '';
-$map_url  = $attributes['mapUrl'] ?? '';
-$map_embed = $attributes['mapEmbed'] ?? '';
+$ghb_block = 'golden-hive/contact-info';
+$title     = $attributes['title'] ?? '';
+$subtitle  = (string) ghb_store_attr($attributes, $ghb_block, 'subtitle');
+$address   = (string) ghb_store_attr($attributes, $ghb_block, 'address');
+$vat       = (string) ghb_store_attr($attributes, $ghb_block, 'vat');
+$phone     = (string) ghb_store_attr($attributes, $ghb_block, 'phone');
+$email     = (string) ghb_store_attr($attributes, $ghb_block, 'email');
+$map_url   = $attributes['mapUrl'] ?? '';
+$map_embed = (string) ghb_store_attr($attributes, $ghb_block, 'mapEmbed');
 
 if (empty($title)) {
     return;

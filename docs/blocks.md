@@ -12,6 +12,10 @@ against this reference.
 Every block also accepts WordPress's own `className`, `anchor`, `align`
 and `style`.
 
+A default reading **Negozio → …** is the store's own detail (Customizer →
+Golden Hive → Negozio): leave the attribute out to show it, write it to show
+something else on that page, write it empty (`""`) to hide it there.
+
 ## `golden-hive/about-hero` — About Hero
 
 Sezione Chi Siamo con storia del brand, valori e immagine.
@@ -19,8 +23,8 @@ Sezione Chi Siamo con storia del brand, valori e immagine.
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
 | `eyebrow` | string | `Chi Siamo` |  |
-| `title` | string | `Born in Piacenza` |  |
-| `text` | string | `Golden Hive nasce dalla passione per le sneake…` |  |
+| `title` | string | `La nostra storia` |  |
+| `text` | string | `""` |  |
 | `imageUrl` | string | `""` |  |
 | `imageUrlId` | number | `0` |  |
 | `values` | array | 3 sample items | items: `title`, `text` |
@@ -76,13 +80,13 @@ Informazioni di contatto aziendali con indirizzo, P.IVA, telefono, email e mappa
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
 | `title` | string | `Vieni a Trovarci` |  |
-| `subtitle` | string | `La nostra boutique nel cuore di Piacenza` |  |
-| `address` | string | `Stradone Farnese 3 - 29121 - Piacenza (PC)` |  |
-| `vat` | string | `P.IVA: 01875650333` |  |
-| `phone` | string | `""` |  |
-| `email` | string | `""` |  |
+| `subtitle` | string | **Negozio → Presentazione del negozio** |  |
+| `address` | string | **Negozio → Indirizzo** |  |
+| `vat` | string | **Negozio → Partita IVA** |  |
+| `phone` | string | **Negozio → Telefono** |  |
+| `email` | string | **Negozio → Email** |  |
 | `mapUrl` | string | `""` |  |
-| `mapEmbed` | string | `""` |  |
+| `mapEmbed` | string | **Negozio → Mappa** |  |
 | `clickToLoad` | boolean | `true` |  |
 
 ## `golden-hive/cta-banner` — CTA Banner
@@ -216,9 +220,9 @@ Griglia Instagram con CTA per seguire il profilo; con "Acquista il look" le foto
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
 | `title` | string | `Seguici su Instagram` |  |
-| `subtitle` | string | `Le ultime dal nostro feed @resellpiacenza` |  |
-| `instagramUrl` | string | `https://www.instagram.com/resellpiacenza/` |  |
-| `buttonText` | string | `@resellpiacenza` |  |
+| `subtitle` | string | `""` |  |
+| `instagramUrl` | string | **Negozio → Instagram** |  |
+| `buttonText` | string | **Negozio → Instagram** |  |
 | `images` | array | 6 sample items | items: `url`, `alt`, `link`, `hotspots`, `productId`, `x`, `y`, `urlId`, `product` |
 | `columns` | number | `3` |  |
 
@@ -241,11 +245,11 @@ Mappa Google Maps integrata per mostrare la posizione del negozio.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `embedCode` | string | `<iframe src="https://www.google.com/maps/embed…` |  |
+| `embedCode` | string | **Negozio → Mappa** |  |
 | `height` | number | `450` |  |
 | `borderRadius` | number | `12` |  |
 | `clickToLoad` | boolean | `true` |  |
-| `address` | string | `""` |  |
+| `address` | string | **Negozio → Indirizzo** |  |
 
 ## `golden-hive/newsletter` — Newsletter
 
@@ -349,11 +353,11 @@ Bottoni social flottanti per Instagram, Facebook, TikTok e altri.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `instagram` | string | `""` |  |
-| `facebook` | string | `""` |  |
-| `tiktok` | string | `""` |  |
-| `youtube` | string | `""` |  |
-| `twitter` | string | `""` |  |
+| `instagram` | string | **Negozio → Instagram** |  |
+| `facebook` | string | **Negozio → Facebook** |  |
+| `tiktok` | string | **Negozio → TikTok** |  |
+| `youtube` | string | **Negozio → YouTube** |  |
+| `twitter` | string | **Negozio → X (Twitter)** |  |
 
 ## `golden-hive/social-proof` — Social Proof
 
@@ -379,10 +383,10 @@ Orari di apertura del negozio con layout elegante.
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
 | `title` | string | `Orari di Apertura` |  |
-| `hours` | array | 7 sample items | items: `day`, `time` |
-| `note` | string | `""` |  |
-| `closedOnHolidays` | boolean | `true` |  |
-| `closedDates` | string | `""` |  |
+| `hours` | array | **Negozio → Orari** | items: `day`, `time` |
+| `note` | string | **Negozio → Nota sugli orari** |  |
+| `closedOnHolidays` | boolean | **Negozio → Chiuso nei giorni festivi** |  |
+| `closedDates` | string | **Negozio → Giorni di chiusura** |  |
 
 ## `golden-hive/store-visit` — Vieni in negozio
 
@@ -392,17 +396,17 @@ Il negozio fisico in un blocco: aperto o chiuso adesso, orari con il giorno di o
 |---|---|---|---|
 | `eyebrow` | string | `Il negozio` |  |
 | `title` | string | `Vieni in negozio` |  |
-| `subtitle` | string | `La nostra boutique nel cuore di Piacenza: pass…` |  |
-| `address` | string | `Stradone Farnese 3 - 29121 - Piacenza (PC)` |  |
-| `vat` | string | `""` |  |
-| `phone` | string | `""` |  |
+| `subtitle` | string | **Negozio → Presentazione del negozio** |  |
+| `address` | string | **Negozio → Indirizzo** |  |
+| `vat` | string | **Negozio → Partita IVA** |  |
+| `phone` | string | **Negozio → Telefono** |  |
 | `showWhatsApp` | boolean | `true` |  |
 | `whatsappText` | string | `Ciao! Vorrei passare in negozio.` |  |
-| `hours` | array | 7 sample items | items: `day`, `time` |
-| `note` | string | `""` |  |
-| `closedOnHolidays` | boolean | `true` |  |
-| `closedDates` | string | `""` |  |
-| `mapEmbed` | string | `<iframe src="https://www.google.com/maps/embed…` |  |
+| `hours` | array | **Negozio → Orari** | items: `day`, `time` |
+| `note` | string | **Negozio → Nota sugli orari** |  |
+| `closedOnHolidays` | boolean | **Negozio → Chiuso nei giorni festivi** |  |
+| `closedDates` | string | **Negozio → Giorni di chiusura** |  |
+| `mapEmbed` | string | **Negozio → Mappa** |  |
 | `mapImage` | string | `""` |  |
 | `mapImageId` | number | `0` |  |
 
@@ -412,7 +416,7 @@ Minimal trust strip with badges for customer confidence.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `badges` | array | 5 sample items | items: `icon`, `title`, `authentic` |
+| `badges` | array | **Negozio → Badge di fiducia** | items: `icon`, `authentic`, `title` |
 | `variant` | string | `default` | one of `default`, `carousel` |
 
 ## `golden-hive/trustpilot-widget` — Trustpilot Widget
@@ -421,9 +425,9 @@ Widget Trustpilot per mostrare valutazione e recensioni del negozio.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `rating` | number | `4.8` |  |
-| `reviewCount` | number | `250` |  |
-| `label` | string | `Eccezionale` |  |
+| `rating` | number |  |  |
+| `reviewCount` | number |  |  |
+| `label` | string | `""` |  |
 | `trustpilotUrl` | string | `""` |  |
 
 ## `golden-hive/whatsapp-button` — WhatsApp Button
@@ -432,7 +436,7 @@ Bottone WhatsApp flottante per contatto rapido con i clienti.
 
 | Attribute | Type | Default | Notes |
 |---|---|---|---|
-| `phoneNumber` | string | `""` |  |
-| `message` | string | `Ciao! Vorrei avere informazioni su...` |  |
+| `phoneNumber` | string | **Negozio → Numero WhatsApp** |  |
+| `message` | string | **Negozio → Messaggio WhatsApp** |  |
 | `buttonText` | string | `Chatta con noi` |  |
 | `iconOnly` | boolean | `false` |  |

@@ -1,17 +1,22 @@
 <?php
 /**
- * Store Hours Block - Render lato server
+ * Store Hours block — server render.
  *
- * Gli stili vivono in style.css (.gh-store-hours). Il giorno corrente viene
- * evidenziato lato server (current_time('N')) e poi corretto nel browser da
- * js/live-blocks.js (StoreHours), che aggiunge anche "Aperto ora · chiude
- * alle 19:30": con una page cache la pagina non resta ferma al giorno in cui
- * è stata generata. Festività italiane e date di chiusura incluse.
+ * Styles live in style.css (.gh-store-hours). Today's row is marked on the
+ * server (current_time('N')) and corrected in the browser by
+ * js/live-blocks.js (StoreHours), which also adds "Aperto ora · chiude alle
+ * 19:30": behind a page cache the page never stays on the day it was built.
+ * Italian holidays and closed dates included.
+ *
+ * Hours, note and closures left out of the block come from the store
+ * (Customizer → Golden Hive → Negozio, includes/store.php); written, they are
+ * this page's (customer-service hours, say).
  */
 
-$title = $attributes['title'] ?? 'Orari di Apertura';
-$hours = $attributes['hours'] ?? [];
-$note  = $attributes['note'] ?? '';
+$ghb_block = 'golden-hive/store-hours';
+$title     = $attributes['title'] ?? 'Orari di Apertura';
+$hours     = (array) ghb_store_attr($attributes, $ghb_block, 'hours');
+$note      = (string) ghb_store_attr($attributes, $ghb_block, 'note');
 
 if (empty($hours)) {
     return;
@@ -20,9 +25,9 @@ if (empty($hours)) {
 $wrapper_attributes = get_block_wrapper_attributes(array(
     'class' => 'gh-block gh-store-hours',
 ));
-$hours_data = gh_hours_data($hours, $attributes['closedOnHolidays'] ?? true, $attributes['closedDates'] ?? '');
+$hours_data = gh_hours_data($hours, (bool) ghb_store_attr($attributes, $ghb_block, 'closedOnHolidays'), (string) ghb_store_attr($attributes, $ghb_block, 'closedDates'));
 
-// 1 (lunedì) ... 7 (domenica), nel fuso orario di WordPress.
+// 1 (Monday) … 7 (Sunday), in WordPress's time zone.
 $weekday_names = array(
     1 => 'lunedì',
     2 => 'martedì',

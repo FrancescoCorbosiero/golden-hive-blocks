@@ -1,31 +1,37 @@
 <?php
 /**
- * Vieni in negozio Block - Render lato server
+ * Vieni in negozio (store visit) block — server render.
  *
- * Il negozio fisico in un blocco: stato "Aperto ora · chiude alle 19:30" e
- * riga di oggi calcolati nel browser (js/live-blocks.js StoreHours, fuso del
- * sito, festività e chiusure incluse), indirizzo (e P.IVA) con "Indicazioni", WhatsApp
- * (numero del Customizer, Golden Hive — Pagina prodotto) e telefono, e una
- * mappa Google che si carica solo al clic (gh_map_facade).
+ * The physical shop in one block: "Aperto ora · chiude alle 19:30" and
+ * today's row, worked out in the browser (js/live-blocks.js StoreHours, in
+ * the site's time zone, holidays and closures included), the address (and
+ * P.IVA) with "Indicazioni", WhatsApp and phone, and a Google map that loads
+ * only on a click (gh_map_facade).
+ *
+ * Subtitle, address, P.IVA, phone, hours, note, closures and map left out of
+ * the block come from the store (Customizer → Golden Hive → Negozio,
+ * includes/store.php); written, even empty, they are this page's. WhatsApp
+ * is always the store's number.
  */
 
+$ghb_block     = 'golden-hive/store-visit';
 $eyebrow       = $attributes['eyebrow'] ?? '';
 $title         = $attributes['title'] ?? '';
-$subtitle      = $attributes['subtitle'] ?? '';
-$address       = trim((string) ($attributes['address'] ?? ''));
-$vat           = trim((string) ($attributes['vat'] ?? ''));
-$phone         = trim((string) ($attributes['phone'] ?? ''));
-$hours         = $attributes['hours'] ?? array();
-$note          = $attributes['note'] ?? '';
-$whatsapp      = (!empty($attributes['showWhatsApp']) && function_exists('ghb_whatsapp_number')) ? ghb_whatsapp_number() : '';
+$subtitle      = (string) ghb_store_attr($attributes, $ghb_block, 'subtitle');
+$address       = trim((string) ghb_store_attr($attributes, $ghb_block, 'address'));
+$vat           = trim((string) ghb_store_attr($attributes, $ghb_block, 'vat'));
+$phone         = trim((string) ghb_store_attr($attributes, $ghb_block, 'phone'));
+$hours         = (array) ghb_store_attr($attributes, $ghb_block, 'hours');
+$note          = (string) ghb_store_attr($attributes, $ghb_block, 'note');
+$whatsapp      = !empty($attributes['showWhatsApp']) ? ghb_whatsapp_number() : '';
 $whatsapp_text = $attributes['whatsappText'] ?? '';
 
 if ('' === $title && '' === $address && empty($hours)) {
     return;
 }
 
-$hours_data = gh_hours_data($hours, $attributes['closedOnHolidays'] ?? true, $attributes['closedDates'] ?? '');
-$map        = gh_map_facade($attributes['mapEmbed'] ?? '', array(
+$hours_data = gh_hours_data($hours, (bool) ghb_store_attr($attributes, $ghb_block, 'closedOnHolidays'), (string) ghb_store_attr($attributes, $ghb_block, 'closedDates'));
+$map        = gh_map_facade((string) ghb_store_attr($attributes, $ghb_block, 'mapEmbed'), array(
     'address'   => $address,
     'image_url' => $attributes['mapImage'] ?? '',
     'image_id'  => (int) ($attributes['mapImageId'] ?? 0),
